@@ -18,3 +18,4 @@ Instances are classified based on machine size as: nano, micro, medium, large, x
   - Need to create multiple different machines with the exact same data for parameters servers 
   - Load balancing - create a new machine with the same AMI to be used in a different region depending on load
 
+## Lecture - Aug 30
