@@ -32,7 +32,7 @@ Instances are classified based on machine size as: nano, micro, medium, large, x
   -  Connection between two units has a “modifier”
   -  If the green line is on, the signal sails through
   -  If the red is on, the output is fixed to 1
-  -  “Learning” – figuring out how to manipulate the coloured wires
+  -  “Learning” – figuring out how to manipulate the colored wires
      -  Done by an A-type machine
 
 ## Parallel Distributed Processing (PDP)
@@ -50,7 +50,7 @@ Requirements for a PDP system
 
 ## Connectionist Systems
 
-Requirments for a Connectionist Systems
+Requirements for a Connectionist Systems
 
 - The connectivity of units
 - The activation function of units
@@ -137,7 +137,7 @@ Here, η is a learning rate coefficient, and x are the outputs of the `i`th and 
    - To arbitrary precision
 3. This generalizes to functions of any number of inputs (next class)
 
-## Weight of percetpron
+## Weight of perceptron
 
 - The perceptron fires if the input is within a specified angle of the weight
 - Neuron fires if the input vector is close enough to the weight vector.
