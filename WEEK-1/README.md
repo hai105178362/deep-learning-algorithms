@@ -78,7 +78,7 @@ Requirements for a Connectionist Systems
 
 ## Hebbian Learning
 
-$$\omega_{ij}[n+t]=\omega{ij}[n] + \eta x_i[n]x_j[n]$$
+<a href="https://www.codecogs.com/eqnedit.php?latex=$$\omega_{ij}[n&plus;t]=\omega{ij}[n]&space;&plus;&space;\eta&space;x_i[n]x_j[n]$$" target="_blank"><img src="https://latex.codecogs.com/gif.latex?$$\omega_{ij}[n&plus;t]=\omega{ij}[n]&space;&plus;&space;\eta&space;x_i[n]x_j[n]$$" title="$$\omega_{ij}[n+t]=\omega{ij}[n] + \eta x_i[n]x_j[n]$$" /></a>
 Here, η is a learning rate coefficient, and x are the outputs of the `i`th and `j`th elements.
 
 

@@ -10,7 +10,7 @@
 
 ## Perceptron
 
-$$Z=\sum_iw_ix_i+b$$
+<a href="https://www.codecogs.com/eqnedit.php?latex=Z=\sum_iw_ix_i&plus;b" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Z=\sum_iw_ix_i&plus;b" title="Z=\sum_iw_ix_i+b" /></a>
 
 - Inputs are real value
 - `b` is the bias term, representing a threshold trigger the perceptron
@@ -41,7 +41,7 @@ for i = 1...N_Train:
 - After no more than <a href="https://www.codecogs.com/eqnedit.php?latex=({R\over\gamma})^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?({R\over\gamma})^2" title="({R\over\gamma})^2" /></a> misclassifications
   - Specifically when `W` is set to 0
 - R: length of longest training position
-- $\gamma$: the best case closest distance of a training point from the classifier.
+- <a href="https://www.codecogs.com/eqnedit.php?latex=\gamma" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\gamma" title="\gamma" /></a>: the best case closest distance of a training point from the classifier.
   - Same as margin in SVM
 
 ## More Complex Decision Boundaries
@@ -58,10 +58,9 @@ for i = 1...N_Train:
 
 The empirical estimate of the expected error is the average error over the samples
 
-$$E[div(f(X;W),g(X))]\approx {1\over N}\sum{div(f(X_i,;W),d_i)}$$
+<a href="https://www.codecogs.com/eqnedit.php?latex=$$E[div(f(X;W),g(X))]\approx&space;{1\over&space;N}\sum{div(f(X_i,;W),d_i)}$$" target="_blank"><img src="https://latex.codecogs.com/gif.latex?$$E[div(f(X;W),g(X))]\approx&space;{1\over&space;N}\sum{div(f(X_i,;W),d_i)}$$" title="$$E[div(f(X;W),g(X))]\approx {1\over N}\sum{div(f(X_i,;W),d_i)}$$" /></a>
 
-$$Loss(W)={1\over N}\sum{div(f(X_i,;W),d_i)}$$
-
+<a href="https://www.codecogs.com/eqnedit.php?latex=$$Loss(W)={1\over&space;N}\sum{div(f(X_i,;W),d_i)}$$" target="_blank"><img src="https://latex.codecogs.com/gif.latex?$$Loss(W)={1\over&space;N}\sum{div(f(X_i,;W),d_i)}$$" title="$$Loss(W)={1\over N}\sum{div(f(X_i,;W),d_i)}$$" /></a>
 
 
 
