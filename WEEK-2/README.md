@@ -22,7 +22,7 @@ $$Z=\sum_iw_ix_i+b$$
 
 ### Algorithm
 
-- Given N training instance, $(X_1,Y_1),(X_2,Y_2),...,(X_N,Y_N)$, where $Y = +1$ or $Y=-1$
+- Given N training instance, <a href="https://www.codecogs.com/eqnedit.php?latex=$(X_1,Y_1),(X_2,Y_2),...,(X_N,Y_N)$" target="_blank"><img src="https://latex.codecogs.com/gif.latex?$(X_1,Y_1),(X_2,Y_2),...,(X_N,Y_N)$" title="$(X_1,Y_1),(X_2,Y_2),...,(X_N,Y_N)$" /></a>, where $Y = +1$ or $Y=-1$
 - Initialize W
 - Cycle through the training dataset:
 - Do:
