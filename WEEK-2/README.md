@@ -22,7 +22,7 @@ $$Z=\sum_iw_ix_i+b$$
 
 ### Algorithm
 
-- Given N training instance, <a href="https://www.codecogs.com/eqnedit.php?latex=$(X_1,Y_1),(X_2,Y_2),...,(X_N,Y_N)$" target="_blank"><img src="https://latex.codecogs.com/gif.latex?$(X_1,Y_1),(X_2,Y_2),...,(X_N,Y_N)$" title="$(X_1,Y_1),(X_2,Y_2),...,(X_N,Y_N)$" /></a>, where $Y = +1$ or $Y=-1$
+- Given N training instance, <a href="https://www.codecogs.com/eqnedit.php?latex=$(X_1,Y_1),(X_2,Y_2),...,(X_N,Y_N)$" target="_blank"><img src="https://latex.codecogs.com/gif.latex?$(X_1,Y_1),(X_2,Y_2),...,(X_N,Y_N)$" title="$(X_1,Y_1),(X_2,Y_2),...,(X_N,Y_N)$" /></a>, where `Y = +1` or `Y=-1`
 - Initialize W
 - Cycle through the training dataset:
 - Do:
@@ -38,8 +38,8 @@ for i = 1...N_Train:
 ### Convergence of Perceptron
 
 - **Guaranteed** to converge if classes are linearly separable
-- After no more than $({R\over\gamma})^2$ misclassifications
-  - Specifically when $W$ is set to 0
+- After no more than <a href="https://www.codecogs.com/eqnedit.php?latex=({R\over\gamma})^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?({R\over\gamma})^2" title="({R\over\gamma})^2" /></a> misclassifications
+  - Specifically when `W` is set to 0
 - R: length of longest training position
 - $\gamma$: the best case closest distance of a training point from the classifier.
   - Same as margin in SVM
@@ -52,7 +52,7 @@ for i = 1...N_Train:
 
 ### Perceptrons with differentiable activation functions
 
-$$y^k_j=\sigma(\sum{w_{i,j}^{k-1},y_i^{k-1}})$$
+<a href="https://www.codecogs.com/eqnedit.php?latex=$$y^k_j=\sigma(\sum{w_{i,j}^{k-1},y_i^{k-1}})$$" target="_blank"><img src="https://latex.codecogs.com/gif.latex?$$y^k_j=\sigma(\sum{w_{i,j}^{k-1},y_i^{k-1}})$$" title="$$y^k_j=\sigma(\sum{w_{i,j}^{k-1},y_i^{k-1}})$$" /></a>
 
 #### Expected Error/Risk
 
