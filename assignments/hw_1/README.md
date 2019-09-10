@@ -6,14 +6,14 @@
 
 - [x] 1.1 Task 1: Activations
   - [x] 1.1.1 Sigmoid Forward
-  - [ ] 1.1.2 Sigmoid Backward
-  - [ ] 1.1.3 Tanh Forward
-  - [ ] 1.1.4 Tanh Backward
-  - [ ] 1.1.5 ReLU Forward
-  - [ ] 1.1.6 ReLU Backward
-- [ ] 1.2 Task 2: Loss
-  - [ ] 1.2.1 Forward
-  - [ ] 1.2.2 Backward
+  - [x] 1.1.2 Sigmoid Backward
+  - [x] 1.1.3 Tanh Forward
+  - [x] 1.1.4 Tanh Backward
+  - [x] 1.1.5 ReLU Forward
+  - [x] 1.1.6 ReLU Backward
+- [x] 1.2 Task 2: Loss
+  - [x] 1.2.1 Forward
+  - [x] 1.2.2 Backward
 - [ ] 1.3 Batch Normalization
 - [ ] 1.4 Initializations
   - [ ] 1.4.1 Weight Initialization

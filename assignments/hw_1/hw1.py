@@ -24,9 +24,10 @@ function whose implementation has been provided.
 import numpy as np
 import os
 
+import sys
+
 
 class Activation(object):
-
     """
     Interface for activation functions (non-linearities).
 
@@ -49,7 +50,6 @@ class Activation(object):
 
 
 class Identity(Activation):
-
     """
     Identity function (already implemented).
     """
@@ -68,7 +68,6 @@ class Identity(Activation):
 
 
 class Sigmoid(Activation):
-
     """
     Sigmoid non-linearity
     """
@@ -79,19 +78,17 @@ class Sigmoid(Activation):
         super(Sigmoid, self).__init__()
 
     def forward(self, x):
-        self.state = 1.0/(1+np.exp(-x))
+        self.state = 1.0 / (1 + np.exp(-x))
         return self.state
         raise NotImplemented
 
     def derivative(self):
-
         # Maybe something we need later in here...
-
+        return self.state * (1 - self.state)
         raise NotImplemented
 
 
 class Tanh(Activation):
-
     """
     Tanh non-linearity
     """
@@ -102,17 +99,17 @@ class Tanh(Activation):
         super(Tanh, self).__init__()
 
     def forward(self, x):
-        self.state = (np.exp(x) - np.exp(-x))/(np.exp(x)+np.exp(-x))
+        self.state = (np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x))
         return self.state
 
         raise NotImplemented
 
     def derivative(self):
+        return 1 - np.power(self.state, 2)
         raise NotImplemented
 
 
 class ReLU(Activation):
-
     """
     ReLU non-linearity
     """
@@ -126,7 +123,9 @@ class ReLU(Activation):
         raise NotImplemented
 
     def derivative(self):
+        return np.where(self.state > 0, 1.0, 0.0)
         raise NotImplemented
+
 
 # Ok now things get decidedly more interesting. The following Criterion class
 # will be used again as the basis for a number of loss functions (which are in the
@@ -135,7 +134,6 @@ class ReLU(Activation):
 
 
 class Criterion(object):
-
     """
     Interface for loss functions.
     """
@@ -158,7 +156,6 @@ class Criterion(object):
 
 
 class SoftmaxCrossEntropy(Criterion):
-
     """
     Softmax loss
     """
@@ -169,25 +166,33 @@ class SoftmaxCrossEntropy(Criterion):
         self.sm = None
 
     def forward(self, x, y):
-
+        ep = np.exp(-8)
         self.logits = x
         self.labels = y
-
+        self.sm = np.zeros(shape=(len(self.logits), len(self.logits[0])))
+        ans = np.zeros(shape=(len(self.logits),))
+        rowlen = len(self.logits[0])
+        for i in range(len(self.logits)):
+            curr_max = np.max(self.logits[i])
+            tmpsum = np.log(np.sum(np.exp(self.logits[i] - curr_max))) + curr_max
+            for j in range(rowlen):
+                self.sm[i][j] = (np.exp(self.logits[i][j]) / np.sum(np.exp(self.logits[i])))
+                if self.labels[i][j] > 0:
+                    ans[i] = -self.labels[i][j] * (np.log(np.exp(self.logits[i][j])) - tmpsum)
+        return np.array(ans)
         # ...
 
         raise NotImplemented
 
     def derivative(self):
-
         # self.sm might be useful here...
-
+        return self.sm - self.labels
         raise NotImplemented
 
 
 class BatchNorm(object):
 
     def __init__(self, fan_in, alpha=0.9):
-
         # You shouldn't need to edit anything in init
 
         self.alpha = alpha
@@ -214,7 +219,6 @@ class BatchNorm(object):
         return self.forward(x, eval)
 
     def forward(self, x, eval=False):
-
         # if eval:
         #    # ???
 
@@ -234,7 +238,6 @@ class BatchNorm(object):
         raise NotImplemented
 
     def backward(self, delta):
-
         raise NotImplemented
 
 
@@ -248,13 +251,12 @@ def zeros_bias_init(d):
 
 
 class MLP(object):
-
     """
     A simple multilayer perceptron
     """
 
-    def __init__(self, input_size, output_size, hiddens, activations, weight_init_fn, bias_init_fn, criterion, lr, momentum=0.0, num_bn_layers=0):
-
+    def __init__(self, input_size, output_size, hiddens, activations, weight_init_fn, bias_init_fn, criterion, lr,
+                 momentum=0.0, num_bn_layers=0):
         # Don't change this -->
         self.train_mode = True
         self.num_bn_layers = num_bn_layers
@@ -306,7 +308,6 @@ class MLP(object):
 
 
 def get_training_stats(mlp, dset, nepochs, batch_size):
-
     train, val, test = dset
     trainx, trainy = train
     valx, valy = val
@@ -326,12 +327,10 @@ def get_training_stats(mlp, dset, nepochs, batch_size):
         # Per epoch setup ...
 
         for b in range(0, len(trainx), batch_size):
-
             pass  # Remove this line when you start implementing this
             # Train ...
 
         for b in range(0, len(valx), batch_size):
-
             pass  # Remove this line when you start implementing this
             # Val ...
 
@@ -340,7 +339,6 @@ def get_training_stats(mlp, dset, nepochs, batch_size):
     # Cleanup ...
 
     for b in range(0, len(testx), batch_size):
-
         pass  # Remove this line when you start implementing this
         # Test ...
 
