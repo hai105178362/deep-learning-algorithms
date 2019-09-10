@@ -221,8 +221,16 @@ class BatchNorm(object):
     def forward(self, x, eval=False):
         # if eval:
         #    # ???
-
         self.x = x
+        self.out = np.zeros(shape=np.shape(x))
+        print("***********")
+        print(self.out)
+        for i in range(len(self.x)):
+            self.var[0][i] = np.var(self.x[i])
+            self.mean[0][i] = np.mean(self.x[i])
+        for i in range(len(self.x)):
+            for j in range(len(self.x[i])):
+                self.out[i][j] = (x[i][j] - self.mean[0][i]) / (np.sqrt(self.var[i][j] + self.eps))
 
         # self.mean = # ???
         # self.var = # ???
@@ -234,7 +242,7 @@ class BatchNorm(object):
         # self.running_var = # ???
 
         # ...
-
+        return self.out
         raise NotImplemented
 
     def backward(self, delta):
