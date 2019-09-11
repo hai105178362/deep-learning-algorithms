@@ -222,16 +222,14 @@ class BatchNorm(object):
         # if eval:
         #    # ???
         self.x = x
-        self.out = np.zeros(shape=np.shape(x))
-        print("***********")
-        print(self.out)
+        self.norm = np.zeros(shape=np.shape(x))
         for i in range(len(self.x)):
             self.var[0][i] = np.var(self.x[i])
             self.mean[0][i] = np.mean(self.x[i])
         for i in range(len(self.x)):
             for j in range(len(self.x[i])):
-                self.out[i][j] = (x[i][j] - self.mean[0][i]) / (np.sqrt(self.var[i][j] + self.eps))
-
+                self.norm[i][j] = (x[i][j] - self.mean[0][i]) / (np.sqrt(self.var[i][j] + self.eps))
+        self.out = self.gamma * self.norm + self.beta
         # self.mean = # ???
         # self.var = # ???
         # self.norm = # ???
@@ -243,18 +241,20 @@ class BatchNorm(object):
 
         # ...
         return self.out
-        raise NotImplemented
 
     def backward(self, delta):
+        return self.out
         raise NotImplemented
 
 
 # These are both easy one-liners, don't over-think them
 def random_normal_weight_init(d0, d1):
+    return np.random(shape=(d0, d1))
     raise NotImplemented
 
 
 def zeros_bias_init(d):
+    return np.zeros(shape=(1, d))
     raise NotImplemented
 
 
@@ -283,26 +283,37 @@ class MLP(object):
         # the values in order to initialize them correctly
         self.W = None
         self.dW = None
+        self.dW = []
         self.b = None
         self.db = None
         # HINT: self.foo = [ bar(???) for ?? in ? ]
-
+        self.W = weight_init_fn(input_size,output_size)
         # if batch norm, add batch norm parameters
         if self.bn:
             self.bn_layers = None
 
         # Feel free to add any other attributes useful to your implementation (input, output, ...)
+        self.input = None
+        self.output = None
 
     def forward(self, x):
+        self.input = x
+        self.output = np.dot(self.input,self.W)
+        return self.output
         raise NotImplemented
 
     def zero_grads(self):
         raise NotImplemented
 
     def step(self):
+        self.W = self.W - self.dW
         raise NotImplemented
 
     def backward(self, labels):
+        print(np.shape(labels),np.shape(self.input.T))
+        self.dW = np.dot(self.input.T,labels)
+        # print(np.shape(self.dW))
+        return self.dW
         raise NotImplemented
 
     def __call__(self, x):
