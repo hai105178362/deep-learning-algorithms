@@ -166,7 +166,6 @@ class SoftmaxCrossEntropy(Criterion):
         self.sm = None
 
     def forward(self, x, y):
-        ep = np.exp(-8)
         self.logits = x
         self.labels = y
         self.sm = np.zeros(shape=(len(self.logits), len(self.logits[0])))
@@ -174,11 +173,9 @@ class SoftmaxCrossEntropy(Criterion):
         rowlen = len(self.logits[0])
         for i in range(len(self.logits)):
             curr_max = np.max(self.logits[i])
-            tmpsum = np.log(np.sum(np.exp(self.logits[i] - curr_max))) + curr_max
             for j in range(rowlen):
                 self.sm[i][j] = (np.exp(self.logits[i][j]) / np.sum(np.exp(self.logits[i])))
-                if self.labels[i][j] > 0:
-                    ans[i] = -self.labels[i][j] * (np.log(np.exp(self.logits[i][j])) - tmpsum)
+            ans[i] = -np.sum(self.labels[i] * np.log(self.sm[i]))
         return np.array(ans)
         # ...
 
@@ -202,18 +199,18 @@ class BatchNorm(object):
         self.out = None
 
         # The following attributes will be tested
-        self.var = np.ones((1, fan_in))
-        self.mean = np.zeros((1, fan_in))
+        self.var = []
+        self.mean = []
 
-        self.gamma = np.ones((1, fan_in))
-        self.dgamma = np.zeros((1, fan_in))
+        self.gamma = []
+        self.dgamma = []
 
-        self.beta = np.zeros((1, fan_in))
-        self.dbeta = np.zeros((1, fan_in))
+        self.beta = []
+        self.dbeta = []
 
         # inference parameters
-        self.running_mean = np.zeros((1, fan_in))
-        self.running_var = np.ones((1, fan_in))
+        self.running_mean = []
+        self.running_var = []
 
     def __call__(self, x, eval=False):
         return self.forward(x, eval)
@@ -224,8 +221,8 @@ class BatchNorm(object):
         self.x = x
         self.norm = np.zeros(shape=np.shape(x))
         for i in range(len(self.x)):
-            self.var[0][i] = np.var(self.x[i])
-            self.mean[0][i] = np.mean(self.x[i])
+            self.var.append(np.var(self.x[i]))
+            self.mean.append(np.mean(self.x[i]))
         for i in range(len(self.x)):
             for j in range(len(self.x[i])):
                 self.norm[i][j] = (x[i][j] - self.mean[0][i]) / (np.sqrt(self.var[i][j] + self.eps))
@@ -249,7 +246,7 @@ class BatchNorm(object):
 
 # These are both easy one-liners, don't over-think them
 def random_normal_weight_init(d0, d1):
-    return np.random(shape=(d0, d1))
+    return np.randomn(shape=(d0, d1))
     raise NotImplemented
 
 
@@ -287,43 +284,83 @@ class MLP(object):
         self.b = None
         self.db = None
         # HINT: self.foo = [ bar(???) for ?? in ? ]
-        self.W = weight_init_fn(input_size,output_size)
+
         # if batch norm, add batch norm parameters
         if self.bn:
             self.bn_layers = None
 
         # Feel free to add any other attributes useful to your implementation (input, output, ...)
-        self.input = None
-        self.output = None
+        # *** Add By myself
+        self.input = []
+        self.z = []
+        self.y = []
+        self.output = []
+        self.W = []
+        self.cur_gradient = []
+        self.dW = []
+        self.tmpout = []
+        self.backdrv = []
+
+        # *** Generate Weight Matrix
+        if (len(hiddens) > 0):
+            self.W.append(weight_init_fn(input_size, hiddens[0]))
+            for i in range(len(hiddens) - 1):
+                self.W.append(weight_init_fn(hiddens[i], hiddens[i + 1]))
+            self.W.append(weight_init_fn(hiddens[-1], output_size))
+            self.b = bias_init_fn(len(hiddens) + 1)
+        else:
+            self.W.append(weight_init_fn(input_size, output_size))
+            self.b = bias_init_fn(len(hiddens) + 1)
 
     def forward(self, x):
         self.input = x
-        self.output = np.dot(self.input,self.W)
-        return self.output
+        self.output.append(x)
+        l = len(self.W)
+        for i in range(l):
+            curr_result = self.activations[i].forward(np.dot(self.output[i], self.W[i]) + self.b[0][i])
+            if i == l-1:
+                curr_deriv = self.W[i] +self.b[0][i]
+            else:
+                curr_deriv = np.dot(self.W[i]+self.b[0][i],self.activations[i].derivative().T)
+            self.backdrv.append(curr_deriv)
+            self.z.append(np.dot(self.output[i], self.W[i]) + self.b[0][i])
+            self.output.append(curr_result)
+            self.y.append(self.output[i])
+        return self.output[-1]
         raise NotImplemented
 
     def zero_grads(self):
+        return  np.zeros(shape=(np.shape(self.W)))
         raise NotImplemented
 
     def step(self):
-        self.W = self.W - self.dW
+        return self.backdrv
         raise NotImplemented
 
     def backward(self, labels):
-        print(np.shape(labels),np.shape(self.input.T))
-        self.dW = np.dot(self.input.T,labels)
-        # print(np.shape(self.dW))
+        self.criterion = SoftmaxCrossEntropy()
+        loss = self.criterion.forward(self.output[-1], labels)
+        loss_backward = self.criterion.derivative()
+        self.dW.append(np.dot(self.y[-1].T, loss_backward)*self.lr)
+        for i in range((len(self.activations) - 1), -1, -1):
+            self.cur_gradient = self.activations[i].derivative() + self.b[0][i]
+            self.dW.append(np.dot(self.y[i].T, self.cur_gradient) * self.lr)
+        if len(self.activations) > 1:
+            self.dW = np.flipud(self.dW)
         return self.dW
         raise NotImplemented
 
-    def __call__(self, x):
-        return self.forward(x)
 
-    def train(self):
-        self.train_mode = True
+def __call__(self, x):
+    return self.forward(x)
 
-    def eval(self):
-        self.train_mode = False
+
+def train(self):
+    self.train_mode = True
+
+
+def eval(self):
+    self.train_mode = False
 
 
 def get_training_stats(mlp, dset, nepochs, batch_size):
