@@ -293,7 +293,7 @@ class MLP(object):
         # *** Add By myself
         self.input = []
         self.z = []
-        self.yhat = []
+        self.y = []
         self.output = []
         self.W = []
         self.cur_gradient = []
@@ -314,22 +314,23 @@ class MLP(object):
 
     def forward(self, x):
         self.input = x
-        self.output = np.zeros(shape=(len(x),self.output_size))
-        # print(len(x[0]))
+        self.output.append(x)
         l = len(self.W)
-        curr_y = x
-        for i in range(len(x)):
-            tmp = []
-            for j in range(l):
-                if j == 0:
-                    dot_product = np.dot(curr_y[i], self.W[j]) + self.b[0][j]
-                    curr_result = self.activations[j].forward(dot_product + self.b[0][j])
-                else:
-                    dot_product = np.dot(curr_result, self.W[j]) + self.b[0][j]
-                    curr_result = self.activations[j].forward(dot_product + self.b[0][j])
-                tmp = curr_result
-            self.output[i] = tmp
-        return self.output
+        for i in range(l):
+            curr_result = self.activations[i].forward(np.dot(self.output[i], self.W[i]) + self.b[0][i])
+            curr_sum = np.sum(self.W[i],axis=0)
+            if i == l-1:
+                curr_deriv = np.multiply(curr_sum.T, self.W[i])
+                # print(np.shape(curr_sum),np.shape(self.W[i]),np.shape(curr_deriv))
+            else:
+                curr_deriv = np.dot(self.W[i]+self.b[0][i],self.activations[i].derivative().T)
+                # curr_deriv = self.activations[i].derivative()
+                # curr_deriv = np.multiply(curr_sum,curr_deriv)
+            self.backdrv.append(curr_deriv)
+            self.z.append(np.dot(self.output[i], self.W[i]) + self.b[0][i])
+            self.output.append(curr_result)
+            self.y.append(self.output[i])
+        return self.output[-1]
         raise NotImplemented
 
     def zero_grads(self):
@@ -341,32 +342,23 @@ class MLP(object):
         raise NotImplemented
 
     def backward(self, labels):
-        self.dW = np.zeros(shape=np.shape(self.W))
-        for row in range(len(self.input)):
-            self.criterion = SoftmaxCrossEntropy()
-            loss = self.criterion.forward([self.output[row]], [labels[row]])
-            loss_backward = self.criterion.derivative()
-            prev_gradient = loss_backward
-            # print(prev_gradient)
-            # print("------------")
-            for i in range((len(self.activations)-1), -1, -1):
-                if (i == (len(self.activations)-1)):
-                    if len(self.activations)==1:
-                        # print(np.shape(self.dW[0]),np.shape(self.output[row]),np.shape(prev_gradient[0]))
-                        # print(self.output[row])
-                        self.dW[0][row] += np.multiply(self.output[row],prev_gradient[0])
-                        # print(self.output[row] * prev_gradient)
-                        # print("-----------")
-                    else:
-                        self.dW[i] +=self.output[row]*prev_gradient
-            #     self.cur_gradient = np.dot(self.W[i],prev_gradient.T)
-            #     if i<(len(self.activations)-1):
-            #         prev_gradient = np.dot(self.W[i],self.activations[i].derivative().T)
-            #     # print(np.shape(self.yhat[row]),np.shape(self.cur_gradient))
-            #     self.dW[row] += (np.multiply(self.yhat[row][i].T, self.cur_gradient))
-            # if len(self.activations) > 1:
-            #     self.dW[row] = np.flipud(self.dW)
+        self.criterion = SoftmaxCrossEntropy()
+        loss = self.criterion.forward(self.output[-1], labels)
+        loss_backward = self.criterion.derivative()
+        # loss_backward = np.dot(self.backdrv[-1],loss_backward.T)
+        print(np.shape(loss_backward))
+        self.dW.append(np.dot(self.y[-1].T, loss_backward))
+        # self.dW.append(np.multiply(self.y[-1].T, loss_backward))
+        if len(self.activations)>1:
+            for i in range((len(self.activations) - 2), -1, -1):
+                self.cur_gradient = self.activations[i].derivative()
+                # self.cur_gradient = np.dot(self.backdrv[i],self.cur_gradient.T)
+                # print(self.cur_gradient)
+                self.dW.append(np.dot(self.y[i].T, self.cur_gradient))
+                # self.dW.append(np.multiply(self.y[i].T, self.cur_gradient))
 
+        if len(self.activations) > 1:
+            self.dW = np.flipud(self.dW)
         return self.dW
         raise NotImplemented
 

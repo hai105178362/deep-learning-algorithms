@@ -342,30 +342,30 @@ class MLP(object):
 
     def backward(self, labels):
         self.dW = np.zeros(shape=np.shape(self.W))
+        self.criterion = SoftmaxCrossEntropy()
+        self.yhat = self.yhat
+        loss = self.criterion.forward(self.output[-1], labels)
+        loss_backward = self.criterion.derivative()
+        prev_gradient = loss_backward
+        # print(np.shape(self.input))
+        # for i in range((len(self.activations)-1), -1, -1):
+        #     self.cur_gradient = np.dot(self.W[i],prev_gradient.T)
+        #     if i<(len(self.activations)-1):
+        #         prev_gradient = np.dot(self.W[i],self.activations[i].derivative().T)
+        #     print("1:{} 2:{} 3:{}".format(np.shape(prev_gradient), np.shape(self.W[i]),np.shape(self.activations[i].derivative())))
+        #     self.dW.append(np.dot(self.yhat[i].T, self.cur_gradient))
+        #
+        # if len(self.activations) > 1:
+        #     self.dW = np.flipud(self.dW)
         for row in range(len(self.input)):
-            self.criterion = SoftmaxCrossEntropy()
-            loss = self.criterion.forward([self.output[row]], [labels[row]])
-            loss_backward = self.criterion.derivative()
-            prev_gradient = loss_backward
-            # print(prev_gradient)
-            # print("------------")
             for i in range((len(self.activations)-1), -1, -1):
-                if (i == (len(self.activations)-1)):
-                    if len(self.activations)==1:
-                        # print(np.shape(self.dW[0]),np.shape(self.output[row]),np.shape(prev_gradient[0]))
-                        # print(self.output[row])
-                        self.dW[0][row] += np.multiply(self.output[row],prev_gradient[0])
-                        # print(self.output[row] * prev_gradient)
-                        # print("-----------")
-                    else:
-                        self.dW[i] +=self.output[row]*prev_gradient
-            #     self.cur_gradient = np.dot(self.W[i],prev_gradient.T)
-            #     if i<(len(self.activations)-1):
-            #         prev_gradient = np.dot(self.W[i],self.activations[i].derivative().T)
-            #     # print(np.shape(self.yhat[row]),np.shape(self.cur_gradient))
-            #     self.dW[row] += (np.multiply(self.yhat[row][i].T, self.cur_gradient))
-            # if len(self.activations) > 1:
-            #     self.dW[row] = np.flipud(self.dW)
+                self.cur_gradient = np.dot(self.W[i],prev_gradient.T)
+                if i<(len(self.activations)-1):
+                    prev_gradient = np.dot(self.W[i],self.activations[i].derivative().T)
+                # print(np.shape(self.yhat[row]),np.shape(self.cur_gradient))
+                self.dW[row] += (np.multiply(self.yhat[row][i].T, self.cur_gradient))
+            if len(self.activations) > 1:
+                self.dW[row] = np.flipud(self.dW)
 
         return self.dW
         raise NotImplemented
