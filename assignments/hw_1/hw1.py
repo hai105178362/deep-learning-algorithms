@@ -314,12 +314,13 @@ class MLP(object):
 
     def forward(self, x):
         self.input = x
-        self.output = np.zeros(shape=(len(x),self.output_size))
-        # print(len(x[0]))
+        self.output = np.zeros(shape=(len(x), self.output_size))
         l = len(self.W)
         curr_y = x
         for i in range(len(x)):
             tmp = []
+            cur_y_hat = []
+            cur_z = []
             for j in range(l):
                 if j == 0:
                     dot_product = np.dot(curr_y[i], self.W[j]) + self.b[0][j]
@@ -328,12 +329,17 @@ class MLP(object):
                     dot_product = np.dot(curr_result, self.W[j]) + self.b[0][j]
                     curr_result = self.activations[j].forward(dot_product + self.b[0][j])
                 tmp = curr_result
+                # print(np.shape(curr_result))
+                cur_z.append(dot_product)
+                cur_y_hat.append(tmp)
+            self.yhat.append(cur_y_hat)
+            self.z.append(cur_z)
             self.output[i] = tmp
         return self.output
         raise NotImplemented
 
     def zero_grads(self):
-        return  np.zeros(shape=(np.shape(self.W)))
+        return np.zeros(shape=(np.shape(self.W)))
         raise NotImplemented
 
     def step(self):
@@ -342,31 +348,33 @@ class MLP(object):
 
     def backward(self, labels):
         self.dW = np.zeros(shape=np.shape(self.W))
-        for row in range(len(self.input)):
+        if len(self.activations) == 1:
+            self.db = np.zeros(shape=np.shape(self.W[0][0]))
+        else:
+            self.db = np.zeros(shape=(len(self.W), len(self.activations)))
+        for row in range(len(self.input) - 1, -1, -1):
             self.criterion = SoftmaxCrossEntropy()
             loss = self.criterion.forward([self.output[row]], [labels[row]])
             loss_backward = self.criterion.derivative()
             prev_gradient = loss_backward
-            # print(prev_gradient)
-            # print("------------")
-            for i in range((len(self.activations)-1), -1, -1):
-                if (i == (len(self.activations)-1)):
-                    if len(self.activations)==1:
-                        # print(np.shape(self.dW[0]),np.shape(self.output[row]),np.shape(prev_gradient[0]))
-                        # print(self.output[row])
-                        self.dW[0][row] += np.multiply(self.output[row],prev_gradient[0])
-                        # print(self.output[row] * prev_gradient)
-                        # print("-----------")
+            for i in range((len(self.activations) - 1), -1, -1):
+                if (i == (len(self.activations) - 1)):
+                    if len(self.activations) == 1:
+                        self.dW[0] += np.dot(np.array([self.input[row]]).T, prev_gradient)
+                        for b_element in range(len(self.db)):
+                            self.db[b_element] += (prev_gradient[0][b_element])
                     else:
-                        self.dW[i] +=self.output[row]*prev_gradient
-            #     self.cur_gradient = np.dot(self.W[i],prev_gradient.T)
-            #     if i<(len(self.activations)-1):
-            #         prev_gradient = np.dot(self.W[i],self.activations[i].derivative().T)
-            #     # print(np.shape(self.yhat[row]),np.shape(self.cur_gradient))
-            #     self.dW[row] += (np.multiply(self.yhat[row][i].T, self.cur_gradient))
-            # if len(self.activations) > 1:
-            #     self.dW[row] = np.flipud(self.dW)
+                        cur_div_y = np.multiply(np.array([self.yhat[row][-1]]), prev_gradient)
 
+                # if len(self.activations) > 1 and i < (len(self.activations) - 1):
+                #     # print(np.shape(self.yhat[i]), np.shape(prev_gradient))
+                #     prev_gradient = np.dot(self.W[i], prev_gradient)
+                #     activation_div = self.activations[i].derivative()
+                #     prev_gradient = np.dot(prev_gradient, activation_div)
+                #     self.dW[i] += np.dot(self.yhat[i], prev_gradient)
+
+        self.db = np.array([self.db]) / len(self.input)
+        self.dW = self.dW / len(self.input)
         return self.dW
         raise NotImplemented
 

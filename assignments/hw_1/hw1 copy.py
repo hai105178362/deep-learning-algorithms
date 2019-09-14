@@ -314,12 +314,14 @@ class MLP(object):
 
     def forward(self, x):
         self.input = x
-        self.output = np.zeros(shape=(len(x),self.output_size))
-        # print(len(x[0]))
+        self.output = np.zeros(shape=(len(x), self.output_size))
         l = len(self.W)
         curr_y = x
         for i in range(len(x)):
             tmp = []
+            cur_y_hat = []
+            cur_z = []
+            cur_y_hat.append(x[i])
             for j in range(l):
                 if j == 0:
                     dot_product = np.dot(curr_y[i], self.W[j]) + self.b[0][j]
@@ -328,12 +330,17 @@ class MLP(object):
                     dot_product = np.dot(curr_result, self.W[j]) + self.b[0][j]
                     curr_result = self.activations[j].forward(dot_product + self.b[0][j])
                 tmp = curr_result
+                # print(np.shape(curr_result))
+                cur_z.append(dot_product)
+                cur_y_hat.append(tmp)
+            self.yhat.append(cur_y_hat)
+            self.z.append(cur_z)
             self.output[i] = tmp
         return self.output
         raise NotImplemented
 
     def zero_grads(self):
-        return  np.zeros(shape=(np.shape(self.W)))
+        return np.zeros(shape=(np.shape(self.W)))
         raise NotImplemented
 
     def step(self):
@@ -341,32 +348,49 @@ class MLP(object):
         raise NotImplemented
 
     def backward(self, labels):
-        self.dW = np.zeros(shape=np.shape(self.W))
-        self.criterion = SoftmaxCrossEntropy()
-        self.yhat = self.yhat
-        loss = self.criterion.forward(self.output[-1], labels)
-        loss_backward = self.criterion.derivative()
-        prev_gradient = loss_backward
-        # print(np.shape(self.input))
-        # for i in range((len(self.activations)-1), -1, -1):
-        #     self.cur_gradient = np.dot(self.W[i],prev_gradient.T)
-        #     if i<(len(self.activations)-1):
-        #         prev_gradient = np.dot(self.W[i],self.activations[i].derivative().T)
-        #     print("1:{} 2:{} 3:{}".format(np.shape(prev_gradient), np.shape(self.W[i]),np.shape(self.activations[i].derivative())))
-        #     self.dW.append(np.dot(self.yhat[i].T, self.cur_gradient))
-        #
+        # self.dW = np.zeros(shape=np.shape(self.W))
         # if len(self.activations) > 1:
-        #     self.dW = np.flipud(self.dW)
-        for row in range(len(self.input)):
-            for i in range((len(self.activations)-1), -1, -1):
-                self.cur_gradient = np.dot(self.W[i],prev_gradient.T)
-                if i<(len(self.activations)-1):
-                    prev_gradient = np.dot(self.W[i],self.activations[i].derivative().T)
-                # print(np.shape(self.yhat[row]),np.shape(self.cur_gradient))
-                self.dW[row] += (np.multiply(self.yhat[row][i].T, self.cur_gradient))
-            if len(self.activations) > 1:
-                self.dW[row] = np.flipud(self.dW)
+        #     self.dW = np.zeros(shape=np.shape(self.W[0]))
+        self.dW = []
+        if len(self.activations) == 1:
+            self.dW = np.zeros(shape=np.shape(self.W))
+        else:
+            l = 0
+            while (l < len(self.activations)):
+                self.dW.append(self.W[l])
+                l += 1
 
+        if len(self.activations) == 1:
+            self.db = np.zeros(shape=np.shape(self.W[0][0]))
+        else:
+            self.db = np.zeros(shape=(len(self.W), len(self.activations)))
+        for row in range(len(self.input) - 1, -1, -1):
+            self.criterion = SoftmaxCrossEntropy()
+            loss = self.criterion.forward([self.output[row]], [labels[row]])
+            loss_backward = self.criterion.derivative()
+            prev_gradient = loss_backward
+            for i in range((len(self.activations) - 1), -1, -1):
+                if (i == (len(self.activations) - 1)):
+                    # print(np.shape(self.dW[i]), np.shape(np.array([self.yhat[row][i]]).T), np.shape(prev_gradient))
+                    self.dW[i] += np.dot(np.array([self.yhat[row][i]]).T, prev_gradient)/ len(self.input)
+
+                    for bias in range(len(self.db)):
+                        self.db[bias] += (prev_gradient[0][bias])
+                else:
+                    curr_criterion = self.activations[i]
+                    curr_criterion.forward(np.array(self.z[row][i]))
+                    curr_div = curr_criterion.derivative()
+                    # print(np.shape(curr_div))
+                    cur_div_y = np.dot(self.W[i+1], prev_gradient.T)
+                    cur_div_z = np.multiply(cur_div_y.T, curr_div)
+                    prev_gradient = cur_div_z
+                    # print(np.shape(np.array([self.yhat[row][i]])), np.shape(prev_gradient),
+                    #       np.shape(self.dW[i-1]))
+                    print((np.array([self.yhat[row][i]]).T,"and" ,prev_gradient))
+                    self.dW[i] += np.multiply(np.array([self.yhat[row][i]]).T, prev_gradient)/ len(self.input)
+
+        self.db = np.array([self.db]) / len(self.input)
+        self.dW = np.array(self.dW)
         return self.dW
         raise NotImplemented
 
