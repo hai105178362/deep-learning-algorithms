@@ -21,5 +21,8 @@ $ jupyter notebook --no-broswer --port=8888
 ```
 
 
+## Upload file from local to Server
 
-
+```
+$ scp -i <keyname>.pem kaggle.json ubuntu@ec2-18-222-93-36.us-east-2.compute.amazonaws.com:<desinitation\path>
+```
