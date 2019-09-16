@@ -330,7 +330,7 @@ class MLP(object):
 
     def step(self):
         for i in range(len(self.W)):
-            self.W[i] += self.lr * self.dW[i]
+            self.W[i] -= self.lr * self.dW[i]
         return self.W
         raise NotImplemented
 
