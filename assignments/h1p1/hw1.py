@@ -237,6 +237,13 @@ class BatchNorm(object):
         return self.out
 
     def backward(self, delta):
+        # dnrom_dmeanbatch = -pow(self.var+self.eps,-1/2)-0.5(self.x-self.mean)*pow((self.var+self.eps),-3/2)*(-2/len(self.x)*np.sum(self.x-self.mean))
+        # dl_dmeanbatch = -dlossbatch_dnorm*pow((self.var+self.eps),1/2)-(1/2))*dlossbatch_dvar*np.sum(self.x-self.mean)
+        # dlbatch_dx = dlbatch_d
+        # dl_dxhat = self.lossbatch_data * self.gamma
+        # dl_dbeta = np.sum(dlossbatch_dy)
+        # dl_dgamma = np.sum(dlossbatch_dy * self.norm)
+        # dl_dvar = dlossbatch_dnorm * dnorm_dvar
         return self.out
         raise NotImplemented
 
@@ -283,8 +290,8 @@ class MLP(object):
         bigArr.append(output_size)
         self.W = [(weight_init_fn(bigArr[i], bigArr[i + 1])) for i in range(len(bigArr) - 1)]
         self.dW = [(weight_init_fn(bigArr[i], bigArr[i + 1])) for i in range(len(bigArr) - 1)]
-        self.b = bias_init_fn(len(hiddens) + 1)
-        self.db = bias_init_fn(len(hiddens) + 1)
+        self.b = [(bias_init_fn(bigArr[i])) for i in range(len(bigArr) - 1)]
+        self.db = [(bias_init_fn(bigArr[i])) for i in range(len(bigArr) - 1)]
         # HINT: self.foo = [ bar(???) for ?? in ? ]
 
         # if batch norm, add batch norm parameters
@@ -305,10 +312,11 @@ class MLP(object):
             self.output = self.state[0]
             return self.output
         else:
+            self.state.append(cur_input)
             assert len(self.activations) == len(self.W), "Different length between activations and W! {} , {}".format(
                 len(self.activations), len(self.W))
             for i in range(len(self.activations)):
-                dot_product = np.matmul(cur_input, self.W[i]) + self.b[0][i]
+                dot_product = np.matmul(cur_input, self.W[i])
                 cur_y = self.activations[i].forward(dot_product)
                 self.state.append(cur_y)
                 cur_input = cur_y
@@ -321,7 +329,9 @@ class MLP(object):
         raise NotImplemented
 
     def step(self):
-        return self.backdrv
+        for i in range(len(self.W)):
+            self.W[i] += self.lr * self.dW[i]
+        return self.W
         raise NotImplemented
 
     def backward(self, labels):
@@ -329,17 +339,23 @@ class MLP(object):
         loss = self.criterion(self.output, labels)
         dz_prev = self.criterion.derivative()
         if self.nlayers == 1:
+            # print("input:{}  dz_prev:{}".format(self.input.shape, dz_prev.shape))
             self.dW = [np.matmul((self.input).transpose(), dz_prev) / len(self.input)]
+            # print(dz_prev.shape)
+            self.db = [np.sum(dz_prev, axis=0) / len(self.input)]
             return self.dW
         else:
-            for i in range(self.nlayers - 2, -2, -1):
-                print("yhat[i+1]:{} , dz_prev:{}".format(self.state[i + 1].shape, dz_prev.shape))
-                self.dW[i + 1] = np.multiply(self.state[i + 1], dz_prev)
-                y_prime = np.matmul(self.W[i + 1], dz_prev.transpose())
-                print("W[i+1]:{} , dz_prev:{}".format(self.W[i + 1].shape, dz_prev.shape))
-                cur_z_prime = self.activations[i].derivative()
-                print(cur_z_prime.shape,y_prime.transpose().shape)
-                dz_prev = np.multiply(y_prime.transpose,cur_z_prime)
+            # print(self.state[-1].shape, self.state[-2].shape, self.state[0].shape, dz_prev.shape)
+            dz_prev = np.multiply(self.activations[-1].derivative(), dz_prev)
+            self.dW[-1] = np.matmul(self.state[-2].transpose(), dz_prev) / len(self.state[-1])
+            self.db[- 1] = np.sum(dz_prev, axis=0) / len(self.state[-1])
+            for i in range(len(self.W) - 1, 0, -1):
+                y_prime = np.matmul(dz_prev, self.W[i].transpose())
+                cur_z_prime = np.multiply(y_prime, self.activations[i - 1].derivative())
+                self.dW[i - 1] = np.matmul(self.state[i - 1].transpose(), cur_z_prime) / len(self.state[i - 1])
+                dz_prev = cur_z_prime
+                self.db[i - 1] = np.sum(dz_prev, axis=0) / len(self.state[i - 1])
+                # print(self.dW[i].shape, self.state[i].shape, dz_prev.shape)
         return self.dW
         raise NotImplemented
 
