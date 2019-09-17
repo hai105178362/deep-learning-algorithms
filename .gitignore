@@ -2,3 +2,6 @@
 *.pdf
 *.npy
 *.png
+*/data
+*/local_autograder
+*/test
