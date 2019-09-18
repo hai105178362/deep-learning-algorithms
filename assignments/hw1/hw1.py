@@ -168,15 +168,12 @@ class SoftmaxCrossEntropy(Criterion):
         self.logits = x
         self.labels = y
         self.sm = []
-        ans = []
-        for i in range(len(self.logits)):
-            curr_max = np.max(self.logits[i])
-            logsm = np.log(np.exp(self.logits[i])) - (curr_max + np.log(np.sum(np.exp(self.logits[i] - curr_max))))
-            self.sm.append(np.exp(logsm))
-            ans.append(-np.sum(self.labels[i] * logsm))
-        return np.array(ans)
-        # ...
-
+        curr_max = np.max(self.logits, axis=1)
+        self.sm = (np.exp(self.logits) / np.sum(np.exp(self.logits), axis=1).reshape((len(self.logits)), 1))
+        logsmtop = np.log(np.exp(self.logits))
+        logsmbot = curr_max + np.log(np.sum(np.exp(self.logits - curr_max.reshape((len(self.logits), 1))), axis=1))
+        logsm = logsmtop - logsmbot.reshape((len(self.logits), 1))
+        return -np.sum(self.labels * logsm, axis=1)
         raise NotImplemented
 
     def derivative(self):
@@ -222,8 +219,8 @@ class BatchNorm(object):
         self.var_sqr = (1. / r) * np.sum((self.x - self.mean) ** 2, axis=0)
         self.norm = (self.x - self.mean) / (np.sqrt(self.var_sqr + self.eps))
         self.out = np.multiply(self.gamma, self.norm) + self.beta
-        print("Batch **forward** result: {}     self.gamma:{}     self.norm:{}".format(self.out.shape, self.gamma.shape,
-                                                                                       self.norm.shape))
+        # print("Batch **forward** result: {}     self.gamma:{}     self.norm:{}".format(self.out.shape, self.gamma.shape,
+        #                                                                                self.norm.shape))
         return self.out
 
         # self.norm = (x - self.mean) / np.sqrt(self.var + self.eps)
@@ -263,8 +260,6 @@ class BatchNorm(object):
                 2 / r * (self.x - self.mean)) + (dmiu / r)
         # print(r)
         # print("dw: {}".format(dw))
-        # assert self.dgamma.shape == self.gamma.shape, "Gamma Shape changed in Backward!"
-        # assert self.dbeta.shape == self.beta.shape, "Gamma Shape changed in Backward!"
 
         return dw
         raise NotImplemented
@@ -321,21 +316,22 @@ class MLP(object):
             self.bn_layers = []
 
         # Feel free to add any other attributes useful to your implementation (input, output, ...)
-        # *** Add By myself
         self.input = []
         self.state = []
         self.output = []
         self.batch = []
         self.z = []
 
+        ## Momentum Part
+        self.deltaW = [(weight_init_fn(bigArr[i], bigArr[i + 1])) for i in range(len(bigArr) - 1)]
+
     # Batch Version
     def forward(self, x):
         self.input = np.array(x)
         cur_input = np.array(x)
         bn_layer = self.num_bn_layers
-
         if len(self.activations) == 1:
-            self.state = [np.matmul(cur_input, self.W[0])]
+            self.state = np.matmul(cur_input, self.W[0])+self.b
             self.output = self.state[0]
             return self.output
         else:
@@ -343,9 +339,9 @@ class MLP(object):
             assert len(self.activations) == len(self.W), "Different length between activations and W! {} , {}".format(
                 len(self.activations), len(self.W))
             for i in range(len(self.activations)):
-                dot_product = np.matmul(cur_input, self.W[i])
+                dot_product = np.matmul(cur_input, self.W[i]) + self.b[i]
                 if bn_layer > 0:
-                    print("GOING BN: Fisrt layer={}".format(dot_product.shape), len(dot_product[1]))
+                    # print("GOING BN: Fisrt layer={}".format(dot_product.shape), len(dot_product[1]))
                     self.bn_layers.append(BatchNorm(len(dot_product[1])))
                     bn_layer -= 1
                     dot_product = self.bn_layers[bn_layer].forward(dot_product)
@@ -368,11 +364,14 @@ class MLP(object):
         for i in range(len(self.W)):
             self.W[i] -= self.lr * self.dW[i]
             self.b[i] -= self.lr * self.db[i]
+        # for i in range(len(self.W)):
+        #     self.deltaW[i] = self.momentum * self.deltaW[i] - self.lr * (self.dW[i])
+        #     self.dW[i] += self.deltaW[i]
+
         return self.W
         raise NotImplemented
 
     def backward(self, labels):
-        print("=====BACK=====")
         self.criterion = SoftmaxCrossEntropy()
         loss = self.criterion(self.output, labels)
         dz_prev = self.criterion.derivative()
@@ -387,20 +386,10 @@ class MLP(object):
             self.db[- 1] = np.sum(dz_prev, axis=0) / len(self.state[-1])
             for i in range(len(self.W) - 1, 0, -1):
                 y_prime = np.matmul(dz_prev, self.W[i].transpose())
-                print("i:{}  num_bn_layers:{}".format(i, nb_layer))
                 if (nb_layer == i and i != 0):
-                    print("BATCH")
-                    # print(self.activations)
-                    # print(self.activations[0].derivative() * dz_prev)
-                    # print(self.bn_layers)
-                    # print((self.z[i]).shape, self.state[i].shape)
                     cur_z_prime = np.multiply(y_prime, self.activations[i - 1].derivative())
                     cur_z_prime = self.bn_layers[i - 1].backward(cur_z_prime)
-                    # print("BATCH BACKWARD RESULT: {} y_prime:{}   dw[i-1]: {}".format(tmp.shape,y_prime.shape,self.dW[i-1].shape))
-                    # cur_z_prime = np.multiply(self.input.tr, tmp)
-                    # print("cur_Z_prime:{}".format(cur_z_prime))
                     nb_layer -= 1
-                    print("BATCH END")
                 else:
                     cur_z_prime = np.multiply(y_prime, self.activations[i - 1].derivative())
                 self.dW[i - 1] = np.matmul(self.state[i - 1].transpose(), cur_z_prime) / len(self.state[i - 1])
@@ -409,17 +398,14 @@ class MLP(object):
         return self.dW
         raise NotImplemented
 
+    def __call__(self, x):
+        return self.forward(x)
 
-def __call__(self, x):
-    return self.forward(x)
+    def train(self):
+        self.train_mode = True
 
-
-def train(self):
-    self.train_mode = True
-
-
-def eval(self):
-    self.train_mode = False
+    def eval(self):
+        self.train_mode = False
 
 
 def get_training_stats(mlp, dset, nepochs, batch_size):
