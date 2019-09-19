@@ -73,18 +73,17 @@ class Sigmoid(Activation):
     """
 
     # Remember do not change the function signatures as those are needed to stay the same for AL
-
     def __init__(self):
         super(Sigmoid, self).__init__()
 
     def forward(self, x):
-        self.state = 1.0 / (1 + np.exp(-x))
+        self.state = np.power((1.0 + np.exp(-x)), -1)
         return self.state
         raise NotImplemented
 
     def derivative(self):
         # Maybe something we need later in here...
-        return self.state * (1 - self.state)
+        return self.state * (1.0 - self.state)
         raise NotImplemented
 
 
@@ -159,7 +158,6 @@ class SoftmaxCrossEntropy(Criterion):
     """
     Softmax loss
     """
-
     def __init__(self):
         super(SoftmaxCrossEntropy, self).__init__()
         self.sm = None
@@ -168,14 +166,12 @@ class SoftmaxCrossEntropy(Criterion):
         self.logits = x
         self.labels = y
         self.sm = []
-        ans = []
-        for i in range(len(self.logits)):
-            curr_max = np.max(self.logits[i])
-            self.sm.append((np.exp(self.logits[i]) / np.sum(np.exp(self.logits[i]))))
-            ans.append(-np.sum(self.labels[i] * np.log(self.sm[i])))
-        return np.array(ans)
-        # ...
-
+        curr_max = np.max(self.logits, axis=1)
+        self.sm = (np.exp(self.logits) / np.sum(np.exp(self.logits), axis=1).reshape((len(self.logits)), 1))
+        logsmtop = np.log(np.exp(self.logits))
+        logsmbot = curr_max + np.log(np.sum(np.exp(self.logits - curr_max.reshape((len(self.logits), 1))), axis=1))
+        logsm = logsmtop - logsmbot.reshape((len(self.logits), 1))
+        return -np.sum(self.labels * logsm, axis=1)
         raise NotImplemented
 
     def derivative(self):
@@ -196,55 +192,49 @@ class BatchNorm(object):
         self.out = None
 
         # The following attributes will be tested
-        self.var = []
-        self.mean = []
+        self.var = np.ones((1, fan_in))
+        self.mean = np.zeros((1, fan_in))
 
-        self.gamma = []
-        self.dgamma = []
+        self.gamma = np.ones((1, fan_in))
+        self.dgamma = np.zeros((1, fan_in))
 
-        self.beta = []
-        self.dbeta = []
+        self.beta = np.zeros((1, fan_in))
+        self.dbeta = np.zeros((1, fan_in))
 
         # inference parameters
-        self.running_mean = []
-        self.running_var = []
+        self.running_mean = np.zeros((1, fan_in))
+        self.running_var = np.ones((1, fan_in))
+        # self.deltagamma = np.zeros((1, fan_in))
+        # self.deltabeta = np.zeros((1, fan_in))
 
     def __call__(self, x, eval=False):
         return self.forward(x, eval)
 
     def forward(self, x, eval=False):
-        # if eval:
-        #    # ???
-        self.x = x
-        self.norm = np.zeros(shape=np.shape(x))
-        for i in range(len(self.x)):
-            self.var.append(np.var(self.x[i]))
-            self.mean.append(np.mean(self.x[i]))
-        for i in range(len(self.x)):
-            for j in range(len(self.x[i])):
-                self.norm[i][j] = (x[i][j] - self.mean[0][i]) / (np.sqrt(self.var[i][j] + self.eps))
-        self.out = self.gamma * self.norm + self.beta
-        # self.mean = # ???
-        # self.var = # ???
-        # self.norm = # ???
-        # self.out = # ???
-
+        if eval:
+            return (self.gamma * ((x - self.running_mean) / (np.sqrt(self.running_var) + self.eps))) + self.beta
+        r, c = x.shape
+        self.mean = np.mean(x, axis=0)
+        self.var = np.var(x, axis=0)
+        self.norm = (x - self.mean) / (np.sqrt(self.var + self.eps))
+        self.out = (self.gamma * self.norm) + self.beta
         # update running batch statistics
-        # self.running_mean = # ???
-        # self.running_var = # ???
-
-        # ...
+        self.running_mean = self.alpha * self.running_mean + (1 - self.alpha) * self.mean
+        self.running_var = self.alpha * self.running_var + (1 - self.alpha) * self.var
+        self.x = x
         return self.out
 
     def backward(self, delta):
-        # dnrom_dmeanbatch = -pow(self.var+self.eps,-1/2)-0.5(self.x-self.mean)*pow((self.var+self.eps),-3/2)*(-2/len(self.x)*np.sum(self.x-self.mean))
-        # dl_dmeanbatch = -dlossbatch_dnorm*pow((self.var+self.eps),1/2)-(1/2))*dlossbatch_dvar*np.sum(self.x-self.mean)
-        # dlbatch_dx = dlbatch_d
-        # dl_dxhat = self.lossbatch_data * self.gamma
-        # dl_dbeta = np.sum(dlossbatch_dy)
-        # dl_dgamma = np.sum(dlossbatch_dy * self.norm)
-        # dl_dvar = dlossbatch_dnorm * dnorm_dvar
-        return self.out
+        r, c = delta.shape
+        dnorm = (self.gamma * delta)
+        self.dbeta = np.sum(delta, axis=0)
+        self.dgamma = np.sum(delta * self.norm, axis=0)
+        dvar_sqr = -0.5 * np.sum(dnorm * (self.x - self.mean) * np.power((self.var + self.eps), -1.5), axis=0)
+        dmiu = -(np.sum(delta * np.power((self.var + self.eps), -0.5), axis=0)) - (
+                (2 / r) * self.var * np.sum(self.x - self.mean, axis=0))
+        dw = dnorm * np.power((self.var + self.eps), -0.5) + dvar_sqr * (
+                2 / r * (self.x - self.mean)) + (dmiu / r)
+        return dw
         raise NotImplemented
 
 
@@ -284,44 +274,50 @@ class MLP(object):
         # the values in order to initialize them correctly
         bigArr = [input_size]
         if len(hiddens) > 0:
-            # print("hiddens: {}, input: {}, output: {}".format(hiddens, input_size, output_size))
             for i in hiddens:
                 bigArr.append(int(i))
         bigArr.append(output_size)
         self.W = [(weight_init_fn(bigArr[i], bigArr[i + 1])) for i in range(len(bigArr) - 1)]
         self.dW = [(weight_init_fn(bigArr[i], bigArr[i + 1])) for i in range(len(bigArr) - 1)]
-        self.b = [(bias_init_fn(bigArr[i])) for i in range(len(bigArr) - 1)]
-        self.db = [(bias_init_fn(bigArr[i])) for i in range(len(bigArr) - 1)]
-        # HINT: self.foo = [ bar(???) for ?? in ? ]
-
+        self.b = [(bias_init_fn(bigArr[i + 1])) for i in range(len(bigArr) - 1)]
+        self.db = [(bias_init_fn(bigArr[i + 1])) for i in range(len(bigArr) - 1)]
         # if batch norm, add batch norm parameters
         if self.bn:
-            self.bn_layers = None
-
+            self.bn_layers = []
         # Feel free to add any other attributes useful to your implementation (input, output, ...)
-        # *** Add By myself
-        self.input = []
-        self.state = []
+        self.input = None
+        self.state = [np.zeros(shape=(bigArr[i])) for i in range(len(bigArr))]
         self.output = []
+        self.batch = []
+        self.z = []
+
+        ## Momentum Part
+        self.deltaW = [np.zeros(shape=(self.W[i].shape)) for i in range(len(self.W))]
+        self.deltaB = [np.zeros(shape=(bigArr[i + 1])) for i in range(len(bigArr) - 1)]
+        self.deltagamma = [np.zeros(shape=(bigArr[i + 1])) for i in range(len(bigArr) - 1)]
+        self.deltabeta = [np.zeros(shape=(bigArr[i + 1])) for i in range(len(bigArr) - 1)]
 
     def forward(self, x):
-        self.input = x
-        cur_input = x
-        if (len(self.activations) == 1):
-            self.state = [np.matmul(cur_input, self.W[0])]
+        self.input = np.array(x)
+        cur_input = np.array(x)
+        bn_layer = self.num_bn_layers
+        if len(self.activations) == 1:
+            self.state = np.dot(cur_input, self.W[0]) + self.b
             self.output = self.state[0]
             return self.output
         else:
-            self.state.append(cur_input)
-            assert len(self.activations) == len(self.W), "Different length between activations and W! {} , {}".format(
-                len(self.activations), len(self.W))
+            self.state[0] = x
             for i in range(len(self.activations)):
-                dot_product = np.matmul(cur_input, self.W[i])
+                dot_product = np.dot(cur_input, self.W[i]) + self.b[i]
+                if bn_layer > 0:
+                    self.bn_layers.append(BatchNorm(len(dot_product[1])))
+                    bn_layer -= 1
+                    dot_product = self.bn_layers[bn_layer].forward(dot_product, eval=(self.train_mode != True))
                 cur_y = self.activations[i].forward(dot_product)
-                self.state.append(cur_y)
+                self.state[i+1] = cur_y
                 cur_input = cur_y
-        self.output = self.state[-1]
-        return self.output
+        self.output = cur_y
+        return cur_y
         raise NotImplemented
 
     def zero_grads(self):
@@ -330,46 +326,62 @@ class MLP(object):
 
     def step(self):
         for i in range(len(self.W)):
-            self.W[i] -= self.lr * self.dW[i]
-        return self.W
+            self.deltaW[i] = self.momentum * self.deltaW[i] - self.lr * self.dW[i]
+            self.deltaB[i] = self.momentum * self.deltaB[i] - self.lr * self.db[i]
+            self.W[i] += self.deltaW[i]
+            self.b[i] += self.deltaB[i]
+        # print(self.activations,self.output_size,self.input_size,self.momentum)
+        # print(self.dW[-1][-1][-1])
+        for i in range(self.num_bn_layers):
+            self.deltagamma[i] = self.bn_layers[i].gamma - self.lr * self.bn_layers[i].dgamma
+            self.deltabeta[i] = self.bn_layers[i].beta - self.lr * self.bn_layers[i].dbeta
+            self.bn_layers[i].gamma = self.deltagamma[i]
+            self.bn_layers[i].beta = self.deltabeta[i]
+
+        return
         raise NotImplemented
 
     def backward(self, labels):
-        self.criterion = SoftmaxCrossEntropy()
         loss = self.criterion(self.output, labels)
         dz_prev = self.criterion.derivative()
+        bn_layer = self.num_bn_layers
         if self.nlayers == 1:
-            # print("input:{}  dz_prev:{}".format(self.input.shape, dz_prev.shape))
-            self.dW = [np.matmul((self.input).transpose(), dz_prev) / len(self.input)]
-            # print(dz_prev.shape)
+            self.dW = np.array([np.matmul(self.input.transpose(), dz_prev)]) / len(self.input)
             self.db = [np.sum(dz_prev, axis=0) / len(self.input)]
-            return self.dW
+            # print("1===")
+            # print(self.dW[-1][-1][-1])
+            return
         else:
-            # print(self.state[-1].shape, self.state[-2].shape, self.state[0].shape, dz_prev.shape)
-            dz_prev = np.multiply(self.activations[-1].derivative(), dz_prev)
-            self.dW[-1] = np.matmul(self.state[-2].transpose(), dz_prev) / len(self.state[-1])
-            self.db[- 1] = np.sum(dz_prev, axis=0) / len(self.state[-1])
+            dz_prev = self.activations[-1].derivative() * dz_prev
+            self.dW[-1] = np.matmul(self.state[-2].transpose(), dz_prev) / len(self.input)
+            self.db[- 1] = np.sum(dz_prev, axis=0) / len(self.input)
             for i in range(len(self.W) - 1, 0, -1):
                 y_prime = np.matmul(dz_prev, self.W[i].transpose())
-                cur_z_prime = np.multiply(y_prime, self.activations[i - 1].derivative())
-                self.dW[i - 1] = np.matmul(self.state[i - 1].transpose(), cur_z_prime) / len(self.state[i - 1])
+                if (bn_layer == i and i == 1):
+                    cur_z_prime = (y_prime * self.activations[i - 1].derivative())
+                    cur_z_prime = self.bn_layers[i - 1].backward(cur_z_prime)
+                    bn_layer -= 1
+                else:
+                    cur_z_prime = (y_prime * self.activations[i - 1].derivative())
+                self.dW[i - 1] = np.matmul(self.state[i - 1].transpose(), cur_z_prime) / len(self.input)
+                self.db[i - 1] = np.sum(cur_z_prime, axis=0) / len(self.input)
                 dz_prev = cur_z_prime
-                self.db[i - 1] = np.sum(dz_prev, axis=0) / len(self.state[i - 1])
-                # print(self.dW[i].shape, self.state[i].shape, dz_prev.shape)
-        return self.dW
+            print(self.dW[-1][-1][-1],self.nlayers)
+            if (self.dW[-1][-1][-1]==-0.026294072070905915):
+                print(self.activations)
+                print(self.dW[-1][-1][-1])
+
+        return loss
         raise NotImplemented
 
+    def __call__(self, x):
+        return self.forward(x)
 
-def __call__(self, x):
-    return self.forward(x)
+    def train(self):
+        self.train_mode = True
 
-
-def train(self):
-    self.train_mode = True
-
-
-def eval(self):
-    self.train_mode = False
+    def eval(self):
+        self.train_mode = False
 
 
 def get_training_stats(mlp, dset, nepochs, batch_size):
@@ -377,27 +389,54 @@ def get_training_stats(mlp, dset, nepochs, batch_size):
     trainx, trainy = train
     valx, valy = val
     testx, testy = test
-
     idxs = np.arange(len(trainx))
-
-    training_losses = []
-    training_errors = []
-    validation_losses = []
-    validation_errors = []
-
+    training_losses, training_errors = [], []
+    validation_losses, validation_errors = [], []
     # Setup ...
-
+    padded_trainy = np.zeros((len(trainx), 10))
+    padded_valy = np.zeros((len(valx), 10))
+    padded_testy = np.zeros((len(testx), 10))
+    total_train_len = len(trainy)
+    total_val_len = len(valy)
+    total_test_len = len(testy)
+    train_output, val_output, test_output = [], [], []
+    for i in range(len(padded_trainy)):
+        padded_trainy[i][trainy[i]] = 1
+    mlp.zero_grads()
     for e in range(nepochs):
-
+        train_correct, val_correct, test_correct = 0, 0, 0
         # Per epoch setup ...
-
         for b in range(0, len(trainx), batch_size):
-            pass  # Remove this line when you start implementing this
+            # pass  # Remove this line when you start implementing this
             # Train ...
+            print(mlp.W[0][0][0])
+            mlp.zero_grads()
+            mlp.forward(trainx[b:b + batch_size])
+            mlp.backward(padded_trainy[b:b + batch_size])
+            mlp.step()
+        #     for i in range(len(mlp.output)):
+        #         train_output.append(np.argmax(mlp.output[i]))
+        # for i, j in zip(train_output, trainy):
+        #     if i == j:
+        #         train_correct += 1
+        # training_losses.append(np.mean(curr_loss))
+        # training_errors.append(1 - (train_correct / total_train_len))
+        # print("**Train** Epoch: {}, Loss: {}, error:{}".format(e, np.mean(curr_loss), training_errors[e]))
 
         for b in range(0, len(valx), batch_size):
             pass  # Remove this line when you start implementing this
-            # Val ...
+        #     mlp.eval()
+        #     mlp.forward(valx[b:b + batch_size])
+        #     curr_loss = mlp.backward(padded_valy[b:b + batch_size])
+        #     for i in range(len(mlp.output)):
+        #         train_output.append(np.argmax(mlp.output[i]))
+        # for i, j in zip(train_output, trainy):
+        #     if i == j:
+        #         val_correct += 1
+        # validation_losses.append(np.mean(curr_loss))
+        # validation_errors.append(1 - (val_correct / total_val_len))
+        # print("**Val** Epoch: {}, Loss: {}, error:{}".format(e, np.mean(curr_loss), validation_errors[e]))
+        # Val ...
 
         # Accumulate data...
 
@@ -405,10 +444,29 @@ def get_training_stats(mlp, dset, nepochs, batch_size):
 
     for b in range(0, len(testx), batch_size):
         pass  # Remove this line when you start implementing this
-        # Test ...
-
+        # mlp.eval()
+        # mlp.forward(testx[b:b + batch_size])
     # Return results ...
-
-    # return (training_losses, training_errors, validation_losses, validation_errors)
+    # return mlp.output
+    return (training_losses, training_errors, validation_losses, validation_errors)
 
     raise NotImplemented
+
+
+#############################################################
+if __name__ == "__main__":
+    f_trainx = np.load("/Users/robert/Documents/CMU/19Fall/11785/homework/h1/handout/data/train_data.npy")
+    f_trainy = np.load("/Users/robert/Documents/CMU/19Fall/11785/homework/h1/handout/data/train_labels.npy")
+    f_testx = np.load("/Users/robert/Documents/CMU/19Fall/11785/homework/h1/handout/data/test_data.npy")
+    f_testy = np.load("/Users/robert/Documents/CMU/19Fall/11785/homework/h1/handout/data/test_labels.npy")
+    f_valx = np.load("/Users/robert/Documents/CMU/19Fall/11785/homework/h1/handout/data/val_data.npy")
+    f_valy = np.load("/Users/robert/Documents/CMU/19Fall/11785/homework/h1/handout/data/val_labels.npy")
+    feed_data = (f_trainx, f_trainy), (f_valx, f_valy), (f_testx, f_testy)
+    def weight_init(x, y):
+        return np.random.randn(x, y)
+    def bias_init(x):
+        return np.zeros((1, x))
+    feedmlp = MLP(784, 10, [32, 32, 32], [ReLU(), Sigmoid(), Tanh(), Identity()], weight_init, bias_init,
+                  SoftmaxCrossEntropy(), 0.008,
+                  momentum=0.856, num_bn_layers=0)
+    get_training_stats(feedmlp, feed_data, nepochs=1, batch_size=20)
