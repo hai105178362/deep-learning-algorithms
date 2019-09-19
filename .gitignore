@@ -2,8 +2,8 @@
 *.pdf
 *.npy
 *.png
-*/data
-*/local_autograder
+*/data/
+*/local_autograder/
 */test
 */.idea
 *.iml
