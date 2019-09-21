@@ -24,9 +24,10 @@ function whose implementation has been provided.
 import numpy as np
 import os
 
+import sys
+
 
 class Activation(object):
-
     """
     Interface for activation functions (non-linearities).
 
@@ -49,7 +50,6 @@ class Activation(object):
 
 
 class Identity(Activation):
-
     """
     Identity function (already implemented).
     """
@@ -64,34 +64,30 @@ class Identity(Activation):
         return x
 
     def derivative(self):
-        return 1.0
+        return np.ones(self.state.shape)
 
 
 class Sigmoid(Activation):
-
     """
     Sigmoid non-linearity
     """
 
     # Remember do not change the function signatures as those are needed to stay the same for AL
-
     def __init__(self):
         super(Sigmoid, self).__init__()
 
     def forward(self, x):
-        self.state = 1.0/(1+np.exp(-x))
+        self.state = np.power((1.0 + np.exp(-x)), -1)
         return self.state
         raise NotImplemented
 
     def derivative(self):
-
         # Maybe something we need later in here...
-
+        return self.state * (1.0 - self.state)
         raise NotImplemented
 
 
 class Tanh(Activation):
-
     """
     Tanh non-linearity
     """
@@ -102,17 +98,17 @@ class Tanh(Activation):
         super(Tanh, self).__init__()
 
     def forward(self, x):
-        self.state = (np.exp(x) - np.exp(-x))/(np.exp(x)+np.exp(-x))
+        self.state = (np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x))
         return self.state
 
         raise NotImplemented
 
     def derivative(self):
+        return 1 - np.power(self.state, 2)
         raise NotImplemented
 
 
 class ReLU(Activation):
-
     """
     ReLU non-linearity
     """
@@ -126,7 +122,9 @@ class ReLU(Activation):
         raise NotImplemented
 
     def derivative(self):
+        return np.where(self.state > 0, 1.0, 0.0)
         raise NotImplemented
+
 
 # Ok now things get decidedly more interesting. The following Criterion class
 # will be used again as the basis for a number of loss functions (which are in the
@@ -135,7 +133,6 @@ class ReLU(Activation):
 
 
 class Criterion(object):
-
     """
     Interface for loss functions.
     """
@@ -158,36 +155,35 @@ class Criterion(object):
 
 
 class SoftmaxCrossEntropy(Criterion):
-
     """
     Softmax loss
     """
 
     def __init__(self):
-
         super(SoftmaxCrossEntropy, self).__init__()
         self.sm = None
 
     def forward(self, x, y):
-
         self.logits = x
         self.labels = y
-
-        # ...
-
+        self.sm = []
+        curr_max = np.max(self.logits, axis=1)
+        self.sm = (np.exp(self.logits) / np.sum(np.exp(self.logits), axis=1).reshape((len(self.logits)), 1))
+        logsmtop = np.log(np.exp(self.logits))
+        logsmbot = curr_max + np.log(np.sum(np.exp(self.logits - curr_max.reshape((len(self.logits), 1))), axis=1))
+        logsm = logsmtop - logsmbot.reshape((len(self.logits), 1))
+        return -np.sum(self.labels * logsm, axis=1)
         raise NotImplemented
 
     def derivative(self):
-
         # self.sm might be useful here...
-
+        return self.sm - self.labels
         raise NotImplemented
 
 
 class BatchNorm(object):
 
     def __init__(self, fan_in, alpha=0.9):
-
         # You shouldn't need to edit anything in init
 
         self.alpha = alpha
@@ -209,52 +205,59 @@ class BatchNorm(object):
         # inference parameters
         self.running_mean = np.zeros((1, fan_in))
         self.running_var = np.ones((1, fan_in))
+        # self.deltagamma = np.zeros((1, fan_in))
+        # self.deltabeta = np.zeros((1, fan_in))
 
     def __call__(self, x, eval=False):
         return self.forward(x, eval)
 
     def forward(self, x, eval=False):
-
-        # if eval:
-        #    # ???
-
-        self.x = x
-
-        # self.mean = # ???
-        # self.var = # ???
-        # self.norm = # ???
-        # self.out = # ???
-
+        if eval:
+            return (self.gamma * ((x - self.running_mean) / (np.sqrt(self.running_var) + self.eps))) + self.beta
+        r, c = x.shape
+        self.mean = np.mean(x, axis=0)
+        self.var = np.var(x, axis=0)
+        self.norm = (x - self.mean) / (np.sqrt(self.var + self.eps))
+        self.out = (self.gamma * self.norm) + self.beta
         # update running batch statistics
-        # self.running_mean = # ???
-        # self.running_var = # ???
-
-        # ...
-
-        raise NotImplemented
+        self.running_mean = self.alpha * self.running_mean + (1 - self.alpha) * self.mean
+        self.running_var = self.alpha * self.running_var + (1 - self.alpha) * self.var
+        self.x = x
+        return self.out
 
     def backward(self, delta):
-
+        r, c = delta.shape
+        dnorm = (self.gamma * delta)
+        self.dbeta = np.sum(delta, axis=0)
+        self.dgamma = np.sum(delta * self.norm, axis=0)
+        dvar_sqr = -0.5 * np.sum(dnorm * (self.x - self.mean) * np.power((self.var + self.eps), -1.5), axis=0)
+        dmiu = -(np.sum(delta * np.power((self.var + self.eps), -0.5), axis=0)) - (
+                (2 / r) * self.var * np.sum(self.x - self.mean, axis=0))
+        dw = dnorm * np.power((self.var + self.eps), -0.5) + dvar_sqr * (
+                2 / r * (self.x - self.mean)) + (dmiu / r)
+        return dw
         raise NotImplemented
 
 
 # These are both easy one-liners, don't over-think them
 def random_normal_weight_init(d0, d1):
+
+    return np.random.normal(np.zeros(shape=(d0, d1)))
     raise NotImplemented
 
 
 def zeros_bias_init(d):
+    return np.zeros(shape=(1, d))
     raise NotImplemented
 
 
 class MLP(object):
-
     """
     A simple multilayer perceptron
     """
 
-    def __init__(self, input_size, output_size, hiddens, activations, weight_init_fn, bias_init_fn, criterion, lr, momentum=0.0, num_bn_layers=0):
-
+    def __init__(self, input_size, output_size, hiddens, activations, weight_init_fn, bias_init_fn, criterion, lr,
+                 momentum=0.0, num_bn_layers=0):
         # Don't change this -->
         self.train_mode = True
         self.num_bn_layers = num_bn_layers
@@ -271,28 +274,98 @@ class MLP(object):
         # Don't change the name of the following class attributes,
         # the autograder will check against these attributes. But you will need to change
         # the values in order to initialize them correctly
-        self.W = None
-        self.dW = None
-        self.b = None
-        self.db = None
-        # HINT: self.foo = [ bar(???) for ?? in ? ]
-
+        bigArr = [input_size]
+        if len(hiddens) > 0:
+            for i in hiddens:
+                bigArr.append(int(i))
+        bigArr.append(output_size)
+        self.W = np.array([(weight_init_fn(bigArr[i], bigArr[i + 1])) for i in range(len(bigArr) - 1)])
+        self.dW = np.array([(weight_init_fn(bigArr[i], bigArr[i + 1])) for i in range(len(bigArr) - 1)])
+        self.b = [(bias_init_fn(bigArr[i + 1])) for i in range(len(bigArr) - 1)]
+        self.db = [(bias_init_fn(bigArr[i + 1])) for i in range(len(bigArr) - 1)]
         # if batch norm, add batch norm parameters
         if self.bn:
-            self.bn_layers = None
-
+            self.bn_layers = []
         # Feel free to add any other attributes useful to your implementation (input, output, ...)
+        self.input = None
+        self.state = [np.zeros(shape=(bigArr[i])) for i in range(len(bigArr))]
+        self.output = []
+        self.batch = []
+        self.z = []
+
+        ## Momentum Part
+        self.deltaW = [np.zeros(shape=(self.W[i].shape)) for i in range(len(self.W))]
+        self.deltaB = [np.zeros(shape=(bigArr[i + 1])) for i in range(len(bigArr) - 1)]
+        self.deltagamma = [np.zeros(shape=(bigArr[i + 1])) for i in range(len(bigArr) - 1)]
+        self.deltabeta = [np.zeros(shape=(bigArr[i + 1])) for i in range(len(bigArr) - 1)]
 
     def forward(self, x):
+        self.input = np.array(x)
+        cur_input = np.array(x)
+        bn_layer = self.num_bn_layers
+        if len(self.activations) == 1:
+            self.state = np.dot(cur_input, self.W[0]) + self.b
+            self.output = self.state[0]
+            return self.output
+        else:
+            self.state[0] = x
+            for i in range(len(self.activations)):
+                dot_product = np.dot(cur_input, self.W[i]) + self.b[i]
+                if bn_layer > 0:
+                    self.bn_layers.append(BatchNorm(len(dot_product[1])))
+                    bn_layer -= 1
+                    dot_product = self.bn_layers[bn_layer].forward(dot_product, eval=(self.train_mode != True))
+                cur_y = self.activations[i].forward(dot_product)
+                self.state[i + 1] = cur_y
+                cur_input = cur_y
+        self.output = cur_y
+        return cur_y
         raise NotImplemented
 
     def zero_grads(self):
+        return np.zeros(shape=(np.shape(self.W)))
         raise NotImplemented
 
     def step(self):
+        for i in range(len(self.W)):
+            self.deltaW[i] = self.momentum * self.deltaW[i] - self.lr * self.dW[i]
+            self.deltaB[i] = self.momentum * self.deltaB[i] - self.lr * self.db[i]
+            self.W[i] += self.deltaW[i]
+            self.b[i] += self.deltaB[i]
+        for i in range(self.num_bn_layers):
+            self.deltagamma[i] = self.bn_layers[i].gamma - self.lr * self.bn_layers[i].dgamma
+            self.deltabeta[i] = self.bn_layers[i].beta - self.lr * self.bn_layers[i].dbeta
+            self.bn_layers[i].gamma = self.deltagamma[i]
+            self.bn_layers[i].beta = self.deltabeta[i]
+        return self.W, self.b
         raise NotImplemented
 
     def backward(self, labels):
+        loss = self.criterion(self.output, labels)
+        dz_prev = self.criterion.derivative()
+        bn_layer = self.num_bn_layers
+        if self.nlayers == 1:
+            self.dW = np.array([np.matmul(self.input.transpose(), dz_prev)]) / len(self.input)
+            self.db = [np.sum(dz_prev, axis=0) / len(self.input)]
+            # print("1===")
+            # print(self.dW[-1][-1][-1])
+            return
+        else:
+            dz_prev = self.activations[-1].derivative() * dz_prev
+            self.dW[-1] = np.matmul(self.state[-2].transpose(), dz_prev) / len(self.input)
+            self.db[- 1] = np.sum(dz_prev, axis=0) / len(self.input)
+            for i in range(len(self.W) - 1, 0, -1):
+                y_prime = np.matmul(dz_prev, self.W[i].transpose())
+                if (bn_layer == i and i == 1):
+                    cur_z_prime = (y_prime * self.activations[i - 1].derivative())
+                    cur_z_prime = self.bn_layers[i - 1].backward(cur_z_prime)
+                    bn_layer -= 1
+                else:
+                    cur_z_prime = (y_prime * self.activations[i - 1].derivative())
+                self.dW[i - 1] = np.matmul(self.state[i - 1].transpose(), cur_z_prime) / len(self.input)
+                self.db[i - 1] = np.sum(cur_z_prime, axis=0) / len(self.input)
+                dz_prev = cur_z_prime
+        return
         raise NotImplemented
 
     def __call__(self, x):
@@ -306,46 +379,65 @@ class MLP(object):
 
 
 def get_training_stats(mlp, dset, nepochs, batch_size):
-
     train, val, test = dset
     trainx, trainy = train
     valx, valy = val
     testx, testy = test
-
     idxs = np.arange(len(trainx))
-
-    training_losses = []
-    training_errors = []
-    validation_losses = []
-    validation_errors = []
-
+    training_losses, training_errors = [], []
+    validation_losses, validation_errors = [], []
+    l = len(trainx)
     # Setup ...
-
     for e in range(nepochs):
+        # accuracy = 0
+        np.random.shuffle(idxs)
+        # cur_x = trainx
+        # cur_y = trainy
+        cur_x = np.array([trainx[idxs[i]] for i in range(len(idxs))])
+        cur_y = np.array([trainy[idxs[i]] for i in range(len(idxs))])
+        curr_out = mlp.forward(cur_x)
+        # single_out = np.array([[np.argmax(i)] for i in curr_out])
+        curr_loss = SoftmaxCrossEntropy().forward(curr_out, cur_y)
+        mlp.backward(cur_y)
+        for i in range(1000):
+            mlp.step()
+        # accuracy+=1
+        # print(mlp.W[0][0][0])
+        print(np.mean(curr_loss),e)
 
-        # Per epoch setup ...
-
-        for b in range(0, len(trainx), batch_size):
-
-            pass  # Remove this line when you start implementing this
-            # Train ...
+        # for i in range(l):
+        #     if np.argmax(curr_out[i]) == np.argmax(cur_y[i]):
+        #         accuracy += 1
+        # print(np.mean(curr_loss))
+        pass
 
         for b in range(0, len(valx), batch_size):
-
             pass  # Remove this line when you start implementing this
-            # Val ...
+        #     mlp.eval()
+        #     mlp.forward(valx[b:b + batch_size])
+        #     curr_loss = mlp.backward(padded_valy[b:b + batch_size])
+        #     for i in range(len(mlp.output)):
+        #         train_output.append(np.argmax(mlp.output[i]))
+        # for i, j in zip(train_output, trainy):
+        #     if i == j:
+        #         val_correct += 1
+        # validation_losses.append(np.mean(curr_loss))
+        # validation_errors.append(1 - (val_correct / total_val_len))
+        # print("**Val** Epoch: {}, Loss: {}, error:{}".format(e, np.mean(curr_loss), validation_errors[e]))
+        # Val ...
 
         # Accumulate data...
 
     # Cleanup ...
 
     for b in range(0, len(testx), batch_size):
-
         pass  # Remove this line when you start implementing this
-        # Test ...
-
+        # mlp.eval()
+        # mlp.forward(testx[b:b + batch_size])
     # Return results ...
-
-    # return (training_losses, training_errors, validation_losses, validation_errors)
+    # return mlp.output
+    return (training_losses, training_errors, validation_losses, validation_errors)
 
     raise NotImplemented
+
+
