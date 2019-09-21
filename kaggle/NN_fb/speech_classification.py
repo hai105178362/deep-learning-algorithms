@@ -17,7 +17,7 @@ class generate_data(object):
         # self.dev = np.array(np.load("dev.npy", allow_pickle=True))[:5]
         # self.test = (np.load("test.npy", allow_pickle=True))[:5]
         self.train_labels = self.start_pad(np.array(np.load("train_labels.npy", allow_pickle=True))[:5])
-        # self.train = np.array(np.load("train.npy", allow_pickle=True))[:5]
+        self.train = np.array(np.load("train.npy", allow_pickle=True))[:5]
 
     def pad_label(self, y):
         return ((np.pad(np.array([1]), (j, 137 - j), 'constant') for j in i) for i in y)
@@ -33,20 +33,23 @@ class generate_data(object):
 
 def training_routine(net, dataset, n_iters, gpu):
     # organize the data
-    train_data, train_labels, val_data, val_labels = dataset
-    criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(net.parameters(), lr=0.01)
+    # train_data, train_labels, val_data, val_labels = dataset
+    train_data, train_labels= dataset
+    print(train_data.shape,train_labels.shape)
+    sys.exit(1)
+    # criterion = nn.CrossEntropyLoss()
+    # optimizer = torch.optim.SGD(net.parameters(), lr=0.01)
     # use the flag
     # train_data, train_labels = train_data, train_labels.long()
     # val_data, val_labels = val_data, val_labels.long()
     if gpu:
         train_data, train_labels = train_data.cuda(), train_labels.cuda()
-        val_data, val_labels = val_data.cuda(), val_labels.cuda()
+        # val_data, val_labels = val_data.cuda(), val_labels.cuda()
         net = net.cuda()  # the network parameters also need to be on the gpu !
         print("Using GPU")
     else:
         train_data, train_labels = train_data.cpu(), train_labels.cpu()
-        val_data, val_labels = val_data.cpu(), val_labels.cpu()
+        # val_data, val_labels = val_data.cpu(), val_labels.cpu()
         net = net.cpu()  # the network parameters also need to be on the gpu !
         print("Using CPU")
     for i in range(n_iters):
@@ -64,16 +67,16 @@ def training_routine(net, dataset, n_iters, gpu):
         # compute the accuracy of the prediction
         train_prediction = train_output.cpu().detach().argmax(dim=1)
         train_accuracy = (train_prediction.cpu().numpy() == train_labels.cpu().numpy()).mean()
-        # Now for the validation set
-        val_output = net(val_data)
-        val_loss = criterion(val_output, val_labels)
-        # compute the accuracy of the prediction
-        val_prediction = val_output.cpu().detach().argmax(dim=1)
-        val_accuracy = (val_prediction.cpu().numpy() == val_labels.cpu().numpy()).mean()
+        # # Now for the validation set
+        # val_output = net(val_data)
+        # val_loss = criterion(val_output, val_labels)
+        # # compute the accuracy of the prediction
+        # val_prediction = val_output.cpu().detach().argmax(dim=1)
+        # val_accuracy = (val_prediction.cpu().numpy() == val_labels.cpu().numpy()).mean()
         print("Training loss :", train_loss.cpu().detach().numpy())
         print("Training accuracy :", train_accuracy)
-        print("Validation loss :", val_loss.cpu().detach().numpy())
-        print("Validation accuracy :", val_accuracy)
+        # print("Validation loss :", val_loss.cpu().detach().numpy())
+        # print("Validation accuracy :", val_accuracy)
 
     net = net.cpu()
 
@@ -83,10 +86,10 @@ def generate_single_hidden_MLP(n_hidden_neurons):
 
 
 if __name__ == "__main__":
-    f = generate_data()
-    for i in f.train_labels:
-        for j in i:
-            print(np.argmax(j))
+
+    d = generate_data()
+    traindata = d.train,d.train_labels
+    training_routine(generate_single_hidden_MLP(32),traindata,1,gpu=False)
 
     # print("{}{}{}{}".format(f.train[0].shape, f.train_labels[0].shape, f.dev[0].shape, f.dev_labels[0].shape))
     # dataset = torch.from_numpy(f.train[0]), torch.from_numpy(f.train_labels[0]), torch.from_numpy(
