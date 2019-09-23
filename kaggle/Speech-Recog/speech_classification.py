@@ -124,8 +124,8 @@ def inference(model, loader, n_members):
 
 
 if __name__ == "__main__":
-    trainy = np.load("train_labels.npy", allow_pickle=True)[:200]
-    trainx = np.load("train.npy", allow_pickle=True)[:200]
+    trainy = np.load("source_data.nosync/train_labels.npy", allow_pickle=True)[:200]
+    trainx = np.load("source_data.nosync/train.npy", allow_pickle=True)[:200]
     mydata = MyDataset(X=trainx, Y=trainy)
     device = torch.device("cuda" if cuda else "cpu")
     model = Pred_Model()
