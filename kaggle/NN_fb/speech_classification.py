@@ -1,123 +1,147 @@
 import sys
 import numpy as np
 import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset, TensorDataset
+import torch.nn as nn
 import torch.nn.functional as F
-from torchvision import transforms, datasets, models
-import matplotlib.pyplot as plt
+import torch.optim as optim
 from torch.autograd import Variable
-from collections import namedtuple
+from torch.utils import data
+cuda = torch.cuda.is_available()
 
 
-class generate_data(object):
+class MyDataset(data.Dataset):
+    def __init__(self, X, Y):
+        self.X = X
+        self.Y = Y
+
+    def __len__(self):
+        return len(self.Y)
+
+    def __getitem__(self, index):
+        X = self.X[index].float().reshape(-1)  # flatten the input
+        Y = self.Y[index].long()
+        return X, Y
+
+
+class SquaredDataset(Dataset):
+    def __init__(self, x, y):
+        super().__init__()
+        assert len(x) == len(y)
+        self._x = x
+        self._y = y
+
+    def __len__(self):
+        return len(self._x)
+
+    def __getitem__(self, index):
+        x_item = self._x[index]
+        # x_item = torch.cat([x_item, x_item.pow(2)])
+        return x_item, self._y[index]
+
+
+class Pred_Model(nn.Module):
+
     def __init__(self):
-        super(generate_data, self).__init__()
-        # self.dev_labels = (np.load("dev_labels.npy", allow_pickle=True))[:5]
-        # self.dev = np.array(np.load("dev.npy", allow_pickle=True))[:5]
-        # self.test = (np.load("test.npy", allow_pickle=True))[:5]
-        self.train_labels = self.start_pad(np.array(np.load("train_labels.npy", allow_pickle=True))[:5])
-        self.train = np.array(np.load("train.npy", allow_pickle=True))[:5]
+        super(Pred_Model, self).__init__()
+        self.fc1 = nn.Linear(40, 256)
+        self.bnorm1 = nn.BatchNorm1d(256)
+        self.dp1 = nn.Dropout(p=0.2)
+        self.fc2 = nn.Linear(256, 128)
+        self.bnorm2 = nn.BatchNorm1d(128)
+        self.dp2 = nn.Dropout(p=0.1)
+        self.fc3 = nn.Linear(128, 138)
 
-    def pad_label(self, y):
-        return ((np.pad(np.array([1]), (j, 137 - j), 'constant') for j in i) for i in y)
-
-    def start_pad(self, y):
-        print("Going")
-        y = self.pad_label(y)
-        return y
-
-    def __call__(self, x, eval=False):
-        return self.start_pad()
-
-
-def training_routine(net, dataset, n_iters, gpu):
-    # organize the data
-    # train_data, train_labels, val_data, val_labels = dataset
-    train_data, train_labels= dataset
-    print(train_data.shape,train_labels.shape)
-    sys.exit(1)
-    # criterion = nn.CrossEntropyLoss()
-    # optimizer = torch.optim.SGD(net.parameters(), lr=0.01)
-    # use the flag
-    # train_data, train_labels = train_data, train_labels.long()
-    # val_data, val_labels = val_data, val_labels.long()
-    if gpu:
-        train_data, train_labels = train_data.cuda(), train_labels.cuda()
-        # val_data, val_labels = val_data.cuda(), val_labels.cuda()
-        net = net.cuda()  # the network parameters also need to be on the gpu !
-        print("Using GPU")
-    else:
-        train_data, train_labels = train_data.cpu(), train_labels.cpu()
-        # val_data, val_labels = val_data.cpu(), val_labels.cpu()
-        net = net.cpu()  # the network parameters also need to be on the gpu !
-        print("Using CPU")
-    for i in range(n_iters):
-        # forward pass
-        train_output = net(train_data.float())
-        train_loss = criterion(train_output, train_labels)
-        # backward pass and optimization
-        train_loss.backward()
-        optimizer.step()
-        optimizer.zero_grad()
-
-        # Once every 100 iterations, print statistics
-        # if i % 100 == 0:
-        print("At iteration", i)
-        # compute the accuracy of the prediction
-        train_prediction = train_output.cpu().detach().argmax(dim=1)
-        train_accuracy = (train_prediction.cpu().numpy() == train_labels.cpu().numpy()).mean()
-        # # Now for the validation set
-        # val_output = net(val_data)
-        # val_loss = criterion(val_output, val_labels)
-        # # compute the accuracy of the prediction
-        # val_prediction = val_output.cpu().detach().argmax(dim=1)
-        # val_accuracy = (val_prediction.cpu().numpy() == val_labels.cpu().numpy()).mean()
-        print("Training loss :", train_loss.cpu().detach().numpy())
-        print("Training accuracy :", train_accuracy)
-        # print("Validation loss :", val_loss.cpu().detach().numpy())
-        # print("Validation accuracy :", val_accuracy)
-
-    net = net.cpu()
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        x = self.dp1(self.bnorm1(x))
+        x = F.sigmoid(self.fc2(x))
+        x = self.dp2(self.bnorm2(x))
+        x = F.log_softmax(self.fc3(x))
+        return x
 
 
-def generate_single_hidden_MLP(n_hidden_neurons):
-    return nn.Sequential(nn.Linear(40, n_hidden_neurons), nn.ReLU(), nn.Linear(n_hidden_neurons, 1))
+def init_xavier(m):
+    if type(m) == nn.Linear:
+        fan_in = m.weight.size()[1]
+        fan_out = m.weight.size()[0]
+        std = np.sqrt(2.0 / (fan_in + fan_out))
+        m.weight.data.normal_(0, std)
+
+
+class Trainer():
+    """
+    A simple training cradle
+    """
+
+    def __init__(self, model, optimizer, load_path=None):
+        self.model = model
+        if load_path is not None:
+            self.model = torch.load(load_path)
+        self.optimizer = optimizer
+
+    def save_model(self, path):
+        torch.save(self.model.state_dict(), path)
+
+    def run(self, nepochs, x, y):
+        train_dataset = SquaredDataset(x, y)
+        train_loader_args = dict(shuffle=True, batch_size=256, num_workers=0, pin_memory=True) if cuda \
+            else dict(shuffle=True, batch_size=64)
+        train_loader = data.DataLoader(train_dataset, **train_loader_args)
+        for epoch in range(nepochs):
+            # print("Epoch", epoch)
+            model.train()
+            model.to(device)
+            running_loss = 0.0
+            scheduler.step()
+            correct = 0
+            for batch_idx, (x, y) in enumerate(train_loader):
+                self.optimizer.zero_grad()
+                X = Variable(x.float()).to(device)
+                Y = Variable(y).to(device)
+                out = model(X)
+                pred = out.data.max(1, keepdim=True)[1]
+                predicted = pred.eq(Y.data.view_as(pred))
+                correct += predicted.sum()
+                loss = F.nll_loss(out, Y)
+                running_loss += loss.item()
+                loss.backward()
+                self.optimizer.step()
+            if (epoch + 1) % 20 == 0:
+                print("epoch:{}   loss:{} correct:{} out of {}".format(epoch + 1, loss, correct, 64*len(train_loader)))
+
+
+def inference(model, loader, n_members):
+    correct = 0
+    for data, label in loader:
+        X = Variable(data.view(-1, 40))
+        Y = Variable(label)
+        out = model(X)
+        pred = out.data.max(1, keepdim=True)[1]
+        predicted = pred.eq(Y.data.view_as(pred))
+        correct += predicted.sum()
+    return correct.numpy() / n_members
 
 
 if __name__ == "__main__":
+    trainy = np.load("train_labels.npy", allow_pickle=True)[:200]
+    trainx = np.load("train.npy", allow_pickle=True)[:200]
+    mydata = MyDataset(X=trainx, Y=trainy)
+    device = torch.device("cuda" if cuda else "cpu")
+    model = Pred_Model()
+    model.apply(init_xavier)
+    optimizer = optim.SGD(model.parameters(), lr=0.03)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.1)
+    trainer = Trainer(model, optimizer)
+    for i in range(1, len(mydata.X)):
+        for cur_x, cur_y in zip(mydata.X[i - 1:i + 1], mydata.Y[i - 1:i + 1]):
+            trainer.run(nepochs=80, x=cur_x, y=cur_y)
+    trainer.save_model('./saved_model.pt')
+    print("testing")
 
-    d = generate_data()
-    traindata = d.train,d.train_labels
-    training_routine(generate_single_hidden_MLP(32),traindata,1,gpu=False)
-
-    # print("{}{}{}{}".format(f.train[0].shape, f.train_labels[0].shape, f.dev[0].shape, f.dev_labels[0].shape))
-    # dataset = torch.from_numpy(f.train[0]), torch.from_numpy(f.train_labels[0]), torch.from_numpy(
-    #     f.dev[0]), torch.from_numpy(f.dev_labels[0])
-    #
-    # model1 = generate_single_hidden_MLP(6)
-    # training_routine(model1, dataset, 5, gpu=False)
-    # n_in, n_h, n_out, batch_size = 10, 5, 40, 477
-    # x = dataset[0]
-    # y = dataset[1]
-    # model = nn.Sequential(nn.Linear(n_in, n_h),
-    #                       nn.ReLU(),
-    #                       nn.Linear(n_h, n_out),
-    #                       nn.Sigmoid())
-    # criterion = torch.nn.MSELoss()
-    # optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
-    # for epoch in range(50):
-    #     # Forward Propagation
-    #     y_pred = model(x)
-    #     # Compute and print loss
-    #     loss = criterion(y_pred, y)
-    #     print('epoch: ', epoch, ' loss: ', loss.item())
-    #     # Zero the gradients
-    #     optimizer.zero_grad()
-    #
-    #     # perform a backward pass (backpropagation)
-    #     loss.backward()
-    #
-    #     # Update the parameters
-    #     optimizer.step()
-    # print(y_pred, y)
+    ### TEST ###
+    testmodel = Pred_Model()
+    testmodel.load_state_dict(torch.load('./saved_model.pt'))
+    testx = (np.load("test.npy", allow_pickle=True))[:5]
+    # testy = (np.load("test.npy", allow_pickle=True))[:5]
+    output = testmodel(Variable(testx))
