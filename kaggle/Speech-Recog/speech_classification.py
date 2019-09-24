@@ -193,6 +193,6 @@ if __name__ == "__main__":
             #     for cur_x, cur_y in zip(mydata.X[i - 1:i + 1], mydata.Y[i - 1:i + 1]):
             #         trainer.train_per_epoch(nepochs=80, x=cur_x, y=cur_y)
         end_time = time.time()
-        print("Loss: {}   Correct: {}  Samples: {} Accuracy:{}  Time: {}".format(c, tot_correct, tot_samples, float(tot_correct / tot_samples), end_time - start_time))
+        print("Loss: {}   Correct: {}  Samples: {} Time: {}".format(c, tot_correct, tot_samples, end_time - start_time))
     trainer.save_model('./saved_model.pt')
     print("Model Saved! Good Luck! :D")

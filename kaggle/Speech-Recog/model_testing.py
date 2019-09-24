@@ -44,7 +44,7 @@ if __name__ == "__main__":
     testx = np.load("source_data.nosync/test.npy", allow_pickle=True)
     # trainx = np.load("train.npy", allow_pickle=True)
     model = Pred_Model()
-    model.load_state_dict(torch.load('./saved_model.pt',map_location='cpu'))
+    model.load_state_dict(torch.load('./context_1.pt',map_location='cpu'))
     # test_acc = inference(model, test_loader, test_size)
     # print("Test accuracy of model optimizer with SGD: {0:.2f}".format(test_acc * 100))
     n = 0
@@ -57,7 +57,7 @@ if __name__ == "__main__":
         for i in pred:
             result.append(i)
     print(len(result))
-    with open('output.csv', mode='w') as csv_file:
+    with open('context_1.csv', mode='w') as csv_file:
         fieldnames = ['id', 'label']
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()

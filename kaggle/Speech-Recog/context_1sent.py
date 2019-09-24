@@ -1,3 +1,20 @@
+'''
+Loss: 2.815763552983602   Correct: 2974025  Samples: 15388610 Accuracy:0.0  Time: 265.41697573661804
+epoch:2
+Loss: 2.784127950668335   Correct: 3289823  Samples: 15388610 Accuracy:0.0  Time: 262.2106890678406
+epoch:3
+Loss: 2.800300041834513   Correct: 3369028  Samples: 15388610 Accuracy:0.0  Time: 260.2379970550537
+epoch:4
+Loss: 2.7539426485697427   Correct: 3352017  Samples: 15388610 Accuracy:0.0  Time: 261.23384952545166
+epoch:5
+Loss: 2.6530216534932456   Correct: 3366201  Samples: 15388610 Accuracy:0.0  Time: 262.9407832622528
+epoch:6
+Loss: 2.628347476323446   Correct: 3402009  Samples: 15388610 Accuracy:0.0  Time: 259.39038920402527
+epoch:7
+Loss: 2.654765764872233   Correct: 3414673  Samples: 15388610 Accuracy:0.0  Time: 260.15447330474854
+epoch:8
+Loss: 2.6403125127156577   Correct: 3385275  Samples: 15388610 Accuracy:0.0  Time: 264.572651386261
+'''
 import sys
 import numpy as np
 import torch
