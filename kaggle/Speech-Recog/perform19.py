@@ -52,13 +52,13 @@ class Pred_Model(nn.Module):
         self.fc2 = nn.Linear(256, 128)
         self.bnorm2 = nn.BatchNorm1d(128)
         self.dp2 = nn.Dropout(p=0.1)
-        self.fc3 = nn.Linear(128, 64)
-        self.bnorm3 = nn.BatchNorm1d(64)
-        self.dp3 = nn.Dropout(p=0.2)
-        self.fc4 = nn.Linear(64, 64)
-        self.bnorm4 = nn.BatchNorm1d(64)
-        self.dp4 = nn.Dropout(p=0.1)
-        self.fc5 = nn.Linear(64, 138)
+        self.fc3 = nn.Linear(128, 138)
+        # self.bnorm3 = nn.BatchNorm1d(64)
+        # self.dp3 = nn.Dropout(p=0.2)
+        # self.fc4 = nn.Linear(64, 64)
+        # self.bnorm4 = nn.BatchNorm1d(64)
+        # self.dp4 = nn.Dropout(p=0.1)
+        # self.fc5 = nn.Linear(64, 138)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
@@ -66,10 +66,10 @@ class Pred_Model(nn.Module):
         x = F.sigmoid(self.fc2(x))
         x = self.dp2(self.bnorm2(x))
         x = F.log_softmax(self.fc3(x))
-        x = self.dp3(self.bnorm3(x))
-        x = F.relu(self.fc3(x))
-        x = self.dp4(self.bnorm4(x))
-        x = F.log_softmax(self.fc3(x))
+        # x = self.dp3(self.bnorm3(x))
+        # x = F.relu(self.fc3(x))
+        # x = self.dp4(self.bnorm4(x))
+        # x = F.log_softmax(self.fc3(x))
         return x
 
 

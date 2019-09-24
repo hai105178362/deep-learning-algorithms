@@ -21,8 +21,10 @@ class MyDataset(data.Dataset):
         return len(self.Y)
 
     def __getitem__(self, index):
-        X = self.X[index].float().reshape(-1)  # flatten the input
-        Y = self.Y[index].long()
+        X = self.X[index].astype(float)  # flatten the input
+        # X = self.X[index].astype(float).reshape(-1)  # flatten the input
+        # Y = self.Y[index].astype(float)
+        Y = self.Y[index]
         return X, Y
 
 
@@ -52,13 +54,13 @@ class Pred_Model(nn.Module):
         self.fc2 = nn.Linear(256, 128)
         self.bnorm2 = nn.BatchNorm1d(128)
         self.dp2 = nn.Dropout(p=0.1)
-        self.fc3 = nn.Linear(128, 64)
-        self.bnorm3 = nn.BatchNorm1d(64)
-        self.dp3 = nn.Dropout(p=0.2)
-        self.fc4 = nn.Linear(64, 64)
-        self.bnorm4 = nn.BatchNorm1d(64)
-        self.dp4 = nn.Dropout(p=0.1)
-        self.fc5 = nn.Linear(64, 138)
+        self.fc3 = nn.Linear(128, 138)
+        # self.bnorm3 = nn.BatchNorm1d(64)
+        # self.dp3 = nn.Dropout(p=0.2)
+        # self.fc4 = nn.Linear(64, 64)
+        # self.bnorm4 = nn.BatchNorm1d(64)
+        # self.dp4 = nn.Dropout(p=0.1)
+        # self.fc5 = nn.Linear(64, 138)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
@@ -66,10 +68,10 @@ class Pred_Model(nn.Module):
         x = F.sigmoid(self.fc2(x))
         x = self.dp2(self.bnorm2(x))
         x = F.log_softmax(self.fc3(x))
-        x = self.dp3(self.bnorm3(x))
-        x = F.relu(self.fc3(x))
-        x = self.dp4(self.bnorm4(x))
-        x = F.log_softmax(self.fc3(x))
+        # x = self.dp3(self.bnorm3(x))
+        # x = F.relu(self.fc3(x))
+        # x = self.dp4(self.bnorm4(x))
+        # x = F.log_softmax(self.fc3(x))
         return x
 
 
@@ -142,6 +144,7 @@ if __name__ == "__main__":
     trainy = np.load("train_labels.npy", allow_pickle=True)
     trainx = np.load("train.npy", allow_pickle=True)
     mydata = MyDataset(X=trainx, Y=trainy)
+    print("data loaded")
     device = torch.device("cuda" if cuda else "cpu")
     model = Pred_Model()
     model.apply(init_xavier)
@@ -156,12 +159,31 @@ if __name__ == "__main__":
         tot_correct = 0
         tot_samples = 0
         start_time = time.time()
-        for cur_x, cur_y in zip(mydata.X, mydata.Y):
-            train_dataset = SquaredDataset(cur_x, cur_y)
+        for idx in range(len(mydata.X)):
+            curx, cury = mydata.__getitem__(idx)
+            if idx > 0:
+                prevx, prevy = mydata.__getitem__(idx - 1)
+            else:
+                prevx, prevy = curx * 0, cury * 0
+            if idx < len(mydata.X) - 1:
+                nextx, nexty = mydata.__getitem__(idx + 1)
+            else:
+                nextx, nexty = curx * 0, cury * 0
+
+            newx = np.concatenate([prevx, curx, nextx])
+            newy = np.concatenate([prevy, cury, nexty])
+            # print(prevx.shape, prevy.shape)
+            # print(curx.shape, cury.shape)
+            # print(nextx.shape,nexty.shape)
+            # print(newx.shape,newy.shape)
+            # print(len(curx),len(cury))
+            # print(len(newx),len(newy))
+            # sys.exit(1)
+            train_dataset = SquaredDataset(curx, cury)
             train_loader_args = dict(shuffle=True, batch_size=256, num_workers=0, pin_memory=True) if cuda \
                 else dict(shuffle=True, batch_size=256)
             train_loader = data.DataLoader(train_dataset, **train_loader_args)
-            a, b, c = trainer.train_per_epoch(x=cur_x, y=cur_y)
+            a, b, c = trainer.train_per_epoch(x=newx, y=newy)
             tot_correct += a
             tot_samples += b
             # for i in range(1, len(mydata.X)):
