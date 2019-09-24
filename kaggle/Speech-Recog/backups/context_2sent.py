@@ -125,16 +125,16 @@ class Trainer():
         return correct, samples, running_loss
 
 
-# def inference(model, loader, n_members):
-#     correct = 0
-#     for data, label in loader:
-#         X = Variable(data)
-#         Y = Variable(label)
-#         out = model(X)
-#         pred = out.data.max(1, keepdim=True)[1]
-#         predicted = pred.eq(Y.data.view_as(pred))
-#         correct += predicted.sum()
-#     return correct.numpy() / n_members
+def inference(model, loader, n_members):
+    correct = 0
+    for data, label in loader:
+        X = Variable(data)
+        Y = Variable(label)
+        out = model(X)
+        pred = out.data.max(1, keepdim=True)[1]
+        predicted = pred.eq(Y.data.view_as(pred))
+        correct += predicted.sum()
+    return correct.numpy() / n_members
 
 
 if __name__ == "__main__":
@@ -149,9 +149,11 @@ if __name__ == "__main__":
     model = Pred_Model()
     model.apply(init_xavier)
     optimizer = optim.SGD(model.parameters(), lr=0.03)
-    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.1)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.1)
     trainer = Trainer(model, optimizer)
-    nepoch = 50
+    nepoch = 10
+    tot_correct = 0
+    tot_samples = 0
     for epoch in range(nepoch):
         print("epoch:{}".format(epoch + 1))
         tot_correct = 0
