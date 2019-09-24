@@ -8,7 +8,9 @@ import torch.optim as optim
 from torch.autograd import Variable
 from torch.utils import data
 import time
+
 cuda = torch.cuda.is_available()
+
 
 class MyDataset(data.Dataset):
     def __init__(self, X, Y):
@@ -65,9 +67,9 @@ class Pred_Model(nn.Module):
         x = self.dp2(self.bnorm2(x))
         x = F.log_softmax(self.fc3(x))
         x = self.dp3(self.bnorm3(x))
-        x = F.relu(self.fc4(x))
+        x = F.relu(self.fc3(x))
         x = self.dp4(self.bnorm4(x))
-        x = F.log_softmax(self.fc5(x))
+        x = F.log_softmax(self.fc3(x))
         return x
 
 
@@ -94,6 +96,12 @@ class Trainer():
         torch.save(self.model.state_dict(), path)
 
     def train_per_epoch(self, x, y):
+        # train_dataset = SquaredDataset(x, y)
+        # train_loader_args = dict(shuffle=True, batch_size=256, num_workers=0, pin_memory=True) if cuda \
+        #     else dict(shuffle=True, batch_size=64)
+        # train_loader = data.DataLoader(train_dataset, **train_loader_args)
+        # for epoch in range(nepochs):
+        # print("Epoch", epoch)
         model.train()
         model.to(device)
         running_loss = 0.0
@@ -115,6 +123,8 @@ class Trainer():
             running_loss += loss.item()
             loss.backward()
             self.optimizer.step()
+            # if (epoch + 1) % 20 == 0:
+        # print("loss:{} corret:{} @ {}".format(loss,correct,256*len(train_loader)))
         running_loss /= len(train_loader)
         return correct, samples, running_loss
 
@@ -141,7 +151,7 @@ if __name__ == "__main__":
     device = torch.device("cuda" if cuda else "cpu")
     model = Pred_Model()
     model.apply(init_xavier)
-    optimizer = optim.Adam(model.parameters(), lr=0.03)
+    optimizer = optim.SGD(model.parameters(), lr=0.03)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.1)
     trainer = Trainer(model, optimizer)
     nepoch = 10
@@ -160,7 +170,10 @@ if __name__ == "__main__":
             a, b, c = trainer.train_per_epoch(x=cur_x, y=cur_y)
             tot_correct += a
             tot_samples += b
+            # for i in range(1, len(mydata.X)):
+            #     for cur_x, cur_y in zip(mydata.X[i - 1:i + 1], mydata.Y[i - 1:i + 1]):
+            #         trainer.train_per_epoch(nepochs=80, x=cur_x, y=cur_y)
         end_time = time.time()
         print("Loss: {}   Correct: {}  Samples: {} Accuracy:{}  Time: {}".format(c, tot_correct, tot_samples, float(tot_correct / tot_samples), end_time - start_time))
-    trainer.save_model('./adam.pt')
+    trainer.save_model('./saved_model.pt')
     print("Model Saved! Good Luck! :D")
