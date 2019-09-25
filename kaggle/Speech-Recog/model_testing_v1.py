@@ -54,10 +54,10 @@ class Pred_Model(nn.Module):
         super(Pred_Model, self).__init__()
         self.fc1 = nn.Linear(40 * (1 + 2 * CONTEXT_SIZE), 1024)
         self.bnorm1 = nn.BatchNorm1d(1024)
-        self.dp1 = nn.Dropout(p=0.1)
+        self.dp1 = nn.Dropout(p=0.3)
         self.fc2 = nn.Linear(1024, 512)
         self.bnorm2 = nn.BatchNorm1d(512)
-        self.dp2 = nn.Dropout(p=0.1)
+        self.dp2 = nn.Dropout(p=0.2)
         self.fc3 = nn.Linear(512, 512)
         self.bnorm3 = nn.BatchNorm1d(512)
         # self.dp3 = nn.Dropout(p=0.2)
@@ -71,28 +71,36 @@ class Pred_Model(nn.Module):
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
-        if len(x.unsqueeze(0)) > 1:
-            x = self.dp1(self.bnorm1(x.unsqueeze(0)))
+        # if len(x) > 1:
+        #     x = self.dp1(self.bnorm1(x))
 
         x = F.relu(self.fc2(x))
-        if len(x.unsqueeze(0)) > 1:
-            x = self.dp2(self.bnorm2(x.unsqueeze(0)))
+        # if len(x) > 1:
+        #     x = self.dp2(self.bnorm2(x))
 
-        x = F.sigmoid(self.fc3(x))
-        if len(x.unsqueeze(0)) > 1:
-            x = self.bnorm3(x.unsqueeze(0))
+        x = F.relu(self.fc3(x))
+        # if len(x) > 1:
+        #     x = self.bnorm3(x)
 
         x = F.sigmoid(self.fc4(x))
-        if len(x.unsqueeze(0)) > 1:
-            x = self.bnorm4(x.unsqueeze(0))
+#         if len(x) > 1:
+#             x = self.bnorm4(x)
 
         x = F.sigmoid(self.fc5(x))
-        if len(x.unsqueeze(0)) > 1:
-            x = self.bnorm5(x.unsqueeze(0))
+#         if len(x) > 1:
+#             x = self.bnorm5(x)
 
         # x = F.sigmoid(self.fc5)
         x = F.log_softmax(self.fc6(x))
         return x
+
+
+def init_xavier(m):
+    if type(m) == nn.Linear:
+        fan_in = m.weight.size()[1]
+        fan_out = m.weight.size()[0]
+        std = np.sqrt(2.0 / (fan_in + fan_out))
+        m.weight.data.normal_(0, std)
 
 
 def init_xavier(m):
@@ -108,6 +116,7 @@ def getoutput(model, x):
     predarr = []
     # X = Variable(torch.from_numpy(inputx))
     for i in x:
+        # print(i)
         cur = torch.tensor(i.astype(float))
         feed = Variable(cur).to(device)
         outputs = model(feed)
@@ -138,6 +147,8 @@ if __name__ == "__main__":
         for k in tmp:
             result.append(int(k))
             # print(k)
+        print(result)
+        sys.exit()
         print("{} out of {}".format(i,mydata.__len__()))
         # print(tmp)
     # print(result)

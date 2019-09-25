@@ -94,12 +94,12 @@ class Pred_Model(nn.Module):
             x = self.bnorm3(x)
 
         x = F.sigmoid(self.fc4(x))
-        if len(x) > 1:
-            x = self.bnorm4(x)
+#         if len(x) > 1:
+#             x = self.bnorm4(x)
 
         x = F.sigmoid(self.fc5(x))
-        if len(x) > 1:
-            x = self.bnorm5(x)
+#         if len(x) > 1:
+#             x = self.bnorm5(x)
 
         # x = F.sigmoid(self.fc5)
         x = F.log_softmax(self.fc6(x))
@@ -146,6 +146,7 @@ class Trainer():
             outputs = model(X)
             pred = outputs.data.max(1, keepdim=True)[1]
             predicted = pred.eq(Y.data.view_as(pred))
+#             print(predicted)
             correct += predicted.sum()
             samples += len(y)
             # loss = criterion(outputs, Y)
@@ -178,14 +179,14 @@ if __name__ == "__main__":
 #     trainy = np.load("source_data.nosync/dev_labels.npy", allow_pickle=True)
     # trainy = np.load("dev_labels.npy", allow_pickle=True)
     # trainx = np.load("dev.npy", allow_pickle=True)
-    # trainy = np.load("train_labels.npy", allow_pickle=True)
-    # trainx = np.load("train.npy", allow_pickle=True)
-    trainy = np.load("/content/drive/My Drive/Colab Notebooks/dev_labels.npy", allow_pickle=True)
-    trainx = np.load("/content/drive/My Drive/Colab Notebooks/dev.npy", allow_pickle=True)
+    trainy = np.load("train_labels.npy", allow_pickle=True)
+    trainx = np.load("train.npy", allow_pickle=True)
+    # trainy = np.load("/content/drive/My Drive/Colab Notebooks/dev_labels.npy", allow_pickle=True)
+    # trainx = np.load("/content/drive/My Drive/Colab Notebooks/dev.npy", allow_pickle=True)
     mydata = MyDataset(X=trainx, Y=trainy)
     model = Pred_Model()
     model.apply(init_xavier)
-    optimizer = optim.RMSprop(model.parameters(), lr=0.01)
+    optimizer = optim.SGD(model.parameters(), lr=0.03)
     # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.1)
     trainer = Trainer(model, optimizer)
     nepoch = 10
