@@ -23,7 +23,7 @@ import csv
 # result = np.pad(source, ((1, 1), (0, 0)),'reflect', reflect_type='odd')
 # print(result)
 #################################
-a = pd.read_csv('tmpresult_2.csv')
+a = pd.read_csv('tmpresult_3.csv')
 b = pd.read_csv('devref.csv')
 correct = 0
 arr1, arr2 = a['label'], b['label']
