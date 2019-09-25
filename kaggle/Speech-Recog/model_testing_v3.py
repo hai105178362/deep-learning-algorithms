@@ -169,7 +169,7 @@ class Trainer():
 if __name__ == "__main__":
     print("Cuda:{}".format(cuda))
     device = torch.device("cuda" if cuda else "cpu")
-    testx = np.load("source_data.nosync/dev.npy", allow_pickle=True)
+    testx = np.load("source_data.nosync/test.npy", allow_pickle=True)
     # testy = np.load("source_data.nosync/dev_labels.npy", allow_pickle=True)
     mydata = MyDataset(X=testx)
     model = Pred_Model()
@@ -179,12 +179,12 @@ if __name__ == "__main__":
         curx = mydata.__getitem__(i)
         test_dataset = SquaredDataset(curx)
         # print(cury)
-        train_loader_args = dict(shuffle=False, batch_size=1, num_workers=0, pin_memory=True) if cuda \
+        train_loader_args = dict(shuffle=False, batch_size=len(curx), num_workers=0, pin_memory=True) if cuda \
             else dict(shuffle=False, batch_size=len(curx))
         test_loader = data.DataLoader(test_dataset, **train_loader_args)
         trainer.eval_process(test_loader, criterion=nn.CrossEntropyLoss())
 print(len(FINAL_OUTPUT))
-with open('tmpresult_3.csv', mode='w') as csv_file:
+with open('tmpresult_test.csv', mode='w') as csv_file:
     fieldnames = ['id', 'label']
     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
     writer.writeheader()
