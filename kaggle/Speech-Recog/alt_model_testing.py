@@ -108,7 +108,7 @@ def getoutput(model, x):
     predarr = []
     # X = Variable(torch.from_numpy(inputx))
     for i in x:
-        cur = torch.tensor(i.astype(float))
+        cur = torch.tensor(i)
         feed = Variable(cur).to(device)
         outputs = model(feed)
         pred = torch.argmax(outputs)
@@ -134,12 +134,13 @@ if __name__ == "__main__":
         curx = mydata.__getitem__(i)
         # print(curx.shape,cury)
         test_dataset = SquaredDataset(curx)
-        tmp = getoutput(model, test_dataset)
+        train_loader_args = dict(shuffle=True, batch_size=64, num_workers=0, pin_memory=True) if cuda \
+            else dict(shuffle=True, batch_size=64)
+        train_loader = data.DataLoader(test_dataset, **train_loader_args)
+        tmp = getoutput(model, train_loader)
         for k in tmp:
-            result.append(int(k))
+            result.append(k)
             # print(k)
-        print("{} out of {}".format(i,mydata.__len__()))
-        # print(tmp)
     # print(result)
     # print(out)
     print(len(result))
@@ -148,4 +149,4 @@ if __name__ == "__main__":
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
         for i in range(len(result)):
-            writer.writerow({'id': i, 'label': int(result[i])})
+            writer.writerow({'id': i, 'label': int(result[i][0])})
