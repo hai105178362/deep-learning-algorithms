@@ -4,6 +4,9 @@
 *.png
 */data/
 */local_autograder/
+*/saved_models/
+*/backups/
+*/outputs/
 */test
 */.idea
 *.iml

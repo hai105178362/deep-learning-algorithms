@@ -64,7 +64,7 @@ class Pred_Model(nn.Module):
         super(Pred_Model, self).__init__()
         self.fc1 = nn.Linear(40 * (1 + 2 * CONTEXT_SIZE), 1024)
         self.bnorm1 = nn.BatchNorm1d(1024)
-        self.dp1 = nn.Dropout(p=0.1)
+        self.dp1 = nn.Dropout(p=0.2)
         self.fc2 = nn.Linear(1024, 512)
         self.bnorm2 = nn.BatchNorm1d(512)
         self.dp2 = nn.Dropout(p=0.1)
@@ -183,10 +183,10 @@ if __name__ == "__main__":
     mydata = MyDataset(X=trainx, Y=trainy)
     model = Pred_Model()
     model.apply(init_xavier)
-    optimizer = optim.SGD(model.parameters(), lr=0.1)
+    optimizer = optim.SGD(model.parameters(), lr=0.05)
     # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.1)
     trainer = Trainer(model, optimizer)
-    nepoch = 50
+    nepoch = 10
     for epoch in range(nepoch):
         print("epoch:{}".format(epoch + 1))
         tot_correct = 0
@@ -195,10 +195,9 @@ if __name__ == "__main__":
         tot_loss = 0
         for i in range(mydata.__len__()):
             curx, cury = mydata.__getitem__(i)
-            # print(curx.shape,cury)
             train_dataset = SquaredDataset(curx, cury)
-            train_loader_args = dict(shuffle=True, batch_size=512, num_workers=0, pin_memory=True) if cuda \
-                else dict(shuffle=True, batch_size=256)
+            train_loader_args = dict(shuffle=True, batch_size=64, num_workers=0, pin_memory=True) if cuda \
+                else dict(shuffle=True, batch_size=64)
             train_loader = data.DataLoader(train_dataset, **train_loader_args)
             correct, samples, runningloss = trainer.train_per_epoch(train_loader, criterion=nn.CrossEntropyLoss())
             tot_samples += samples
@@ -208,5 +207,5 @@ if __name__ == "__main__":
         end_time = time.time()
         print("Loss: {}   Correct: {}  Samples: {} Time: {}".format(tot_loss / mydata.__len__(), tot_correct, tot_samples, end_time - start_time))
         print("Accuracy: {}".format(float(tot_correct / tot_samples)))
-    trainer.save_model('./saved_model.pt')
+    # trainer.save_model('./saved_model.pt')
     print("Model Saved! Good Luck! :D")
