@@ -124,7 +124,7 @@ def getoutput(model, x):
 
 ### TEST ###
 if __name__ == "__main__":
-    testx = np.load("source_data.nosync/test.npy", allow_pickle=True)
+    testx = np.load("source_data.nosync/dev.npy", allow_pickle=True)
     # print(testx)
     model = Pred_Model().double()
     model.load_state_dict(torch.load('saved_model.pt', map_location='cpu'))
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     # print(result)
     # print(out)
     print(len(result))
-    with open('context_1240.csv', mode='w') as csv_file:
+    with open('tmpresult.csv', mode='w') as csv_file:
         fieldnames = ['id', 'label']
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
