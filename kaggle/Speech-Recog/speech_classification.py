@@ -11,7 +11,7 @@ import time
 
 cuda = torch.cuda.is_available()
 CONTEXT_SIZE = 14
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.0025
 
 
 class MyDataset(data.Dataset):
@@ -182,8 +182,8 @@ if __name__ == "__main__":
     # trainx = np.load("dev.npy", allow_pickle=True)
     # trainy = np.load("train_labels.npy", allow_pickle=True)
     # trainx = np.load("train.npy", allow_pickle=True)
-    trainy = np.load("/content/drive/My Drive/Colab Notebooks/dev_labels.npy", allow_pickle=True)
-    trainx = np.load("/content/drive/My Drive/Colab Notebooks/dev.npy", allow_pickle=True)
+    trainy = np.load("/content/drive/My Drive/Colab Notebooks/train_labels.npy", allow_pickle=True)
+    trainx = np.load("/content/drive/My Drive/Colab Notebooks/train.npy", allow_pickle=True)
     rawdata = MyDataset(X=trainx, Y=trainy)
     mydata = SquaredDataset(rawdata)
     model = Pred_Model()
@@ -192,7 +192,7 @@ if __name__ == "__main__":
     idx_guide = []
     num = 0
     trainer = Trainer(model, optimizer)
-    nepoch = 30
+    nepoch = 10
     end_time = time.time()
     print("Processing data used: {}".format(end_time - start_time))
     for epoch in range(nepoch):
@@ -202,8 +202,8 @@ if __name__ == "__main__":
         tot_samples = 0
         start_time = time.time()
         tot_loss = 0
-        train_loader_args = dict(shuffle=False, batch_size=512, num_workers=0, pin_memory=True) if cuda \
-            else dict(shuffle=False, batch_size=64)
+        train_loader_args = dict(shuffle=True, batch_size=512, num_workers=0, pin_memory=True) if cuda \
+            else dict(shuffle=True, batch_size=64)
         train_loader = data.DataLoader(mydata, **train_loader_args)
         correct, samples, runningloss = trainer.train_per_epoch(train_loader, criterion=nn.CrossEntropyLoss())
         tot_samples += samples
