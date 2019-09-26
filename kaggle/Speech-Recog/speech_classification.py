@@ -10,8 +10,8 @@ from torch.utils import data
 import time
 
 cuda = torch.cuda.is_available()
-CONTEXT_SIZE = 12
-LEARNING_RATE = 0.1
+CONTEXT_SIZE = 14
+LEARNING_RATE = 0.001
 
 
 class MyDataset(data.Dataset):
@@ -99,13 +99,13 @@ class Pred_Model(nn.Module):
         if len(x) > 1:
             x = self.bnorm3(x)
 
-        x = F.sigmoid(self.fc4(x))
-        if len(x) > 1:
-            x = self.bnorm4(x)
+        x = F.relu(self.fc4(x))
+        # if len(x) > 1:
+        x = self.bnorm4(x)
 
         x = F.sigmoid(self.fc5(x))
-        if len(x) > 1:
-            x = self.bnorm5(x)
+        # if len(x) > 1:
+        x = self.bnorm5(x)
 
         # x = F.sigmoid(self.fc5)
         x = F.log_softmax(self.fc6(x))
@@ -176,23 +176,23 @@ if __name__ == "__main__":
     start_time = time.time()
     print("Cuda:{}".format(cuda))
     device = torch.device("cuda" if cuda else "cpu")
-    trainx = np.load("source_data.nosync/dev.npy", allow_pickle=True)
-    trainy = np.load("source_data.nosync/dev_labels.npy", allow_pickle=True)
+    # trainx = np.load("source_data.nosync/dev.npy", allow_pickle=True)
+    # trainy = np.load("source_data.nosync/dev_labels.npy", allow_pickle=True)
     # trainy = np.load("dev_labels.npy", allow_pickle=True)
     # trainx = np.load("dev.npy", allow_pickle=True)
     # trainy = np.load("train_labels.npy", allow_pickle=True)
     # trainx = np.load("train.npy", allow_pickle=True)
-    # trainy = np.load("/content/drive/My Drive/Colab Notebooks/dev_labels.npy", allow_pickle=True)
-    # trainx = np.load("/content/drive/My Drive/Colab Notebooks/dev.npy", allow_pickle=True)
+    trainy = np.load("/content/drive/My Drive/Colab Notebooks/dev_labels.npy", allow_pickle=True)
+    trainx = np.load("/content/drive/My Drive/Colab Notebooks/dev.npy", allow_pickle=True)
     rawdata = MyDataset(X=trainx, Y=trainy)
     mydata = SquaredDataset(rawdata)
     model = Pred_Model()
     model.apply(init_xavier)
-    optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE)
+    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
     idx_guide = []
     num = 0
     trainer = Trainer(model, optimizer)
-    nepoch = 10
+    nepoch = 30
     end_time = time.time()
     print("Processing data used: {}".format(end_time - start_time))
     for epoch in range(nepoch):

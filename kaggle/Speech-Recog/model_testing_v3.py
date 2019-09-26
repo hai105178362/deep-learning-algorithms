@@ -11,7 +11,7 @@ import csv
 import time
 
 cuda = torch.cuda.is_available()
-CONTEXT_SIZE = 12
+CONTEXT_SIZE = 14
 FINAL_OUTPUT = []
 
 
@@ -25,6 +25,8 @@ class MyDataset(data.Dataset):
             self.padX[i] = np.pad(self.padX[i], ((CONTEXT_SIZE, CONTEXT_SIZE), (0, 0)), 'reflect', reflect_type='odd')
 
     def __len__(self):
+        print(len(self.X))
+        sys.exit(1)
         return len(self.X)
 
     def __getitem__(self, index):
@@ -97,35 +99,47 @@ class Pred_Model(nn.Module):
         if len(x) > 1:
             x = self.bnorm3(x)
 
-        x = F.sigmoid(self.fc4(x))
-        if len(x) > 1:
-            x = self.bnorm4(x)
+        x = F.relu(self.fc4(x))
+        # if len(x) > 1:
+        x = self.bnorm4(x)
 
         x = F.sigmoid(self.fc5(x))
-        if len(x) > 1:
-            x = self.bnorm5(x)
+        # if len(x) > 1:
+        x = self.bnorm5(x)
 
         # x = F.sigmoid(self.fc5)
         x = F.log_softmax(self.fc6(x))
         return x
 
 
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        if len(x) > 1:
+            x = self.bnorm1(x)
+        #             x = self.dp1(x)
+        #             x = self.dp1(self.bnorm1(x))
 
-def init_xavier(m):
-    if type(m) == nn.Linear:
-        fan_in = m.weight.size()[1]
-        fan_out = m.weight.size()[0]
-        std = np.sqrt(2.0 / (fan_in + fan_out))
-        m.weight.data.normal_(0, std)
+        x = F.relu(self.fc2(x))
+        if len(x) > 1:
+            x = self.bnorm2(x)
+        #             x = self.dp2(x)
+        #             x = self.dp1(self.bnorm1(x))
 
+        x = F.relu(self.fc3(x))
+        if len(x) > 1:
+            x = self.bnorm3(x)
 
-def init_xavier(m):
-    if type(m) == nn.Linear:
-        fan_in = m.weight.size()[1]
-        fan_out = m.weight.size()[0]
-        std = np.sqrt(2.0 / (fan_in + fan_out))
-        m.weight.data.normal_(0, std)
+        x = F.relu(self.fc4(x))
+        # if len(x) > 1:
+        x = self.bnorm4(x)
 
+        x = F.sigmoid(self.fc5(x))
+        # if len(x) > 1:
+        x = self.bnorm5(x)
+
+        # x = F.sigmoid(self.fc5)
+        x = F.log_softmax(self.fc6(x))
+        return x
 
 class Trainer():
     """
