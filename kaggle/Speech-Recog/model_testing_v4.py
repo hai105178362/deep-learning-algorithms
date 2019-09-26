@@ -112,35 +112,6 @@ class Pred_Model(nn.Module):
         x = F.log_softmax(self.fc6(x))
         return x
 
-    def forward(self, x):
-        x = F.relu(self.fc1(x))
-        if len(x) > 1:
-            x = self.bnorm1(x)
-        #             x = self.dp1(x)
-        #             x = self.dp1(self.bnorm1(x))
-
-        x = F.relu(self.fc2(x))
-        if len(x) > 1:
-            x = self.bnorm2(x)
-        #             x = self.dp2(x)
-        #             x = self.dp1(self.bnorm1(x))
-
-        x = F.relu(self.fc3(x))
-        if len(x) > 1:
-            x = self.bnorm3(x)
-
-        x = F.relu(self.fc4(x))
-        # if len(x) > 1:
-        x = self.bnorm4(x)
-
-        x = F.sigmoid(self.fc5(x))
-        # if len(x) > 1:
-        x = self.bnorm5(x)
-
-        # x = F.sigmoid(self.fc5)
-        x = F.log_softmax(self.fc6(x))
-        return x
-
 
 class Evaler():
     """
@@ -179,7 +150,7 @@ class Evaler():
 if __name__ == "__main__":
     print("Cuda:{}".format(cuda))
     device = torch.device("cuda" if cuda else "cpu")
-    testx = np.load("source_data.nosync/dev.npy", allow_pickle=True)
+    testx = np.load("source_data.nosync/test.npy", allow_pickle=True)
     # testy = np.load("source_data.nosync/dev_labels.npy", allow_pickle=True)
     for i in testx:
         OUTPUT_SIZE += len(i)
