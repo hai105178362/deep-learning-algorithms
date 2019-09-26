@@ -7,6 +7,23 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.autograd import Variable
 from torch.utils import data
+import csv
+import time
+
+cuda = torch.cuda.is_available()
+CONTEXT_SIZE = 12
+FINAL_OUTPUT = []
+
+
+import sys
+import numpy as np
+import torch
+from torch.utils.data import DataLoader, Dataset, TensorDataset
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from torch.autograd import Variable
+from torch.utils import data
 import time
 
 cuda = torch.cuda.is_available()
@@ -15,20 +32,20 @@ LEARNING_RATE = 0.1
 
 
 class MyDataset(data.Dataset):
-    def __init__(self, X, Y):
+    def __init__(self, X):
         self.X = X
-        self.Y = Y
+        # self.Y = Y
         self.padX = X
         for i in range(len(self.padX)):
             self.padX[i] = np.pad(self.padX[i], ((CONTEXT_SIZE, CONTEXT_SIZE), (0, 0)), 'constant', constant_values=0)
 
     def __len__(self):
-        return len(self.Y)
+        return len(self.X)
 
     def __getitem__(self, index):
         framex = self.padX[index].astype(float)  # flatten the input
-        framey = self.Y[index]
-        return framex, framey
+        # framey = self.Y[index]
+        return framex
 
 
 class SquaredDataset(Dataset):
@@ -36,20 +53,20 @@ class SquaredDataset(Dataset):
         super().__init__()
         num = 0
         finalx = mydata.X
-        finaly = []
+        # finaly = []
         self.finaldict = {}
         for i in range(mydata.__len__()):
             x, y = mydata.__getitem__(i)
-            finaly.extend(y)
+            # finaly.extend(y)
             # # finalx.append(x)
             for j in range(len(x) - 2 * CONTEXT_SIZE):
                 self.finaldict[num] = (i, j + 2 * CONTEXT_SIZE + 1)
                 num += 1
         self._x = finalx
-        self._y = finaly
+        # self._y = finaly
 
     def __len__(self):
-        return len(self._y)
+        return len(self._x)
 
     def __getitem__(self, index):
         idx1, idx2 = self.finaldict[index][0], self.finaldict[index][1]
@@ -59,7 +76,7 @@ class SquaredDataset(Dataset):
         # print(idx2 - 2 * CONTEXT_SIZE - 1, idx2)
         # sys.exit(1)
         # x_item = torch.cat([x_item, x_item.pow(2)])
-        return x_item, self._y[index]
+        return x_item
 
 
 class Pred_Model(nn.Module):
@@ -125,39 +142,37 @@ class Trainer():
     A simple training cradle
     """
 
-    def __init__(self, model, optimizer, load_path=None):
+    def __init__(self, model, load_path=None):
         self.model = model
         if load_path is not None:
             self.model = torch.load(load_path)
-        self.optimizer = optimizer
+        # self.optimizer = optimizer
 
-    def save_model(self, path):
-        torch.save(self.model.state_dict(), path)
-
-    def train_per_epoch(self, cur_loader, criterion):
-        self.model.train()
+    def eval_process(self, cur_loader, criterion):
+        self.model.eval()
         self.model.to(device)
         running_loss = 0.0
+        # scheduler.step()
         correct = 0
         samples = 0
-        for batch_idx, (x, y) in enumerate(cur_loader):
-            # print(len(x),len(y))
-            # print(x[0],y[0])
-            # sys.exit(0)
-            self.optimizer.zero_grad()
+        # start_time = time.time()
+
+        for batch_idx, x in enumerate(cur_loader):
+            # print(y)
+            # print(x,x.shape)
+            # sys.exit(1)
             X = Variable(x.float()).to(device)
-            Y = Variable(y).to(device)
+            # Y = Variable(y).to(device)
             outputs = model(X)
             pred = outputs.data.max(1, keepdim=True)[1]
-            predicted = pred.eq(Y.data.view_as(pred))
-            correct += predicted.sum()
-            samples += len(y)
-            loss = F.nll_loss(outputs, Y)
-            running_loss += loss.item()
-            loss.backward()
-            self.optimizer.step()
-        running_loss /= len(cur_loader)
-        return correct, samples, running_loss
+            # predicted = pred.eq(Y.data.view_as(pred))
+            # print(predicted.sum(),"out of ",len(Y))
+            # print(pred.numpy()[:, ::-1].reshape(-1),Y)
+            # print(Y)
+            # sys.exit(1)
+            tmpout = (pred.numpy()[:, ::-1].reshape(-1))
+            FINAL_OUTPUT.extend(tmpout)
+        return
 
 
 # def inference(model, loader, n_members):
@@ -173,43 +188,26 @@ class Trainer():
 
 
 if __name__ == "__main__":
-    start_time = time.time()
     print("Cuda:{}".format(cuda))
     device = torch.device("cuda" if cuda else "cpu")
-    trainx = np.load("source_data.nosync/dev.npy", allow_pickle=True)
-    trainy = np.load("source_data.nosync/dev_labels.npy", allow_pickle=True)
-    # trainy = np.load("dev_labels.npy", allow_pickle=True)
-    # trainx = np.load("dev.npy", allow_pickle=True)
-    # trainy = np.load("train_labels.npy", allow_pickle=True)
-    # trainx = np.load("train.npy", allow_pickle=True)
-    # trainy = np.load("/content/drive/My Drive/Colab Notebooks/dev_labels.npy", allow_pickle=True)
-    # trainx = np.load("/content/drive/My Drive/Colab Notebooks/dev.npy", allow_pickle=True)
-    rawdata = MyDataset(X=trainx, Y=trainy)
-    mydata = SquaredDataset(rawdata)
+    testx = np.load("source_data.nosync/dev.npy", allow_pickle=True)
+    # testy = np.load("source_data.nosync/dev_labels.npy", allow_pickle=True)
+    mydata = MyDataset(X=testx)
     model = Pred_Model()
-    model.apply(init_xavier)
-    optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE)
-    idx_guide = []
-    num = 0
-    trainer = Trainer(model, optimizer)
-    nepoch = 10
-    end_time = time.time()
-    print("Processing data used: {}".format(end_time - start_time))
-    for epoch in range(nepoch):
-        trainer = Trainer(model, optimizer)
-        print("epoch:{}".format(epoch + 1))
-        tot_correct = 0
-        tot_samples = 0
-        start_time = time.time()
-        tot_loss = 0
-        train_loader_args = dict(shuffle=False, batch_size=512, num_workers=0, pin_memory=True) if cuda \
-            else dict(shuffle=False, batch_size=64)
-        train_loader = data.DataLoader(mydata, **train_loader_args)
-        correct, samples, runningloss = trainer.train_per_epoch(train_loader, criterion=nn.CrossEntropyLoss())
-        tot_samples += samples
-        tot_correct += correct
-        tot_loss += runningloss
-        end_time = time.time()
-        print("Loss: {}   Correct: {}  Samples: {} Time: {}".format(tot_loss / mydata.__len__(), tot_correct, tot_samples, end_time - start_time))
-    trainer.save_model('./now_saved_model.pt')
-    print("Model Saved! Good Luck! :D")
+    model.load_state_dict(torch.load('now_saved_model.pt', map_location=device))
+    trainer = Trainer(model)
+    for i in range(mydata.__len__()):
+        curx = mydata.__getitem__(i)
+        test_dataset = SquaredDataset(curx)
+        # print(cury)
+        train_loader_args = dict(shuffle=False, batch_size=len(curx), num_workers=0, pin_memory=True) if cuda \
+            else dict(shuffle=False, batch_size=len(curx))
+        test_loader = data.DataLoader(test_dataset, **train_loader_args)
+        trainer.eval_process(test_loader, criterion=nn.CrossEntropyLoss())
+print(len(FINAL_OUTPUT))
+with open('tmpresult_test.csv', mode='w') as csv_file:
+    fieldnames = ['id', 'label']
+    writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+    writer.writeheader()
+    for i in range(len(FINAL_OUTPUT)):
+        writer.writerow({'id': i, 'label': int(FINAL_OUTPUT[i])})

@@ -60,52 +60,63 @@ class SquaredDataset(Dataset):
         # x_item = torch.cat([x_item, x_item.pow(2)])
         return x_item
 
-
 class Pred_Model(nn.Module):
 
     def __init__(self):
         super(Pred_Model, self).__init__()
         self.fc1 = nn.Linear(40 * (1 + 2 * CONTEXT_SIZE), 1024)
         self.bnorm1 = nn.BatchNorm1d(1024)
-        self.dp1 = nn.Dropout(p=0.3)
-        self.fc2 = nn.Linear(1024, 512)
-        self.bnorm2 = nn.BatchNorm1d(512)
+        self.dp1 = nn.Dropout(p=0.2)
+        self.fc2 = nn.Linear(1024, 1024)
+        self.bnorm2 = nn.BatchNorm1d(1024)
         self.dp2 = nn.Dropout(p=0.2)
-        self.fc3 = nn.Linear(512, 512)
+        self.fc3 = nn.Linear(1024, 512)
         self.bnorm3 = nn.BatchNorm1d(512)
-        # self.dp3 = nn.Dropout(p=0.2)
+        self.dp3 = nn.Dropout(p=0.2)
         self.fc4 = nn.Linear(512, 512)
         self.bnorm4 = nn.BatchNorm1d(512)
-        # self.dp4 = nn.Dropout(p=0.1)
+        self.dp4 = nn.Dropout(p=0.1)
         self.fc5 = nn.Linear(512, 256)
         self.bnorm5 = nn.BatchNorm1d(256)
-
         self.fc6 = nn.Linear(256, 138)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
         if len(x) > 1:
-            x = self.dp1(self.bnorm1(x))
+            x = self.bnorm1(x)
+        #             x = self.dp1(x)
+        #             x = self.dp1(self.bnorm1(x))
 
         x = F.relu(self.fc2(x))
         if len(x) > 1:
-            x = self.dp2(self.bnorm2(x))
+            x = self.bnorm2(x)
+        #             x = self.dp2(x)
+        #             x = self.dp1(self.bnorm1(x))
 
         x = F.relu(self.fc3(x))
         if len(x) > 1:
             x = self.bnorm3(x)
 
         x = F.sigmoid(self.fc4(x))
-        #         if len(x) > 1:
-        #             x = self.bnorm4(x)
+        if len(x) > 1:
+            x = self.bnorm4(x)
 
         x = F.sigmoid(self.fc5(x))
-        #         if len(x) > 1:
-        #             x = self.bnorm5(x)
+        if len(x) > 1:
+            x = self.bnorm5(x)
 
         # x = F.sigmoid(self.fc5)
         x = F.log_softmax(self.fc6(x))
         return x
+
+
+
+def init_xavier(m):
+    if type(m) == nn.Linear:
+        fan_in = m.weight.size()[1]
+        fan_out = m.weight.size()[0]
+        std = np.sqrt(2.0 / (fan_in + fan_out))
+        m.weight.data.normal_(0, std)
 
 
 def init_xavier(m):
@@ -169,11 +180,11 @@ class Trainer():
 if __name__ == "__main__":
     print("Cuda:{}".format(cuda))
     device = torch.device("cuda" if cuda else "cpu")
-    testx = np.load("source_data.nosync/test.npy", allow_pickle=True)
+    testx = np.load("source_data.nosync/dev.npy", allow_pickle=True)
     # testy = np.load("source_data.nosync/dev_labels.npy", allow_pickle=True)
     mydata = MyDataset(X=testx)
     model = Pred_Model()
-    model.load_state_dict(torch.load('saved_model.pt', map_location=device))
+    model.load_state_dict(torch.load('now_saved_model.pt', map_location=device))
     trainer = Trainer(model)
     for i in range(mydata.__len__()):
         curx = mydata.__getitem__(i)

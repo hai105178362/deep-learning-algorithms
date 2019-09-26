@@ -10,8 +10,8 @@ from torch.utils import data
 import time
 
 cuda = torch.cuda.is_available()
-CONTEXT_SIZE = 12
-LEARNING_RATE = 0.1
+CONTEXT_SIZE = 14
+LEARNING_RATE = 0.08
 
 
 class MyDataset(data.Dataset):
@@ -35,29 +35,25 @@ class SquaredDataset(Dataset):
     def __init__(self, mydata):
         super().__init__()
         num = 0
-        finalx = mydata.X
+        finalx = []
         finaly = []
-        self.finaldict = {}
         for i in range(mydata.__len__()):
             x, y = mydata.__getitem__(i)
             finaly.extend(y)
-            # # finalx.append(x)
-            for j in range(len(x) - 2 * CONTEXT_SIZE):
-                self.finaldict[num] = (i, j + 2 * CONTEXT_SIZE + 1)
+            assert len(x) - 2 * CONTEXT_SIZE == len(y)
+            newx = np.zeros((len(x) - 2 * CONTEXT_SIZE, 40 * (2 * CONTEXT_SIZE + 1)))
+            for j in range(len(newx)):
+                newx[j] = x[j:j + 2 * CONTEXT_SIZE + 1].reshape(-1)
+                finalx.append(newx[j])
                 num += 1
         self._x = finalx
         self._y = finaly
 
     def __len__(self):
-        return len(self._y)
+        return len(self._x)
 
     def __getitem__(self, index):
-        idx1, idx2 = self.finaldict[index][0], self.finaldict[index][1]
-        x_item = (self._x[idx1][(idx2 - 2 * CONTEXT_SIZE - 1):idx2]).reshape(-1)
-        # print(x_item)
-        # sys.exit(1)
-        # print(idx2 - 2 * CONTEXT_SIZE - 1, idx2)
-        # sys.exit(1)
+        x_item = self._x[index]
         # x_item = torch.cat([x_item, x_item.pow(2)])
         return x_item, self._y[index]
 
@@ -141,9 +137,6 @@ class Trainer():
         correct = 0
         samples = 0
         for batch_idx, (x, y) in enumerate(cur_loader):
-            # print(len(x),len(y))
-            # print(x[0],y[0])
-            # sys.exit(0)
             self.optimizer.zero_grad()
             X = Variable(x.float()).to(device)
             Y = Variable(y).to(device)
@@ -176,12 +169,12 @@ if __name__ == "__main__":
     start_time = time.time()
     print("Cuda:{}".format(cuda))
     device = torch.device("cuda" if cuda else "cpu")
-    trainx = np.load("source_data.nosync/dev.npy", allow_pickle=True)
-    trainy = np.load("source_data.nosync/dev_labels.npy", allow_pickle=True)
+    # trainx = np.load("source_data.nosync/dev.npy", allow_pickle=True)
+    # trainy = np.load("source_data.nosync/dev_labels.npy", allow_pickle=True)
     # trainy = np.load("dev_labels.npy", allow_pickle=True)
     # trainx = np.load("dev.npy", allow_pickle=True)
-    # trainy = np.load("train_labels.npy", allow_pickle=True)
-    # trainx = np.load("train.npy", allow_pickle=True)
+    trainy = np.load("train_labels.npy", allow_pickle=True)
+    trainx = np.load("train.npy", allow_pickle=True)
     # trainy = np.load("/content/drive/My Drive/Colab Notebooks/dev_labels.npy", allow_pickle=True)
     # trainx = np.load("/content/drive/My Drive/Colab Notebooks/dev.npy", allow_pickle=True)
     rawdata = MyDataset(X=trainx, Y=trainy)
@@ -194,7 +187,7 @@ if __name__ == "__main__":
     trainer = Trainer(model, optimizer)
     nepoch = 10
     end_time = time.time()
-    print("Processing data used: {}".format(end_time - start_time))
+    print("Processing data used: {}".format(end_time-start_time))
     for epoch in range(nepoch):
         trainer = Trainer(model, optimizer)
         print("epoch:{}".format(epoch + 1))
@@ -202,8 +195,8 @@ if __name__ == "__main__":
         tot_samples = 0
         start_time = time.time()
         tot_loss = 0
-        train_loader_args = dict(shuffle=False, batch_size=512, num_workers=0, pin_memory=True) if cuda \
-            else dict(shuffle=False, batch_size=64)
+        train_loader_args = dict(shuffle=True, batch_size=512, num_workers=0, pin_memory=True) if cuda \
+            else dict(shuffle=True, batch_size=64)
         train_loader = data.DataLoader(mydata, **train_loader_args)
         correct, samples, runningloss = trainer.train_per_epoch(train_loader, criterion=nn.CrossEntropyLoss())
         tot_samples += samples
@@ -211,5 +204,6 @@ if __name__ == "__main__":
         tot_loss += runningloss
         end_time = time.time()
         print("Loss: {}   Correct: {}  Samples: {} Time: {}".format(tot_loss / mydata.__len__(), tot_correct, tot_samples, end_time - start_time))
-    trainer.save_model('./now_saved_model.pt')
+        print("Accuracy: {}".format(float(tot_correct / tot_samples)))
+    trainer.save_model('./saved_model.pt')
     print("Model Saved! Good Luck! :D")

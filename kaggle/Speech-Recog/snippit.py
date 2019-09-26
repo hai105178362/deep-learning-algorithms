@@ -23,7 +23,7 @@ import csv
 # result = np.pad(source, ((1, 1), (0, 0)),'reflect', reflect_type='odd')
 # print(result)
 #################################
-a = pd.read_csv('tmpresult_3.csv')
+a = pd.read_csv('tmpresult_test.csv')
 b = pd.read_csv('devref.csv')
 correct = 0
 arr1, arr2 = a['label'], b['label']
@@ -31,6 +31,7 @@ for i, j in zip(arr1, arr2):
     assert len(arr1) == len((arr2)), 'Output has diff lenght'
     if i == j:
         correct += 1
+print((correct))
 print(correct / len(arr1))
 
 ##################
@@ -46,3 +47,7 @@ print(correct / len(arr1))
 #     for i in range(len(dev_label)):
 #         writer.writerow({'id': i, 'label': int(dev_label[i])})
 # print(len(dev_label))
+
+
+# a = [1,2,3,4,5]
+# print(a[1:3])
