@@ -14,3 +14,4 @@
 *.nosync
 *.csv
 *.pt
+*/label_fusion/
