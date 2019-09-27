@@ -388,50 +388,41 @@ def get_training_stats(mlp, dset, nepochs, batch_size):
     l = len(trainx)
     # Setup ...
     for e in range(nepochs):
+        print(e)
         accuracy = 0
         np.random.shuffle(idxs)
         train_x = np.array([trainx[idxs[i]] for i in range(len(idxs))])
         train_y = np.array([trainy[idxs[i]] for i in range(len(idxs))])
         train_out = mlp.forward(train_x)
-        train_loss = SoftmaxCrossEntropy().forward(train_out, train_y)
+        train_runningloss = SoftmaxCrossEntropy().forward(train_out, train_y)
         mlp.backward(train_y)
         for b in range(0, len(trainx), batch_size):
             mlp.step()
         for i in range(l):
             if np.argmax(train_out[i]) == np.argmax(train_y[i]):
                 accuracy += 1
-        # print(mlp.W[0][0][0])
-        print(e)
-        print("Train: {a:1.5f} {b:0.5f}  ".format(a=np.mean(train_loss), b=(1 - accuracy / l)))
+        print("Train_loss: {a:1.5f}  Train_Error: {b:0.5f}  ".format(a=np.mean(train_runningloss), b=(1 - accuracy / l)))
         training_errors.append(1 - (accuracy / l))
-        training_losses.append(np.mean(train_loss))
+        training_losses.append(np.mean(train_runningloss))
         ##########################################
-        accuracy = 0
-        mlp.eval()
-        eval_out = mlp.forward(valx)
-        eval_loss = SoftmaxCrossEntropy().forward(eval_out, valy)
-        for i in range(len(valx)):
-            if np.argmax(eval_out[i]) == np.argmax(valy[i]):
-                accuracy += 1
-        print("Valid: {a:1.5f} {b:0.5f}  ".format(a=np.mean(eval_loss), b=(1 - accuracy / len(valx))))
+        for b in range(0, len(valx), batch_size):
+            accuracy = 0
+            mlp.eval()
+            eval_out = mlp.forward(valx)
+            eval_loss = SoftmaxCrossEntropy().forward(eval_out, valy)
+            for i in range(len(valx)):
+                if np.argmax(eval_out[i]) == np.argmax(valy[i]):
+                    accuracy += 1
+        print("Valid_loss: {a:1.5f}  Vlide_Error: {b:0.5f}  ".format(a=np.mean(eval_loss), b=(1 - accuracy / len(valx))))
+        print("---------------------------------------------------------------------------------------------------------")
         validation_losses.append(np.mean(eval_loss))
         validation_errors.append(1 - (accuracy / len(valx)))
-
-        # for b in range(0, len(valx), batch_size):
-        #     pass  # Remove this line when you start implementing this
-
-        # Val ...
-
-        # Accumulate data...
-
-    # Cleanup ...
-
-    for b in range(0, len(testx), batch_size):
-        pass  # Remove this line when you start implementing this
-        # mlp.eval()
-        # mlp.forward(testx[b:b + batch_size])
-    # Return results ...
-    # return mlp.output
+        ###########################################
+        output = []
+        for b in range(0, len(testx), batch_size):
+            mlp.eval()
+            test_out = mlp.forward(testx)
+            output.append(test_out.reshape(-1))
     return (training_losses, training_errors, validation_losses, validation_errors)
 
     raise NotImplemented

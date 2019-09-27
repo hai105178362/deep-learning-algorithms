@@ -158,6 +158,7 @@ class SoftmaxCrossEntropy(Criterion):
     """
     Softmax loss
     """
+
     def __init__(self):
         super(SoftmaxCrossEntropy, self).__init__()
         self.sm = None
@@ -240,7 +241,7 @@ class BatchNorm(object):
 
 # These are both easy one-liners, don't over-think them
 def random_normal_weight_init(d0, d1):
-    return np.randomn(shape=(d0, d1))
+    return np.random.normal(np.zeros(shape=(d0, d1)))
     raise NotImplemented
 
 
@@ -277,8 +278,8 @@ class MLP(object):
             for i in hiddens:
                 bigArr.append(int(i))
         bigArr.append(output_size)
-        self.W = [(weight_init_fn(bigArr[i], bigArr[i + 1])) for i in range(len(bigArr) - 1)]
-        self.dW = [(weight_init_fn(bigArr[i], bigArr[i + 1])) for i in range(len(bigArr) - 1)]
+        self.W = np.array([(weight_init_fn(bigArr[i], bigArr[i + 1])) for i in range(len(bigArr) - 1)])
+        self.dW = np.array([(weight_init_fn(bigArr[i], bigArr[i + 1])) for i in range(len(bigArr) - 1)])
         self.b = [(bias_init_fn(bigArr[i + 1])) for i in range(len(bigArr) - 1)]
         self.db = [(bias_init_fn(bigArr[i + 1])) for i in range(len(bigArr) - 1)]
         # if batch norm, add batch norm parameters
@@ -314,7 +315,7 @@ class MLP(object):
                     bn_layer -= 1
                     dot_product = self.bn_layers[bn_layer].forward(dot_product, eval=(self.train_mode != True))
                 cur_y = self.activations[i].forward(dot_product)
-                self.state[i+1] = cur_y
+                self.state[i + 1] = cur_y
                 cur_input = cur_y
         self.output = cur_y
         return cur_y
@@ -330,15 +331,12 @@ class MLP(object):
             self.deltaB[i] = self.momentum * self.deltaB[i] - self.lr * self.db[i]
             self.W[i] += self.deltaW[i]
             self.b[i] += self.deltaB[i]
-        # print(self.activations,self.output_size,self.input_size,self.momentum)
-        # print(self.dW[-1][-1][-1])
         for i in range(self.num_bn_layers):
             self.deltagamma[i] = self.bn_layers[i].gamma - self.lr * self.bn_layers[i].dgamma
             self.deltabeta[i] = self.bn_layers[i].beta - self.lr * self.bn_layers[i].dbeta
             self.bn_layers[i].gamma = self.deltagamma[i]
             self.bn_layers[i].beta = self.deltabeta[i]
-
-        return
+        return self.W, self.b
         raise NotImplemented
 
     def backward(self, labels):
@@ -366,12 +364,7 @@ class MLP(object):
                 self.dW[i - 1] = np.matmul(self.state[i - 1].transpose(), cur_z_prime) / len(self.input)
                 self.db[i - 1] = np.sum(cur_z_prime, axis=0) / len(self.input)
                 dz_prev = cur_z_prime
-            print(self.dW[-1][-1][-1],self.nlayers)
-            if (self.dW[-1][-1][-1]==-0.026294072070905915):
-                print(self.activations)
-                print(self.dW[-1][-1][-1])
-
-        return loss
+        return
         raise NotImplemented
 
     def __call__(self, x):
@@ -392,81 +385,45 @@ def get_training_stats(mlp, dset, nepochs, batch_size):
     idxs = np.arange(len(trainx))
     training_losses, training_errors = [], []
     validation_losses, validation_errors = [], []
+    l = len(trainx)
     # Setup ...
-    padded_trainy = np.zeros((len(trainx), 10))
-    padded_valy = np.zeros((len(valx), 10))
-    padded_testy = np.zeros((len(testx), 10))
-    total_train_len = len(trainy)
-    total_val_len = len(valy)
-    total_test_len = len(testy)
-    train_output, val_output, test_output = [], [], []
-    for i in range(len(padded_trainy)):
-        padded_trainy[i][trainy[i]] = 1
-    mlp.zero_grads()
     for e in range(nepochs):
-        train_correct, val_correct, test_correct = 0, 0, 0
-        # Per epoch setup ...
+        accuracy = 0
+        np.random.shuffle(idxs)
+        train_x = np.array([trainx[idxs[i]] for i in range(len(idxs))])
+        train_y = np.array([trainy[idxs[i]] for i in range(len(idxs))])
+        train_out = mlp.forward(train_x)
+        train_runningloss = SoftmaxCrossEntropy().forward(train_out, train_y)
+        print(train_runningloss)
+        sys.exit(1)
         for b in range(0, len(trainx), batch_size):
-            # pass  # Remove this line when you start implementing this
-            # Train ...
-            print(mlp.W[0][0][0])
-            mlp.zero_grads()
-            mlp.forward(trainx[b:b + batch_size])
-            mlp.backward(padded_trainy[b:b + batch_size])
+            mlp.backward(train_y)
             mlp.step()
-        #     for i in range(len(mlp.output)):
-        #         train_output.append(np.argmax(mlp.output[i]))
-        # for i, j in zip(train_output, trainy):
-        #     if i == j:
-        #         train_correct += 1
-        # training_losses.append(np.mean(curr_loss))
-        # training_errors.append(1 - (train_correct / total_train_len))
-        # print("**Train** Epoch: {}, Loss: {}, error:{}".format(e, np.mean(curr_loss), training_errors[e]))
-
-        for b in range(0, len(valx), batch_size):
-            pass  # Remove this line when you start implementing this
-        #     mlp.eval()
-        #     mlp.forward(valx[b:b + batch_size])
-        #     curr_loss = mlp.backward(padded_valy[b:b + batch_size])
-        #     for i in range(len(mlp.output)):
-        #         train_output.append(np.argmax(mlp.output[i]))
-        # for i, j in zip(train_output, trainy):
-        #     if i == j:
-        #         val_correct += 1
-        # validation_losses.append(np.mean(curr_loss))
-        # validation_errors.append(1 - (val_correct / total_val_len))
-        # print("**Val** Epoch: {}, Loss: {}, error:{}".format(e, np.mean(curr_loss), validation_errors[e]))
-        # Val ...
-
-        # Accumulate data...
-
-    # Cleanup ...
-
-    for b in range(0, len(testx), batch_size):
-        pass  # Remove this line when you start implementing this
-        # mlp.eval()
-        # mlp.forward(testx[b:b + batch_size])
-    # Return results ...
-    # return mlp.output
+        for i in range(l):
+            if np.argmax(train_out[i]) == np.argmax(train_y[i]):
+                accuracy += 1
+        print(e)
+        print("Train_loss: {a:1.5f}  Train_Error: {b:0.5f}  ".format(a=np.mean(train_runningloss), b=(1 - accuracy / l)))
+        training_errors.append(1 - (accuracy / l))
+        training_losses.append(np.mean(train_runningloss))
+        ##########################################
+        for b in range(0, len(trainx), batch_size):
+            accuracy = 0
+            mlp.eval()
+            eval_out = mlp.forward(valx)
+            eval_loss = SoftmaxCrossEntropy().forward(eval_out, valy)
+            for i in range(len(valx)):
+                if np.argmax(eval_out[i]) == np.argmax(valy[i]):
+                    accuracy += 1
+        print("Valid_loss: {a:1.5f}  Vlide_Error: {b:0.5f}  ".format(a=np.mean(eval_loss), b=(1 - accuracy / len(valx))))
+        validation_losses.append(np.mean(eval_loss))
+        validation_errors.append(1 - (accuracy / len(valx)))
+        ###########################################
+        output = []
+        for b in range(0, len(testx), batch_size):
+            mlp.eval()
+            test_out = mlp.forward(testx)
+            output.append(test_out.reshape(-1))
     return (training_losses, training_errors, validation_losses, validation_errors)
 
     raise NotImplemented
-
-
-#############################################################
-if __name__ == "__main__":
-    f_trainx = np.load("/Users/robert/Documents/CMU/19Fall/11785/homework/h1/handout/data/train_data.npy")
-    f_trainy = np.load("/Users/robert/Documents/CMU/19Fall/11785/homework/h1/handout/data/train_labels.npy")
-    f_testx = np.load("/Users/robert/Documents/CMU/19Fall/11785/homework/h1/handout/data/test_data.npy")
-    f_testy = np.load("/Users/robert/Documents/CMU/19Fall/11785/homework/h1/handout/data/test_labels.npy")
-    f_valx = np.load("/Users/robert/Documents/CMU/19Fall/11785/homework/h1/handout/data/val_data.npy")
-    f_valy = np.load("/Users/robert/Documents/CMU/19Fall/11785/homework/h1/handout/data/val_labels.npy")
-    feed_data = (f_trainx, f_trainy), (f_valx, f_valy), (f_testx, f_testy)
-    def weight_init(x, y):
-        return np.random.randn(x, y)
-    def bias_init(x):
-        return np.zeros((1, x))
-    feedmlp = MLP(784, 10, [32, 32, 32], [ReLU(), Sigmoid(), Tanh(), Identity()], weight_init, bias_init,
-                  SoftmaxCrossEntropy(), 0.008,
-                  momentum=0.856, num_bn_layers=0)
-    get_training_stats(feedmlp, feed_data, nepochs=1, batch_size=20)
