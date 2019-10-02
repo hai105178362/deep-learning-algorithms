@@ -1,10 +1,9 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from  torch.autograd import Variable
+from torch.autograd import Variable
 import multiprocessing as mtp
 import traceback
-
 
 np.random.seed(11785)
 
@@ -12,25 +11,26 @@ np.random.seed(11785)
 def test_cnn_correctness_once(idx):
     from layers import Conv1D
 
-    scores_dict = [0,0,0,0]
+    scores_dict = [0, 0, 0, 0]
 
     ############################################################################################
     #############################   Initialize hyperparameters    ##############################
     ############################################################################################
     rint = np.random.randint
     norm = np.linalg.norm
-    in_c, out_c = rint(5,15), rint(5,15)
-    kernel, stride =  rint(1,10), rint(1,10)
-    batch, width = rint(1,4), rint(20,300)
+    in_c, out_c = rint(5, 15), rint(5, 15)
+    kernel, stride = rint(1, 10), rint(1, 10)
+    batch, width = rint(1, 4), rint(20, 300)
 
-
+    kernel = 5
+    stride = 4
+    width = 256
 
     def info():
         print('\nTesting model:')
-        print('    in_channel: {}, out_channel: {},'.format(in_c,out_c))
-        print('    kernel size: {}, stride: {},'.format(kernel,stride))
-        print('    batch size: {}, input size: {}.'.format(batch,width))
-
+        print('    in_channel: {}, out_channel: {},'.format(in_c, out_c))
+        print('    kernel size: {}, stride: {},'.format(kernel, stride))
+        print('    batch size: {}, input size: {}.'.format(batch, width))
 
     ##############################################################################################
     ##########    Initialize the CNN layer and copy parameters to a PyTorch CNN layer   ##########
@@ -46,35 +46,35 @@ def test_cnn_correctness_once(idx):
     model.weight = nn.Parameter(torch.tensor(net.W))
     model.bias = nn.Parameter(torch.tensor(net.b))
 
-
     #############################################################################################
     #########################    Get the correct results from PyTorch   #########################
     #############################################################################################
     x = np.random.randn(batch, in_c, width)
-    x1 = Variable(torch.tensor(x),requires_grad=True)
+    x1 = Variable(torch.tensor(x), requires_grad=True)
     y1 = model(x1)
     b, c, w = y1.shape
-    delta = np.random.randn(b,c,w)
+    delta = np.random.randn(b, c, w)
     y1.backward(torch.tensor(delta))
-
 
     #############################################################################################
     ##########################    Get your forward results and compare ##########################
     #############################################################################################
     y = net(x)
+    print("net(x) =y, reference = y1", y.shape,y1.shape)
     assert y.shape == y1.shape
-    if not(y.shape == y1.shape): print("FAILURE")
-
+    if not (y.shape == y1.shape): print("FAILURE")
 
     forward_res = y - y1.detach().numpy()
     forward_res_norm = abs(forward_res).max()
 
-
     if forward_res_norm < 1e-12:
-        scores_dict[0] =  1
+        scores_dict[0] = 1
+        print("PASSED: Foward")
     else:
         info()
         print('Fail to return correct forward values')
+        print("Reference: ", y1)
+        print("Your answer:", y)
         return scores_dict
 
     #############################################################################################
@@ -82,7 +82,7 @@ def test_cnn_correctness_once(idx):
     #############################################################################################
     dx = net.backward(delta)
 
-    assert dx.shape == x.shape    
+    assert dx.shape == x.shape
     assert net.dW.shape == model.weight.grad.detach().numpy().shape
     assert net.db.shape == model.bias.grad.detach().numpy().shape
     #############################################################################################
@@ -97,10 +97,9 @@ def test_cnn_correctness_once(idx):
     db_res = net.db - model.bias.grad.detach().numpy()
     db_res_norm = abs(db_res).max()
 
-
     if delta_res_norm < 1e-12:
         scores_dict[1] = 1
-    
+
     if dW_res_norm < 1e-12:
         scores_dict[2] = 1
 
@@ -118,24 +117,23 @@ def test_cnn_correctness_once(idx):
     return scores_dict
 
 
-
-
-
 def test_cnn_correctness():
     scores = []
-    worker = min(mtp.cpu_count(),4)
+    worker = min(mtp.cpu_count(), 4)
     p = mtp.Pool(worker)
-    
+
     for __ in range(15):
-        scores_dict = test_cnn_correctness_once(__) 
+        scores_dict = test_cnn_correctness_once(__)
         scores.append(scores_dict)
         if min(scores_dict) != 1:
             break
-    
+
     scores = np.array(scores).min(0)
     return list(scores)
 
+
 import cnn as cnn_solution
+
 
 def test_part_b():
     data = np.loadtxt('data/data.asc').T.reshape(1, 24, -1)
@@ -147,9 +145,9 @@ def test_part_b():
     result = cnn(data)
 
     try:
-        assert(type(result)==type(expected_result))
-        assert(result.shape==expected_result.shape)
-        assert(np.allclose(result,expected_result))
+        assert (type(result) == type(expected_result))
+        assert (result.shape == expected_result.shape)
+        assert (np.allclose(result, expected_result))
 
         return True
     except Exception as e:
@@ -167,9 +165,9 @@ def test_part_c():
     result = cnn(data)
 
     try:
-        assert(type(result)==type(expected_result))
-        assert(result.shape==expected_result.shape)
-        assert(np.allclose(result,expected_result))
+        assert (type(result) == type(expected_result))
+        assert (result.shape == expected_result.shape)
+        assert (np.allclose(result, expected_result))
 
         return True
     except Exception as e:
@@ -177,17 +175,9 @@ def test_part_c():
         return False
 
 
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
     a, b, c, d = test_cnn_correctness()
-    string = 'CNN layer forward: {}; backward dx: {}, dW: {}, db: {}.'.format(a,b,c,d)
+    string = 'CNN layer forward: {}; backward dx: {}, dW: {}, db: {}.'.format(a, b, c, d)
 
     print('Conv1D Forward:', 'PASS' if a == 1 else 'FAIL')
     print('Conv1D dX:', 'PASS' if b == 1 else 'FAIL')
@@ -197,13 +187,4 @@ if __name__ == '__main__':
     b = test_part_b()
     print("PART B:", "PASS" if b else "FAIL")
     c = test_part_c()
-    print("PART C:", "PASS" if c else "FAIL")    
-
-
-
-    
-
-
-
-
-
+    print("PART C:", "PASS" if c else "FAIL")
