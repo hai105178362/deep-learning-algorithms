@@ -17,3 +17,5 @@
 */label_fusion/
 *.nosync/
 */dataset/
+*/dataset
+dataset/
