@@ -4,6 +4,7 @@ import numpy as np
 from torch.autograd import Variable
 import multiprocessing as mtp
 import traceback
+import sys
 
 np.random.seed(11785)
 
@@ -21,10 +22,6 @@ def test_cnn_correctness_once(idx):
     in_c, out_c = rint(5, 15), rint(5, 15)
     kernel, stride = rint(1, 10), rint(1, 10)
     batch, width = rint(1, 4), rint(20, 300)
-
-    kernel = 5
-    stride = 4
-    width = 256
 
     def info():
         print('\nTesting model:')
@@ -60,7 +57,9 @@ def test_cnn_correctness_once(idx):
     ##########################    Get your forward results and compare ##########################
     #############################################################################################
     y = net(x)
-    print("net(x) =y, reference = y1", y.shape,y1.shape)
+    # print("net(x) =y, reference = y1", y.shape,y1.shape)
+    # print(y,'================================\n',y1)
+    # sys.exit(1)
     assert y.shape == y1.shape
     if not (y.shape == y1.shape): print("FAILURE")
 
@@ -97,6 +96,21 @@ def test_cnn_correctness_once(idx):
     db_res = net.db - model.bias.grad.detach().numpy()
     db_res_norm = abs(db_res).max()
 
+    print("=============dx=================")
+    print("-----------Result------------")
+    print(dx[0][0])
+    print("-----------Reference------------")
+    print(dx1[0][0])
+    print("\n\n=============dW=================")
+    print("-----------Result------------")
+    print(net.dW[0][0])
+    print("-----------Reference------------")
+    print(model.weight.grad.detach().numpy()[0][0])
+    print("\n\n=============db=================")
+    print("-----------Result------------")
+    print(net.db)
+    print("-----------Reference------------")
+    print(model.bias.grad.detach().numpy())
     if delta_res_norm < 1e-12:
         scores_dict[1] = 1
 
@@ -138,7 +152,7 @@ import cnn as cnn_solution
 def test_part_b():
     data = np.loadtxt('data/data.asc').T.reshape(1, 24, -1)
     cnn = cnn_solution.CNN_B()
-    weights = np.load('weights/mlp_weights_part_b.npy')
+    weights = np.load('weights/mlp_weights_part_b.npy', allow_pickle=True)
     cnn.init_weights(weights)
 
     expected_result = np.load('autograde/res_b.npy')
