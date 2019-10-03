@@ -95,22 +95,22 @@ def test_cnn_correctness_once(idx):
 
     db_res = net.db - model.bias.grad.detach().numpy()
     db_res_norm = abs(db_res).max()
-
-    print("=============dx=================")
-    print("-----------Result------------")
-    print(dx[0][0])
-    print("-----------Reference------------")
-    print(dx1[0][0])
-    print("\n\n=============dW=================")
-    print("-----------Result------------")
-    print(net.dW[0][0])
-    print("-----------Reference------------")
-    print(model.weight.grad.detach().numpy()[0][0])
-    print("\n\n=============db=================")
-    print("-----------Result------------")
-    print(net.db)
-    print("-----------Reference------------")
-    print(model.bias.grad.detach().numpy())
+    #
+    # print("=============dx=================")
+    # print("-----------Result------------")
+    # print(dx[0][0])
+    # print("-----------Reference------------")
+    # print(dx1[0][0])
+    # print("\n\n=============dW=================")
+    # print("-----------Result------------")
+    # print(net.dW[0][0])
+    # print("-----------Reference------------")
+    # print(model.weight.grad.detach().numpy()[0][0])
+    # print("\n\n=============db=================")
+    # print("-----------Result------------")
+    # print(net.db)
+    # print("-----------Reference------------")
+    # print(model.bias.grad.detach().numpy())
     if delta_res_norm < 1e-12:
         scores_dict[1] = 1
 

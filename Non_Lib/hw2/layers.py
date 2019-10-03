@@ -77,27 +77,30 @@ class Conv1D():
                         end += self.stride
                         if end > self.width:
                             end = self.width - 1
+        self.output = result
         return result
         raise NotImplemented
 
     def backward(self, delta):
-        print("delta.shape: {}, kernel_size: {},  W.shape: {}, b.shape: {}".format(delta.shape, self.kernel_size, self.W.shape,self.b.shape))
+        # print("delta.shape: {}, kernel_size: {},  W.shape: {}, b.shape: {}".format(delta.shape, self.kernel_size, self.W.shape, self.b.shape))
         dx = np.zeros(shape=(self.batch, self.in_channel, self.width))
-        print("dx.shape: {}".format(dx.shape))
+        # print("dx.shape: {}, output.shape: {}".format(dx.shape, self.output.shape))
         for b in range(self.batch):
             for ic in range(self.in_channel):
                 for oc in range(self.out_channel):
                     start, end = 0, self.kernel_size
-                    self.db[oc] = np.sum(delta[b][oc])
                     for step in range(self.result_width):
-                        dx[b][ic][start:end] += (self.W[b][ic] * delta[b][oc][step])
-                        self.dW[b][ic] += self.inx[b][ic][start:end] * delta[b][oc][step]
+                        dx[b][ic][start:end] += (self.W[oc][ic] * delta[b][oc][step])
+                        self.dW[oc][ic] += self.inx[b][ic][start:end] * delta[b][oc][step]
                         # print(self.inx[b][ic][start:end], delta[b][oc][step])
                         # sys.exit(1)
                         start += self.stride
                         end += self.stride
                         if end > self.width:
                             end = self.width - 1
+        for b in range(self.batch):
+            for oc in range(self.out_channel):
+                self.db[oc] += np.sum(delta[b][oc])
 
         ## Your codes here
         # self.db = ???
