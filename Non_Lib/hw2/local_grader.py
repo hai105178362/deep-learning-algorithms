@@ -190,13 +190,13 @@ def test_part_c():
 
 
 if __name__ == '__main__':
-    # a, b, c, d = test_cnn_correctness()
-    # string = 'CNN layer forward: {}; backward dx: {}, dW: {}, db: {}.'.format(a, b, c, d)
-    #
-    # print('Conv1D Forward:', 'PASS' if a == 1 else 'FAIL')
-    # print('Conv1D dX:', 'PASS' if b == 1 else 'FAIL')
-    # print('Conv1D dW:', 'PASS' if c == 1 else 'FAIL')
-    # print('Conv1D db:', 'PASS' if d == 1 else 'FAIL')
+    a, b, c, d = test_cnn_correctness()
+    string = 'CNN layer forward: {}; backward dx: {}, dW: {}, db: {}.'.format(a, b, c, d)
+
+    print('Conv1D Forward:', 'PASS' if a == 1 else 'FAIL')
+    print('Conv1D dX:', 'PASS' if b == 1 else 'FAIL')
+    print('Conv1D dW:', 'PASS' if c == 1 else 'FAIL')
+    print('Conv1D db:', 'PASS' if d == 1 else 'FAIL')
 
     b = test_part_b()
     print("PART B:", "PASS" if b else "FAIL")

@@ -17,7 +17,9 @@ class CNN_B():
 
     def init_weights(self, weights):
         for i in weights:
-            self.layers.append(Conv1D(i.shape[0] // 8, i.shape[1], 8, 4))
+            self.layers.append(Conv1D(i.shape[0], i.shape[1], i.shape[0], i.shape[0]))
+            # print(i.shape)
+        # sys.exit(1)
         return self.layers
         # Load the weights for your CNN from the MLP Weights given
         raise NotImplemented

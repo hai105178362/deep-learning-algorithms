@@ -55,24 +55,36 @@ class Conv1D():
     def forward(self, x):
 
         ## Your codes here
-        self.batch, __, self.width = x.shape
+        flag = 0
+        try:
+            self.batch, __, self.width = x.shape
+            assert __ == self.in_channel, 'Expected the inputs to have {} channels, you have {} channels'.format(self.in_channel, __)
+        except:
+            self.batch,self.width = x.shape
+            flag =1
+
         self.inx = x
 
-        assert __ == self.in_channel, 'Expected the inputs to have {} channels, you have {} channels'.format(self.in_channel, __)
         tmp = self.kernel_size
         while tmp <= self.width:
             if tmp > self.width:
                 break
             self.result_width += 1
             tmp += self.stride
-        # print("stride: {}, origin witdth: {}, kerneal size: {}, result width: {}".format(self.stride, self.width, self.kernel_size, result_width))
+        print("stride: {}, origin witdth: {}, kerneal size: {}, result width: {}, batch:{}".format(self.stride, self.width, self.kernel_size, self.result_width,self.batch))
+        print("In_channel: {}, out_channel: {}".format(self.in_channel,self.out_channel))
         result = np.zeros(shape=(self.batch, self.out_channel, self.result_width))
         for b in range(self.batch):
             for oc in range(self.out_channel):
                 for ic in range(self.in_channel):
                     start, end = 0, self.kernel_size
                     for step in range(self.result_width):
-                        result[b][oc][step] += np.sum(np.multiply(self.W[oc][ic][:(end - start)], x[b][ic][start:end])) + self.b[oc]
+                        if flag ==1:
+                            print(self.W.shape)
+                            sys.exit(1)
+                            result[b][step] = np.sum(np.multiply(self.W[0],x[step*self.W[0].shape[0]]))+self.b[oc]
+                        else:
+                            result[b][oc][step] += np.sum(np.multiply(self.W[oc][ic][:(end - start)], x[b][ic][start:end])) + self.b[oc]
                         start += self.stride
                         end += self.stride
                         if end > self.width:
