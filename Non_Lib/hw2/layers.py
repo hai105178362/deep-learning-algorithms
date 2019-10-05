@@ -58,7 +58,7 @@ class Conv1D():
         self.batch, __, self.width = x.shape
         self.inx = x
 
-        assert __ == self.in_channel, 'Expected the inputs to have {} channels'.format(self.in_channel)
+        assert __ == self.in_channel, 'Expected the inputs to have {} channels, you have {} channels'.format(self.in_channel, __)
         tmp = self.kernel_size
         while tmp <= self.width:
             if tmp > self.width:
@@ -115,10 +115,13 @@ class Flatten():
 
     def forward(self, x):
         ## Your codes here
+        batch_size, in_channel, in_width = x.shape
+        # print(batch_size,in_channel,in_width)
+        return x.reshape(batch_size, in_channel * in_width)
         raise NotImplemented
 
     def backward(self, x):
-        # Your codes here
+        # Your codes here+
         raise NotImplemented
 
 
