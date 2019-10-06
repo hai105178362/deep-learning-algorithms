@@ -160,8 +160,9 @@ def test_part_b():
 
     try:
         assert (type(result) == type(expected_result))
-        assert (result.shape == expected_result.shape)
-        assert (np.allclose(result, expected_result))
+        assert (result.shape == expected_result.shape) , "result.shape: {}   expected_result.shape: {}".format(result.shape,expected_result.shape)
+        assert (np.allclose(result, expected_result)), "\n***********result*************\n{}, \n*********expected_Result************\n{}".format(result,expected_result)
+
 
         return True
     except Exception as e:

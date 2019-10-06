@@ -7,25 +7,24 @@ class CNN_B():
     def __init__(self):
         # Your initialization code goes here
         self.layers = []
-        self.stride = [4, 1, 1]
-        self.kernel_size = [8, 1, 1]
-        self.in_channel = [24, 8, 16]
-        self.out_channel = [8, 16, 4]
-        for i in range(3):
-            self.layers.append(Conv1D(self.in_channel[i], self.out_channel[i], self.kernel_size[i], self.stride[i]))
-            self.layers.append(ReLU())
-        self.layers = self.layers[:-1]  # remove final ReLU
-        self.layers.append(Flatten())
-
+        self.stride = [4, 8, 16]
+        self.kernel_size = [192, 8, 16]
+        self.in_channel = 1
+        self.out_channel = 1
 
     def __call__(self, x):
+        f = Flatten()
+        x = f(x)
         return self.forward(x)
 
     def init_weights(self, weights):
+        for i in range(len((weights))):
+            self.layers.append(Conv1D(self.in_channel, self.out_channel, self.kernel_size[i], self.stride[i]))
+            self.layers.append(ReLU())
+        self.layers = self.layers[:-1]  # remove final ReLU
+
         for i in range(len(weights)):
             self.layers[i * 2].W = weights[i].T
-
-
         return self.layers
         # Load the weights for your CNN from the MLP Weights given
         raise NotImplemented
@@ -34,7 +33,9 @@ class CNN_B():
         # You do not need to modify this method
         out = x
         for layer in self.layers:
+            # print(out.shape)
             out = layer(out)
+        # print(out.shape)
         return out
 
     def backward(self, delta):
