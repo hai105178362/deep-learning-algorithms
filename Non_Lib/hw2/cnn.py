@@ -17,15 +17,32 @@ class CNN_B():
         self.layers = self.layers[:-1]  # remove final ReLU
         self.layers.append(Flatten())
 
-
     def __call__(self, x):
         return self.forward(x)
 
     def init_weights(self, weights):
-        for i in range(len(weights)):
-            self.layers[i * 2].W = weights[i].T
+        tmp = np.zeros(shape=(8, 24, 8))  # (out_channel,in_channel,kernel_size)
+        for k in range(8):
+            cnt = 0
+            for j in range(8):
+                for i in range(24):
+                    tmp[k][i][j] = weights[0][cnt][k]
+                    cnt += 1
+        self.layers[0].W = tmp
 
-
+        tmp = np.zeros(shape=(16, 8, 1))
+        for k in range(8):
+            for j in range(16):
+                for i in range(1):
+                    tmp[j][k][i] = weights[1][k][j]
+        self.layers[2].W = tmp
+        #
+        tmp = np.zeros(shape=(4, 16, 1))
+        for k in range(16):
+            for j in range(4):
+                for i in range(1):
+                    tmp[j][k][i] = weights[2][k][j]
+        self.layers[4].W = tmp
         return self.layers
         # Load the weights for your CNN from the MLP Weights given
         raise NotImplemented
@@ -34,6 +51,7 @@ class CNN_B():
         # You do not need to modify this method
         out = x
         for layer in self.layers:
+            print("layer: {}".format(self.layers.index(layer) // 2))
             out = layer(out)
         return out
 

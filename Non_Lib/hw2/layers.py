@@ -52,15 +52,13 @@ class Conv1D():
 
     def forward(self, x):
         ## Your codes here
-        print("---------------------")
-        print("Current W: {}".format(self.W.shape))
-        self.W = self.W.reshape(self.out_channel,self.in_channel,self.kernel_size)
         self.batch, __, self.width = x.shape
-        print(self.W.shape)
+        print(self.W.shape, x.shape)
         assert __ == self.in_channel, 'Expected the inputs to have {} channels, you have {} channels'.format(self.in_channel, __)
         self.inx = x
         self.result_width = ((self.width - self.kernel_size) // self.stride) + 1
         result = np.zeros(shape=(self.batch, self.out_channel, self.result_width))
+        print("result.shape= {}, w.shape= {}, x.shape={}".format(result.shape,self.W.shape,x.shape))
         for b in range(self.batch):
             for oc in range(self.out_channel):
                 for ic in range(self.in_channel):
@@ -84,12 +82,8 @@ class Conv1D():
                     for step in range(self.result_width):
                         dx[b][ic][start:end] += (self.W[oc][ic] * delta[b][oc][step])
                         self.dW[oc][ic] += self.inx[b][ic][start:end] * delta[b][oc][step]
-                        # print(self.inx[b][ic][start:end], delta[b][oc][step])
-                        # sys.exit(1)
                         start += self.stride
                         end += self.stride
-                        if end > self.width:
-                            end = self.width - 1
         for b in range(self.batch):
             for oc in range(self.out_channel):
                 self.db[oc] += np.sum(delta[b][oc])
@@ -114,7 +108,7 @@ class Flatten():
 
     def backward(self, delta):
         # Your codes here+
-        return delta.reshape(self.batch_size,self.in_channel,self.in_width)
+        return delta.reshape(self.batch_size, self.in_channel, self.in_width)
         raise NotImplemented
 
 
