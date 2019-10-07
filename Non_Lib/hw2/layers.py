@@ -53,7 +53,7 @@ class Conv1D():
     def forward(self, x):
         ## Your codes here
         self.batch, __, self.width = x.shape
-        print(self.W.shape, x.shape)
+        # print(self.W.shape, x.shape)
         assert __ == self.in_channel, 'Expected the inputs to have {} channels, you have {} channels'.format(self.in_channel, __)
         self.inx = x
         self.result_width = ((self.width - self.kernel_size) // self.stride) + 1

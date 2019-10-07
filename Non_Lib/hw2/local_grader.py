@@ -152,7 +152,7 @@ import cnn as cnn_solution
 def test_part_b():
     data = np.loadtxt('data/data.asc').T.reshape(1, 24, -1)
     cnn = cnn_solution.CNN_B()
-    weights = np.load('weights/mlp_weights_part_b.npy',allow_pickle=True)
+    weights = np.load('weights/mlp_weights_part_b.npy', allow_pickle=True)
     cnn.init_weights(weights)
 
     expected_result = np.load('autograde/res_b.npy')
@@ -160,9 +160,8 @@ def test_part_b():
 
     try:
         assert (type(result) == type(expected_result))
-        assert (result.shape == expected_result.shape) , "result.shape: {}   expected_result.shape: {}".format(result.shape,expected_result.shape)
-        assert (np.allclose(result, expected_result)), "\n***********result*************\n{}, \n*********expected_Result************\n{}".format(result,expected_result)
-
+        assert (result.shape == expected_result.shape), "result.shape: {}   expected_result.shape: {}".format(result.shape, expected_result.shape)
+        assert (np.allclose(result, expected_result)), "\n***********result*************\n{}, \n*********expected_Result************\n{}".format(result, expected_result)
 
         return True
     except Exception as e:
@@ -173,7 +172,7 @@ def test_part_b():
 def test_part_c():
     data = np.loadtxt('data/data.asc').T.reshape(1, 24, -1)
     cnn = cnn_solution.CNN_C()
-    weights = np.load('weights/mlp_weights_part_c.npy')
+    weights = np.load('weights/mlp_weights_part_c.npy', allow_pickle=True)
     cnn.init_weights(weights)
 
     expected_result = np.load('autograde/res_c.npy')
@@ -181,8 +180,8 @@ def test_part_c():
 
     try:
         assert (type(result) == type(expected_result))
-        assert (result.shape == expected_result.shape)
-        assert (np.allclose(result, expected_result))
+        assert (result.shape == expected_result.shape), "result: {}, expected: {}  \n*********expected_Result************\n{}".format(result.shape,expected_result.shape,expected_result)
+        assert (np.allclose(result, expected_result)), "\n***********result*************\n{}, \n*********expected_Result************\n{}".format(result, expected_result)
 
         return True
     except Exception as e:
@@ -199,7 +198,7 @@ if __name__ == '__main__':
     # print('Conv1D dW:', 'PASS' if c == 1 else 'FAIL')
     # print('Conv1D db:', 'PASS' if d == 1 else 'FAIL')
 
-    b = test_part_b()
-    print("PART B:", "PASS" if b else "FAIL")
+    # b = test_part_b()
+    # print("PART B:", "PASS" if b else "FAIL")
     c = test_part_c()
     print("PART C:", "PASS" if c else "FAIL")
