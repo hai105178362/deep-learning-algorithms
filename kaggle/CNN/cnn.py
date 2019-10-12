@@ -9,6 +9,13 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 import sys
 
+NUM_EPOCHS = 1
+NUM_FEATS = 3
+
+LEARNING_RATE = 1e-2
+WEIGHT_DECAY = 5e-5
+
+HIDDEN_SIZE = [32, 64]
 
 class ImageDataset(Dataset):
     def __init__(self, file_list, target_list):
@@ -105,19 +112,141 @@ def init_weights(m):
         torch.nn.init.xavier_normal_(m.weight.data)
 
 
-def train(model, data_loader, test_loader, task='Classification'):
+# def train(model, data_loader, test_loader, task='Classification'):
+#     model.train()
+#     for epoch in range(NUM_EPOCHS):
+#         avg_loss = 0.0
+#         for batch_num, (feats, labels) in enumerate(data_loader):
+#             feats, labels = feats.to(device), labels.to(device)
+#
+#             optimizer.zero_grad()
+#             outputs = model(feats)[1]
+#
+#             loss = criterion(outputs, labels.long())
+#             loss.backward()
+#             optimizer.step()
+#
+#             avg_loss += loss.item()
+#
+#             if batch_num % 50 == 49:
+#                 print('Epoch: {}\tBatch: {}\tAvg-Loss: {:.4f}'.format(epoch + 1, batch_num + 1, avg_loss / 50))
+#                 avg_loss = 0.0
+#
+#             torch.cuda.empty_cache()
+#             del feats
+#             del labels
+#             del loss
+#         if epoch % 2 == 0:
+#             PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
+#             torch.save(model.state_dict(), PATH)
+#         PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
+#         torch.save(model.state_dict(), PATH)
+#
+#         if task == 'Classification':
+#             val_loss, val_acc = test_classify(model, test_loader)
+#             train_loss, train_acc = test_classify(model, data_loader)
+#             print('Train Loss: {:.4f}\tTrain Accuracy: {:.4f}\tVal Loss: {:.4f}\tVal Accuracy: {:.4f}'.
+#                   format(train_loss, train_acc, val_loss, val_acc))
+#         else:
+#             test_verify(model, test_loader)
+#
+#
+# def test_classify(model, test_loader):
+#     model.eval()
+#     test_loss = []
+#     accuracy = 0
+#     total = 0
+#
+#     for batch_num, (feats, labels) in enumerate(test_loader):
+#         feats, labels = feats.to(device), labels.to(device)
+#         outputs = model(feats)[1]
+#
+#         _, pred_labels = torch.max(F.softmax(outputs, dim=1), 1)
+#         pred_labels = pred_labels.view(-1)
+#
+#         loss = criterion(outputs, labels.long())
+#
+#         accuracy += torch.sum(torch.eq(pred_labels, labels)).item()
+#         total += len(labels)
+#         test_loss.extend([loss.item()] * feats.size()[0])
+#         del feats
+#         del labels
+#
+#     model.train()
+#     return np.mean(test_loss), accuracy / total
+
+
+# def test_verify(model, test_loader):
+#     raise NotImplementedError
+
+
+
+
+############## CLOSS
+class CenterLoss(nn.Module):
+    """
+    Args:
+        num_classes (int): number of classes.
+        feat_dim (int): feature dimension.
+    """
+
+    def __init__(self, num_classes, feat_dim, device=torch.device('cpu')):
+        super(CenterLoss, self).__init__()
+        self.num_classes = num_classes
+        self.feat_dim = feat_dim
+        self.device = device
+
+        self.centers = nn.Parameter(torch.randn(self.num_classes, self.feat_dim).to(self.device))
+
+    def forward(self, x, labels):
+        """
+        Args:
+            x: feature matrix with shape (batch_size, feat_dim).
+            labels: ground truth labels with shape (batch_size).
+        """
+        batch_size = x.size(0)
+        distmat = torch.pow(x, 2).sum(dim=1, keepdim=True).expand(batch_size, self.num_classes) + \
+                  torch.pow(self.centers, 2).sum(dim=1, keepdim=True).expand(self.num_classes, batch_size).t()
+        distmat.addmm_(1, -2, x, self.centers.t())
+
+        classes = torch.arange(self.num_classes).long().to(self.device)
+        labels = labels.unsqueeze(1).expand(batch_size, self.num_classes)
+        mask = labels.eq(classes.expand(batch_size, self.num_classes))
+
+        dist = []
+        for i in range(batch_size):
+            value = distmat[i][mask[i]]
+            value = value.clamp(min=1e-12, max=1e+12)  # for numerical stability
+            dist.append(value)
+        dist = torch.cat(dist)
+        loss = dist.mean()
+
+        return loss
+
+def train_closs(model, data_loader, test_loader, task='Classification'):
     model.train()
+
     for epoch in range(NUM_EPOCHS):
         avg_loss = 0.0
         for batch_num, (feats, labels) in enumerate(data_loader):
             feats, labels = feats.to(device), labels.to(device)
 
-            optimizer.zero_grad()
-            outputs = model(feats)[1]
+            optimizer_label.zero_grad()
+            optimizer_closs.zero_grad()
 
-            loss = criterion(outputs, labels.long())
+            feature, outputs = model(feats)
+
+            l_loss = criterion_label(outputs, labels.long())
+            c_loss = criterion_closs(feature, labels.long())
+            loss = l_loss + closs_weight * c_loss
+
             loss.backward()
-            optimizer.step()
+
+            optimizer_label.step()
+            # by doing so, weight_cent would not impact on the learning of centers
+            for param in criterion_closs.parameters():
+                param.grad.data *= (1. / closs_weight)
+            optimizer_closs.step()
 
             avg_loss += loss.item()
 
@@ -129,22 +258,17 @@ def train(model, data_loader, test_loader, task='Classification'):
             del feats
             del labels
             del loss
-        if epoch % 2 == 0:
-            PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
-            torch.save(model.state_dict(), PATH)
-        PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
-        torch.save(model.state_dict(), PATH)
 
         if task == 'Classification':
-            val_loss, val_acc = test_classify(model, test_loader)
-            train_loss, train_acc = test_classify(model, data_loader)
+            val_loss, val_acc = test_classify_closs(model, test_loader)
+            train_loss, train_acc = test_classify_closs(model, data_loader)
             print('Train Loss: {:.4f}\tTrain Accuracy: {:.4f}\tVal Loss: {:.4f}\tVal Accuracy: {:.4f}'.
                   format(train_loss, train_acc, val_loss, val_acc))
         else:
             test_verify(model, test_loader)
 
 
-def test_classify(model, test_loader):
+def test_classify_closs(model, test_loader):
     model.eval()
     test_loss = []
     accuracy = 0
@@ -152,12 +276,14 @@ def test_classify(model, test_loader):
 
     for batch_num, (feats, labels) in enumerate(test_loader):
         feats, labels = feats.to(device), labels.to(device)
-        outputs = model(feats)[1]
+        feature, outputs = model(feats)
 
         _, pred_labels = torch.max(F.softmax(outputs, dim=1), 1)
         pred_labels = pred_labels.view(-1)
 
-        loss = criterion(outputs, labels.long())
+        l_loss = criterion_label(outputs, labels.long())
+        c_loss = criterion_closs(feature, labels.long())
+        loss = l_loss + closs_weight * c_loss
 
         accuracy += torch.sum(torch.eq(pred_labels, labels)).item()
         total += len(labels)
@@ -167,10 +293,6 @@ def test_classify(model, test_loader):
 
     model.train()
     return np.mean(test_loss), accuracy / total
-
-
-def test_verify(model, test_loader):
-    raise NotImplementedError
 
 
 if __name__ == '__main__':
@@ -201,21 +323,29 @@ if __name__ == '__main__':
                                                    transform=torchvision.transforms.ToTensor())
     dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=10,
                                                  shuffle=True, num_workers=8)
-    NUM_EPOCHS = 1
-    NUM_FEATS = 3
 
-    LEARNING_RATE = 1e-2
-    WEIGHT_DECAY = 5e-5
-
-    HIDDEN_SIZE = [32, 64]
     NUM_CLASSES = len(train_dataset.classes)
+    #
+    # network = Network(NUM_FEATS, HIDDEN_SIZE, NUM_CLASSES)
+    # network.apply(init_weights)
+    #
+    # criterion = nn.CrossEntropyLoss()
+    # optimizer = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.9)
+    # # optimizer = optim.Adam(network.parameters(), lr=LEARNING_RATE)
+    # network.train()
+    # network.to(device)
+    # train(network, train_dataloader, dev_dataloader)
+    closs_weight = 1
+    lr_cent = 0.5
+    feat_dim = 10
 
-    network = Network(NUM_FEATS, HIDDEN_SIZE, NUM_CLASSES)
+    network = Network(NUM_FEATS, HIDDEN_SIZE, NUM_CLASSES, feat_dim)
     network.apply(init_weights)
 
-    criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.9)
-    # optimizer = optim.Adam(network.parameters(), lr=LEARNING_RATE)
+    criterion_label = nn.CrossEntropyLoss()
+    criterion_closs = CenterLoss(NUM_CLASSES, feat_dim, device)
+    optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.9)
+    optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=lr_cent)
     network.train()
     network.to(device)
-    train(network, train_dataloader, dev_dataloader)
+    train_closs(network, train_dataloader, dev_dataloader)
