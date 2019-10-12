@@ -124,6 +124,9 @@ def train(model, data_loader, test_loader, task='Classification'):
             del feats
             del labels
             del loss
+        if epoch%2==0:
+            PATH = "saved_model/cnn_epoch{}.pt".format(epoch)
+            torch.save(model.state_dict(), PATH)
 
         if task == 'Classification':
             val_loss, val_acc = test_classify(model, test_loader)
