@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
+import sys
 
 
 class ImageDataset(Dataset):
@@ -106,7 +107,6 @@ def init_weights(m):
 
 def train(model, data_loader, test_loader, task='Classification'):
     model.train()
-
     for epoch in range(NUM_EPOCHS):
         avg_loss = 0.0
         for batch_num, (feats, labels) in enumerate(data_loader):
@@ -201,7 +201,7 @@ if __name__ == '__main__':
                                                    transform=torchvision.transforms.ToTensor())
     dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=10,
                                                  shuffle=True, num_workers=8)
-    NUM_EPOCHS = 4
+    NUM_EPOCHS = 1
     NUM_FEATS = 3
 
     LEARNING_RATE = 1e-2
