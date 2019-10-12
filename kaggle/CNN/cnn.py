@@ -214,7 +214,7 @@ if __name__ == '__main__':
     network.apply(init_weights)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.9)
+    # optimizer = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.9)
     optimizer = optim.Adam(network.parameters(), lr=LEARNING_RATE)
     network.train()
     network.to(device)
