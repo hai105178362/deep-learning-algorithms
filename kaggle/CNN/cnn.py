@@ -131,6 +131,8 @@ def train(model, data_loader, test_loader, task='Classification'):
         if epoch % 2 == 0:
             PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
             torch.save(model.state_dict(), PATH)
+        PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
+        torch.save(model.state_dict(), PATH)
 
         if task == 'Classification':
             val_loss, val_acc = test_classify(model, test_loader)
