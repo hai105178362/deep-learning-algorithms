@@ -129,7 +129,7 @@ def train(model, data_loader, test_loader, task='Classification'):
             del labels
             del loss
         if epoch % 2 == 0:
-            PATH = "saved_model/cnn_epoch{}.pt".format(epoch)
+            PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
             torch.save(model.state_dict(), PATH)
 
         if task == 'Classification':

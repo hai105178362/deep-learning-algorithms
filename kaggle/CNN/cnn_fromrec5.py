@@ -88,7 +88,7 @@ class BasicCNNModule(nn.Module):
 args,kwargs = [], {}
 model = BasicCNNModule()
 # save only model parameters
-PATH = "saved_model/basic_cnn.pt"
+PATH = "saved_models/basic_cnn.pt"
 torch.save(model.state_dict(), PATH)
 
 # load a saved model parameters
