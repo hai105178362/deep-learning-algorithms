@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 
+
 class ImageDataset(Dataset):
     def __init__(self, file_list, target_list):
         self.file_list = file_list
@@ -21,6 +22,7 @@ class ImageDataset(Dataset):
         img = torchvision.transforms.ToTensor()(img)
         label = self.target_list[index]
         return img, label
+
 
 def parse_data(datadir):
     img_list = []
@@ -41,6 +43,7 @@ def parse_data(datadir):
     print('{}\t\t{}\n{}\t\t{}'.format('#Images', '#Labels', len(img_list), len(set(label_list))))
     return img_list, label_list, class_n
 
+
 class BasicBlock(nn.Module):
 
     def __init__(self, channel_size, stride=1):
@@ -55,6 +58,7 @@ class BasicBlock(nn.Module):
         out += self.shortcut(x)
         out = F.relu(out)
         return out
+
 
 class Network(nn.Module):
     def __init__(self, num_feats, hidden_sizes, num_classes, feat_dim=10):
@@ -124,7 +128,7 @@ def train(model, data_loader, test_loader, task='Classification'):
             del feats
             del labels
             del loss
-        if epoch%2==0:
+        if epoch % 2 == 0:
             PATH = "saved_model/cnn_epoch{}.pt".format(epoch)
             torch.save(model.state_dict(), PATH)
 
@@ -168,24 +172,29 @@ def test_verify(model, test_loader):
 
 if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print("device: ",device)
+    print("device: ", device)
+    # TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/train_data/medium'
+    TRAIN_PATH = 'dataset/train_data/medium'
 
-    img_list, label_list, class_n = parse_data('data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/train_data/medium')
+    # VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium/'
+    VAL_PATH = 'dataset/validation_classification/medium/'
+
+    img_list, label_list, class_n = parse_data(TRAIN_PATH)
     trainset = ImageDataset(img_list, label_list)
     train_data_item, train_data_label = trainset.__getitem__(0)
     print('data item shape: {}\t data item label: {}'.format(train_data_item.shape, train_data_label))
     dataloader = DataLoader(trainset, batch_size=10, shuffle=True, num_workers=1, drop_last=False)
-    imageFolder_dataset = torchvision.datasets.ImageFolder(root='data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/train_data/medium/',
+    imageFolder_dataset = torchvision.datasets.ImageFolder(root=TRAIN_PATH,
                                                            transform=torchvision.transforms.ToTensor())
     imageFolder_dataloader = DataLoader(imageFolder_dataset, batch_size=10, shuffle=True, num_workers=1)
     print(imageFolder_dataset.__len__(), len(imageFolder_dataset.classes))
 
-    train_dataset = torchvision.datasets.ImageFolder(root='data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/train_data/medium/',
+    train_dataset = torchvision.datasets.ImageFolder(root=TRAIN_PATH,
                                                      transform=torchvision.transforms.ToTensor())
     train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=10,
                                                    shuffle=True, num_workers=8)
 
-    dev_dataset = torchvision.datasets.ImageFolder(root='data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium/',
+    dev_dataset = torchvision.datasets.ImageFolder(root=VAL_PATH,
                                                    transform=torchvision.transforms.ToTensor())
     dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=10,
                                                  shuffle=True, num_workers=8)
