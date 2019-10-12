@@ -176,8 +176,8 @@ def init_weights(m):
 #     return np.mean(test_loss), accuracy / total
 
 
-# def test_verify(model, test_loader):
-#     raise NotImplementedError
+def test_verify(model, test_loader):
+    raise NotImplementedError
 
 
 
@@ -225,7 +225,8 @@ class CenterLoss(nn.Module):
 
 def train_closs(model, data_loader, test_loader, task='Classification'):
     model.train()
-
+    PATH = "saved_models/cnn_epoch{}.pt".format('test')
+    torch.save(model.state_dict(), PATH)
     for epoch in range(NUM_EPOCHS):
         avg_loss = 0.0
         for batch_num, (feats, labels) in enumerate(data_loader):
@@ -254,6 +255,8 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
                 print('Epoch: {}\tBatch: {}\tAvg-Loss: {:.4f}'.format(epoch + 1, batch_num + 1, avg_loss / 50))
                 avg_loss = 0.0
 
+            PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
+            torch.save(model.state_dict(), PATH)
             torch.cuda.empty_cache()
             del feats
             del labels
@@ -264,9 +267,9 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
             train_loss, train_acc = test_classify_closs(model, data_loader)
             print('Train Loss: {:.4f}\tTrain Accuracy: {:.4f}\tVal Loss: {:.4f}\tVal Accuracy: {:.4f}'.
                   format(train_loss, train_acc, val_loss, val_acc))
+
         else:
             test_verify(model, test_loader)
-
 
 def test_classify_closs(model, test_loader):
     model.eval()
