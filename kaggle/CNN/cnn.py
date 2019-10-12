@@ -5,6 +5,7 @@ import torch
 import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 
 
@@ -106,7 +107,7 @@ def init_weights(m):
 def train(model, data_loader, test_loader, task='Classification'):
     model.train()
 
-    for epoch in range(numEpochs):
+    for epoch in range(NUM_EPOCHS):
         avg_loss = 0.0
         for batch_num, (feats, labels) in enumerate(data_loader):
             feats, labels = feats.to(device), labels.to(device)
@@ -200,20 +201,21 @@ if __name__ == '__main__':
                                                    transform=torchvision.transforms.ToTensor())
     dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=10,
                                                  shuffle=True, num_workers=8)
-    numEpochs = 4
-    num_feats = 3
+    NUM_EPOCHS = 4
+    NUM_FEATS = 3
 
-    learningRate = 1e-2
-    weightDecay = 5e-5
+    LEARNING_RATE = 1e-2
+    WEIGHT_DECAY = 5e-5
 
-    hidden_sizes = [32, 64]
-    num_classes = len(train_dataset.classes)
+    HIDDEN_SIZE = [32, 64]
+    NUM_CLASSES = len(train_dataset.classes)
 
-    network = Network(num_feats, hidden_sizes, num_classes)
+    network = Network(NUM_FEATS, HIDDEN_SIZE, NUM_CLASSES)
     network.apply(init_weights)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(network.parameters(), lr=learningRate, weight_decay=weightDecay, momentum=0.9)
+    optimizer = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.9)
+    optimizer = optim.Adam(network.parameters(), lr=LEARNING_RATE)
     network.train()
     network.to(device)
     train(network, train_dataloader, dev_dataloader)
