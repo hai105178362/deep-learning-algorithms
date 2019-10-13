@@ -9,13 +9,7 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 import sys
 
-NUM_EPOCHS = 1
-NUM_FEATS = 3
 
-LEARNING_RATE = 1e-2
-WEIGHT_DECAY = 5e-5
-
-HIDDEN_SIZE = [32, 64]
 
 class ImageDataset(Dataset):
     def __init__(self, file_list, target_list):
@@ -299,13 +293,19 @@ def test_classify_closs(model, test_loader):
 
 
 if __name__ == '__main__':
+    NUM_EPOCHS = 10
+    # NUM_FEATS = 3
+    NUM_FEATS = 3
+    LEARNING_RATE = 0.08
+    WEIGHT_DECAY = 5e-5
+    HIDDEN_SIZE = [32, 64]
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print("device: ", device)
     # TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/train_data/medium'
-    TRAIN_PATH = 'dataset/train_data/medium'
+    TRAIN_PATH = 'devset/medium'
 
     # VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium/'
-    VAL_PATH = 'dataset/validation_classification/medium/'
+    VAL_PATH = 'devset/medium_dev'
 
     img_list, label_list, class_n = parse_data(TRAIN_PATH)
     trainset = ImageDataset(img_list, label_list)
@@ -334,7 +334,7 @@ if __name__ == '__main__':
     #
     # criterion = nn.CrossEntropyLoss()
     # optimizer = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.9)
-    # # optimizer = optim.Adam(network.parameters(), lr=LEARNING_RATE)
+    # optimizer = optim.Adam(network.parameters(), lr=LEARNING_RATE)
     # network.train()
     # network.to(device)
     # train(network, train_dataloader, dev_dataloader)
@@ -348,7 +348,10 @@ if __name__ == '__main__':
     criterion_label = nn.CrossEntropyLoss()
     criterion_closs = CenterLoss(NUM_CLASSES, feat_dim, device)
     optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.9)
+    # optimizer_label = torch.optim.Adam(network.parameters(), lr=LEARNING_RATE)
     optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=lr_cent)
+    # optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=lr_cent)
+
     network.train()
     network.to(device)
     train_closs(network, train_dataloader, dev_dataloader)
