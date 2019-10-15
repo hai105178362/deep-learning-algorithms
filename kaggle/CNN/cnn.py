@@ -42,8 +42,6 @@ def parse_data(datadir):
     img_list = []
     ID_list = []
     for root, directories, filenames in os.walk(datadir):
-        print(root,directories,filenames)
-        sys.exit(1)
         for filename in sorted(filenames):
             if filename.endswith('.jpg'):
                 filei = os.path.join(root, filename)
@@ -53,7 +51,6 @@ def parse_data(datadir):
     # construct a dictionary, where key and value correspond to ID and target
     uniqueID_list = list(set(ID_list))
     # print(img_list)
-    sys.exit(1)
     class_n = len(uniqueID_list)
     target_dict = dict(zip(uniqueID_list, range(class_n)))
     label_list = [target_dict[ID_key] for ID_key in ID_list]
