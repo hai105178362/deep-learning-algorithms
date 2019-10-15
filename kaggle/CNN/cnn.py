@@ -11,7 +11,7 @@ import sys
 import time
 import datetime
 
-NUM_EPOCHS = 10
+NUM_EPOCHS = 20
 NUM_FEATS = 3
 # NUM_FEATS = 10
 LEARNING_RATE = 0.002
