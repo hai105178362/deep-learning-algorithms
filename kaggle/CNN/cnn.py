@@ -236,11 +236,6 @@ def test_classify_closs(model, test_loader):
 
         _, pred_labels = torch.max(F.softmax(outputs, dim=1), 1)
         pred_labels = pred_labels.view(-1)
-        for i in range(len(pred_labels)):
-            print(pred_labels[i].numpy())
-            print(pred_labels[i], "to", train_dataset.classes.index(str(pred_labels[i])))
-            pred_labels[i] = train_dataset.classes.index(str(pred_labels[i]))
-            sys.exit(1)
         # print("Labels \n",labels)
         # print("Preds \n",pred_labels)
 
@@ -249,6 +244,7 @@ def test_classify_closs(model, test_loader):
         loss = l_loss + CLOSS_WEIGHT * c_loss
 
         accuracy += torch.sum(torch.eq(pred_labels, labels)).item()
+        print(pred_labels,labels)
         total += len(labels)
         test_loss.extend([loss.item()] * feats.size()[0])
         del feats
