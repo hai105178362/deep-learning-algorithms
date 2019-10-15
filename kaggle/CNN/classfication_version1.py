@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 import sys
-from cnn import Network,NUM_FEATS,HIDDEN_SIZE,NUM_CLASSES
+from cnn import Network, NUM_FEATS, HIDDEN_SIZE, NUM_CLASSES
 import csv
 
 
@@ -29,7 +29,8 @@ def parse_data(datadir):
     label_list = [target_dict[ID_key] for ID_key in ID_list]
 
     print('{}\t\t{}\n{}\t\t{}'.format('#Images', '#Labels', len(img_list), len(set(label_list))))
-    return img_list, label_list, class_n
+    return img_list, label_list, class_n, ID_list
+
 
 def get_result(model, test_loader):
     model.eval()
@@ -46,29 +47,29 @@ def get_result(model, test_loader):
     # model.train()
     return pred_labels
 
+
 if __name__ == "__main__":
     print("Testing Procedure")
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print("device is: ", device)
-    # print(NUM_FEATS,NUM_CLASSES,HIDDEN_SIZE)
-    model = Network(num_feats=NUM_FEATS,num_classes=NUM_CLASSES,hidden_sizes=HIDDEN_SIZE)
-    print("Model")
+    model = Network(num_feats=NUM_FEATS, num_classes=NUM_CLASSES, hidden_sizes=HIDDEN_SIZE)
     model.load_state_dict(torch.load('saved_models/cnn_epoch5.pt', map_location=device))
-    VAL_PATH = 'devset/medium_dev'
-    print("Model Loaded")
-    # criterion_label = nn.CrossEntropyLoss()
-    dev_dataset = torchvision.datasets.ImageFolder(root=VAL_PATH,
+    REF_PATH = 'devset/medium_dev'
+    dev_dataset = torchvision.datasets.ImageFolder(root=REF_PATH,
                                                    transform=torchvision.transforms.ToTensor())
-    dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=10,
-                                                 shuffle=True, num_workers=8)
-    final_result = get_result(model,dev_dataloader)
-    print("Predict: ",final_result)
-
+    img_list, label_list, class_n, ID_list = parse_data(REF_PATH)
+    ref_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=10,
+                                                 shuffle=False, num_workers=8)
+    final_result = get_result(model, ref_dataloader)
+    print("Predict: ", final_result)
+    print("Ref:", label_list)
+    print("ID:",ID_list)
+    #
     reflabel = []
-    for batch_num, (feats, labels) in enumerate(dev_dataloader):
+    for batch_num, (feats, labels) in enumerate(ref_dataloader):
         feats, labels = feats.to(device), labels.to(device)
         reflabel.append(labels)
-    print("Dev: ",reflabel)
+    print("Ref from dataloader: ", reflabel)
     # with open('result.csv', mode='w') as csv_file:
     #     fieldnames = ['id', 'label']
     #     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
