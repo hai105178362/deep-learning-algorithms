@@ -236,6 +236,7 @@ def test_classify_closs(model, test_loader):
         _, pred_labels = torch.max(F.softmax(outputs, dim=1), 1)
         pred_labels = pred_labels.view(-1)
         for i in range(len(pred_labels)):
+            print(pred_labels[i])
             print(pred_labels[i], "to", train_dataset.classes.index(str(pred_labels[i])))
             pred_labels[i] = train_dataset.classes.index(str(pred_labels[i]))
             sys.exit(1)
