@@ -10,16 +10,16 @@ from torch.utils.data import Dataset, DataLoader
 import sys
 
 NUM_EPOCHS = 10
-# NUM_FEATS = 3
-NUM_FEATS = 10
-LEARNING_RATE = 0.001
+NUM_FEATS = 3
+# NUM_FEATS = 10
+LEARNING_RATE = 0.01
 WEIGHT_DECAY = 5e-5
 # HIDDEN_SIZE = [32, 64]
 HIDDEN_SIZE = [224,224, 96, 64]
 CLOSS_WEIGHT = 1
 LR_CENT = 0.05
 feat_dim = 10
-FEAT_DIM = 2300
+FEAT_DIM = 1500
 
 class ImageDataset(Dataset):
     def __init__(self, file_list, target_list):
@@ -80,7 +80,7 @@ class BasicBlock(nn.Module):
 
 
 class Network(nn.Module):
-    def __init__(self, num_feats, hidden_sizes, num_classes, feat_dim=FEAT_DIM):
+    def __init__(self, num_feats, hidden_sizes, num_classes, feat_dim):
         super(Network, self).__init__()
 
         self.hidden_sizes = [num_feats] + hidden_sizes + [num_classes]
