@@ -11,17 +11,19 @@ import sys
 import time
 import datetime
 
-
 NUM_EPOCHS = 10
 NUM_FEATS = 3
 # NUM_FEATS = 10
-LEARNING_RATE = 0.002
+LEARNING_RATE = 0.001
 WEIGHT_DECAY = 5e-5
 # HIDDEN_SIZE = [32, 64]
-HIDDEN_SIZE = [32, 28, 14, 7]
+HIDDEN_SIZE = [224, 96, 96, 64]
 CLOSS_WEIGHT = 1
-LR_CENT = 0.5
-FEAT_DIM = 30
+LR_CENT = 0.2
+FEAT_DIM = 2300
+all_spec = "NUM_EPOCH:{}   NUM_FEATS:{}   LR:{}   WEIGHT_DECAY:{}\nHIDDEN_SIZE:{}   LR_CENT:{}   FEAT_DIM:{}\n".format(NUM_EPOCHS, NUM_FEATS \
+                                                                                                                     , LEARNING_RATE, WEIGHT_DECAY, HIDDEN_SIZE \
+                                                                                                                     , LR_CENT, FEAT_DIM)
 
 
 class ImageDataset(Dataset):
@@ -67,11 +69,11 @@ class BasicBlock(nn.Module):
         super(BasicBlock, self).__init__()
         self.conv1 = nn.Conv2d(channel_size, channel_size, kernel_size=3, stride=stride, padding=1, bias=False)
         # self.bn1 = nn.BatchNorm2d(channel_size)
-        self.dropout1 = nn.Dropout2d(0.3)
+        self.dropout1 = nn.Dropout2d(0.5)
         self.relu = nn.ReLU(inplace=True)
         self.shortcut = nn.Conv2d(channel_size, channel_size, kernel_size=1, stride=stride, bias=False)
         # self.bn2 = nn.BatchNorm2d(channel_size)
-        self.dropout2 = nn.Dropout2d(0.3)
+        self.dropout2 = nn.Dropout2d(0.5)
 
     def forward(self, x):
         out = F.relu(self.dropout1(self.conv1(x)))
@@ -210,7 +212,7 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
             del labels
             del loss
         end_time = time.time()
-        print("Epoch {} trained for {} seconds".format(epoch,end_time-start_time))
+        print("Epoch {} trained for {} seconds".format(epoch, end_time - start_time))
 
         if task == 'Classification':
             start_time = time.time()
@@ -228,8 +230,11 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
                 print("==========================================================================")
                 print("Model Saved with train accuracy {:.5f} and val accuracy {:.5f} at epoch {}".format(train_acc, val_acc, epoch))
                 print("==========================================================================")
+                cnn_tmplogger = open("cnn_trace.txt", "a")
+                cnn_tmplogger.write("Model Saved with train accuracy {:.5f} and val accuracy {:.5f} at epoch {}\n".format(train_acc, val_acc, epoch))
+                cnn_tmplogger.close()
             end_time = time.time()
-            print("Time took for calculate loss:{}".format(end_time-start_time))
+            print("Time took for calculate loss:{}".format(end_time - start_time))
         else:
             test_verify(model, test_loader)
 
@@ -262,15 +267,15 @@ def test_classify_closs(model, test_loader):
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print("device: ", device)
 # TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/train_data/medium'
-# TRAIN_PATH = 'devset/medium'
+TRAIN_PATH = 'devset/medium'
 # TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
 # TRAIN_PATH = 'dataset/validation_classification/medium'
-TRAIN_PATH = 'dataset/train_data/medium'
+# TRAIN_PATH = 'dataset/train_data/medium'
 
 # VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium/'
-# VAL_PATH = 'devset/medium_dev'
+VAL_PATH = 'devset/medium_dev'
 # VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
-VAL_PATH = 'dataset/validation_classification/medium'
+# VAL_PATH = 'dataset/validation_classification/medium'
 
 img_list, label_list, class_n = parse_data(TRAIN_PATH)
 trainset = ImageDataset(img_list, label_list)
@@ -303,6 +308,13 @@ NUM_CLASSES = len(train_dataset.classes)
 # print(train_dataset.classes.index(str(10)))
 
 if __name__ == "__main__":
+    cnn_logger = open("cnn_trace.txt", "a")
+    timeinfo = datetime.datetime.today()
+    print(timeinfo)
+    cnn_logger.write(str(timeinfo) + '\n')
+    cnn_logger.write("==================\n{}".format(all_spec))
+    cnn_logger.close()
+
     network = Network(NUM_FEATS, HIDDEN_SIZE, NUM_CLASSES, FEAT_DIM)
     network.apply(init_weights)
 
