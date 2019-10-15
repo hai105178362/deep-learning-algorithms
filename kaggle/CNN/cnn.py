@@ -12,8 +12,8 @@ import time
 import datetime
 
 NUM_EPOCHS = 20
-NUM_FEATS = 3
-# NUM_FEATS = 10
+# NUM_FEATS = 3
+NUM_FEATS = 10
 LEARNING_RATE = 0.001
 WEIGHT_DECAY = 5e-5
 # HIDDEN_SIZE = [32, 64]
