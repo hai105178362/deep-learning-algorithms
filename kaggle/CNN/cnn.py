@@ -232,6 +232,7 @@ def test_classify_closs(model, test_loader):
     for batch_num, (feats, labels) in enumerate(test_loader):
         feats, labels = feats.to(device), labels.to(device)
         feature, outputs = model(feats)
+        print(labels)
 
         _, pred_labels = torch.max(F.softmax(outputs, dim=1), 1)
         pred_labels = pred_labels.view(-1)
