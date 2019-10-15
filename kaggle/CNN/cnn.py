@@ -14,10 +14,10 @@ import datetime
 NUM_EPOCHS = 20
 NUM_FEATS = 3
 # NUM_FEATS = 10
-LEARNING_RATE = 0.002
+LEARNING_RATE = 0.001
 WEIGHT_DECAY = 5e-5
 # HIDDEN_SIZE = [32, 64]
-HIDDEN_SIZE = [224, 224, 96, 64]
+HIDDEN_SIZE = [224, 96, 64, 32]
 CLOSS_WEIGHT = 1
 LR_CENT = 0.2
 FEAT_DIM = 2300
@@ -283,7 +283,7 @@ train_data_item, train_data_label = trainset.__getitem__(0)
 # print(train_data_item,train_data_label)
 print('data item shape: {}\t data item label: {}'.format(train_data_item.shape, train_data_label))
 
-dataloader = DataLoader(trainset, batch_size=10, shuffle=True, num_workers=1, drop_last=False)
+# dataloader = DataLoader(trainset, batch_size=10, shuffle=True, num_workers=1, drop_last=False)
 # imageFolder_dataset = torchvision.datasets.ImageFolder(root=TRAIN_PATH,
 #                                                        transform=torchvision.transforms.ToTensor())
 # imageFolder_dataloader = DataLoader(imageFolder_dataset, batch_size=10, shuffle=True, num_workers=1)
@@ -291,12 +291,12 @@ dataloader = DataLoader(trainset, batch_size=10, shuffle=True, num_workers=1, dr
 
 train_dataset = torchvision.datasets.ImageFolder(root=TRAIN_PATH,
                                                  transform=torchvision.transforms.ToTensor())
-train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=128,
+train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=100,
                                                shuffle=True, num_workers=8)
 
 dev_dataset = torchvision.datasets.ImageFolder(root=VAL_PATH,
                                                transform=torchvision.transforms.ToTensor())
-dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=128,
+dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=100,
                                              shuffle=True, num_workers=8)
 
 NUM_CLASSES = len(train_dataset.classes)
@@ -320,10 +320,10 @@ if __name__ == "__main__":
 
     criterion_label = nn.CrossEntropyLoss()
     criterion_closs = CenterLoss(NUM_CLASSES, FEAT_DIM, device)
-    # optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.9)
-    optimizer_label = torch.optim.Adam(network.parameters(), lr=LEARNING_RATE)
-    # optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=LR_CENT)
-    optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=LEARNING_RATE)
+    optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.9)
+    # optimizer_label = torch.optim.Adam(network.parameters(), lr=LEARNING_RATE)
+    optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=LR_CENT)
+    # optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=LEARNING_RATE)
 
     network.train()
     network.to(device)
