@@ -14,16 +14,16 @@ import datetime
 NUM_EPOCHS = 10
 NUM_FEATS = 3
 # NUM_FEATS = 10
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.002
 WEIGHT_DECAY = 5e-5
 # HIDDEN_SIZE = [32, 64]
-HIDDEN_SIZE = [224, 96, 96, 64]
+HIDDEN_SIZE = [224, 224, 96, 64]
 CLOSS_WEIGHT = 1
 LR_CENT = 0.2
 FEAT_DIM = 2300
 all_spec = "NUM_EPOCH:{}   NUM_FEATS:{}   LR:{}   WEIGHT_DECAY:{}\nHIDDEN_SIZE:{}   LR_CENT:{}   FEAT_DIM:{}\n".format(NUM_EPOCHS, NUM_FEATS \
-                                                                                                                     , LEARNING_RATE, WEIGHT_DECAY, HIDDEN_SIZE \
-                                                                                                                     , LR_CENT, FEAT_DIM)
+                                                                                                                       , LEARNING_RATE, WEIGHT_DECAY, HIDDEN_SIZE \
+                                                                                                                       , LR_CENT, FEAT_DIM)
 
 
 class ImageDataset(Dataset):
@@ -68,18 +68,18 @@ class BasicBlock(nn.Module):
     def __init__(self, channel_size, stride=1):
         super(BasicBlock, self).__init__()
         self.conv1 = nn.Conv2d(channel_size, channel_size, kernel_size=3, stride=stride, padding=1, bias=False)
-        # self.bn1 = nn.BatchNorm2d(channel_size)
+        self.bn1 = nn.BatchNorm2d(channel_size)
         self.dropout1 = nn.Dropout2d(0.5)
         self.relu = nn.ReLU(inplace=True)
         self.shortcut = nn.Conv2d(channel_size, channel_size, kernel_size=1, stride=stride, bias=False)
-        # self.bn2 = nn.BatchNorm2d(channel_size)
+        self.bn2 = nn.BatchNorm2d(channel_size)
         self.dropout2 = nn.Dropout2d(0.5)
 
     def forward(self, x):
-        out = F.relu(self.dropout1(self.conv1(x)))
-        # out = F.relu(self.bn1(self.conv1(x)))
-        out = self.dropout2(self.conv1(out))
-        # out = self.bn1(self.conv1(out))
+        # out = F.relu(self.dropout1(self.conv1(x)))
+        out = F.relu(self.bn1(self.conv1(x)))
+        # out = self.dropout2(self.conv1(out))
+        out = self.bn1(self.conv1(out))
         out += self.shortcut(x)
         out = F.relu(out)
         return out
@@ -183,18 +183,13 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
         avg_loss = 0.0
         for batch_num, (feats, labels) in enumerate(data_loader):
             feats, labels = feats.to(device), labels.to(device)
-
             optimizer_label.zero_grad()
             optimizer_closs.zero_grad()
-
             feature, outputs = model(feats)
-
             l_loss = criterion_label(outputs, labels.long())
             c_loss = criterion_closs(feature, labels.long())
             loss = l_loss + CLOSS_WEIGHT * c_loss
-
             loss.backward()
-
             optimizer_label.step()
             # by doing so, weight_cent would not impact on the learning of centers
             for param in criterion_closs.parameters():
@@ -203,7 +198,7 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
 
             avg_loss += loss.item()
 
-            if batch_num % 50 == 49:
+            if batch_num % 10 == 9:
                 print('Epoch: {}\tBatch: {}\tAvg-Loss: {:.4f}'.format(epoch + 1, batch_num + 1, avg_loss / 50))
                 avg_loss = 0.0
 
@@ -212,7 +207,7 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
             del labels
             del loss
         end_time = time.time()
-        print("Epoch {} trained for {} seconds".format(epoch, end_time - start_time))
+        print("Epoch {} trained for {} seconds".format(epoch+1, end_time - start_time))
 
         if task == 'Classification':
             start_time = time.time()
@@ -222,17 +217,22 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
                   format(train_loss, train_acc, val_loss, val_acc))
             # PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
             # torch.save(model.state_dict(), PATH)
+            d = datetime.datetime.today()
+            record = "{}-{}-{}-e{}".format(d.day, d.hour, d.minute, epoch)
+            PATH = "saved_models/{}.pt".format(record)
+            print("==========================================================================")
+            print("Train Accuracy {:.5f} \nValidation Accuracy {:.5f} at Epoch {}\n".format(train_acc, val_acc, epoch + 1))
+            print("==========================================================================")
+            cnn_tmplogger = open("cnn_trace.txt", "a")
+            cnn_tmplogger.write("==========================================================================")
+            cnn_tmplogger.write("Train Accuracy {:.5f} \nValidation Accuracy {:.5f} at Epoch {}\n".format(train_acc, val_acc, epoch + 1))
             if train_acc >= 0.4 or val_acc >= 0.4:
-                d = datetime.datetime.today()
-                record = "{}-{}-{}-e{}".format(d.day, d.hour, d.minute, epoch)
-                PATH = "saved_models/{}.pt".format(record)
                 torch.save(model.state_dict(), PATH)
-                print("==========================================================================")
-                print("Model Saved with train accuracy {:.5f} and val accuracy {:.5f} at epoch {}".format(train_acc, val_acc, epoch))
-                print("==========================================================================")
-                cnn_tmplogger = open("cnn_trace.txt", "a")
-                cnn_tmplogger.write("Model Saved with train accuracy {:.5f} and val accuracy {:.5f} at epoch {}\n".format(train_acc, val_acc, epoch))
-                cnn_tmplogger.close()
+                cnn_tmplogger.write("Model Saved\n")
+                print("Model Saved")
+            cnn_tmplogger.write("==========================================================================")
+            cnn_tmplogger.close()
+
             end_time = time.time()
             print("Time took for calculate loss:{}".format(end_time - start_time))
         else:
@@ -267,15 +267,15 @@ def test_classify_closs(model, test_loader):
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print("device: ", device)
 # TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/train_data/medium'
-# TRAIN_PATH = 'devset/medium'
+TRAIN_PATH = 'devset/medium'
 # TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
 # TRAIN_PATH = 'dataset/validation_classification/medium'
-TRAIN_PATH = 'dataset/train_data/medium'
+# TRAIN_PATH = 'dataset/train_data/medium'
 
 # VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium/'
-# VAL_PATH = 'devset/medium_dev'
+VAL_PATH = 'devset/medium_dev'
 # VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
-VAL_PATH = 'dataset/validation_classification/medium'
+# VAL_PATH = 'dataset/validation_classification/medium'
 
 img_list, label_list, class_n = parse_data(TRAIN_PATH)
 trainset = ImageDataset(img_list, label_list)
@@ -291,12 +291,12 @@ dataloader = DataLoader(trainset, batch_size=10, shuffle=True, num_workers=1, dr
 
 train_dataset = torchvision.datasets.ImageFolder(root=TRAIN_PATH,
                                                  transform=torchvision.transforms.ToTensor())
-train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=10,
+train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=100,
                                                shuffle=True, num_workers=8)
 
 dev_dataset = torchvision.datasets.ImageFolder(root=VAL_PATH,
                                                transform=torchvision.transforms.ToTensor())
-dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=10,
+dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=100,
                                              shuffle=True, num_workers=8)
 
 NUM_CLASSES = len(train_dataset.classes)
