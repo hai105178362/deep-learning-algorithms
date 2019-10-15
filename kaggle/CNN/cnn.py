@@ -284,6 +284,8 @@ dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=10,
                                              shuffle=True, num_workers=8)
 
 NUM_CLASSES = len(train_dataset.classes)
+print(train_dataset.classes)
+sys.exit(1)
 
 
 if __name__ == "__main__":
