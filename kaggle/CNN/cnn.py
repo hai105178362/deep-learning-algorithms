@@ -198,7 +198,7 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
 
             avg_loss += loss.item()
 
-            if batch_num % 50 == 49:
+            if batch_num % 10 == 9:
                 print('Epoch: {}\tBatch: {}\tAvg-Loss: {:.4f}'.format(epoch + 1, (batch_num + 1), avg_loss / 50))
                 avg_loss = 0.0
 
@@ -267,15 +267,15 @@ def test_classify_closs(model, test_loader):
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print("device: ", device)
 # TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/train_data/medium'
-# TRAIN_PATH = 'devset/medium'
+TRAIN_PATH = 'devset/medium'
 # TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
 # TRAIN_PATH = 'dataset/validation_classification/medium'
-TRAIN_PATH = 'dataset/train_data/medium'
+# TRAIN_PATH = 'dataset/train_data/medium'
 
 # VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium/'
-# VAL_PATH = 'devset/medium_dev'
+VAL_PATH = 'devset/medium_dev'
 # VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
-VAL_PATH = 'dataset/validation_classification/medium'
+# VAL_PATH = 'dataset/validation_classification/medium'
 
 img_list, label_list, class_n = parse_data(TRAIN_PATH)
 trainset = ImageDataset(img_list, label_list)
@@ -291,12 +291,12 @@ dataloader = DataLoader(trainset, batch_size=10, shuffle=True, num_workers=1, dr
 
 train_dataset = torchvision.datasets.ImageFolder(root=TRAIN_PATH,
                                                  transform=torchvision.transforms.ToTensor())
-train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=1024,
+train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=128,
                                                shuffle=True, num_workers=8)
 
 dev_dataset = torchvision.datasets.ImageFolder(root=VAL_PATH,
                                                transform=torchvision.transforms.ToTensor())
-dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=1024,
+dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=128,
                                              shuffle=True, num_workers=8)
 
 NUM_CLASSES = len(train_dataset.classes)
