@@ -12,14 +12,13 @@ import sys
 NUM_EPOCHS = 10
 NUM_FEATS = 3
 # NUM_FEATS = 10
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.002
 WEIGHT_DECAY = 5e-5
 # HIDDEN_SIZE = [32, 64]
 HIDDEN_SIZE = [224, 224, 96, 64]
 CLOSS_WEIGHT = 1
 LR_CENT = 0.5
-feat_dim = 30
-FEAT_DIM = 10
+FEAT_DIM = 30
 
 
 class ImageDataset(Dataset):
@@ -298,7 +297,7 @@ if __name__ == "__main__":
 
     criterion_label = nn.CrossEntropyLoss()
     criterion_closs = CenterLoss(NUM_CLASSES, FEAT_DIM, device)
-    optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.5)
+    optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.9)
     # optimizer_label = torch.optim.Adam(network.parameters(), lr=LEARNING_RATE)
     optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=LR_CENT)
     # optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=LR_CENT)
