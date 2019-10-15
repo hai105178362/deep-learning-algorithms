@@ -268,10 +268,10 @@ trainset = ImageDataset(img_list, label_list)
 train_data_item, train_data_label = trainset.__getitem__(0)
 print('data item shape: {}\t data item label: {}'.format(train_data_item.shape, train_data_label))
 dataloader = DataLoader(trainset, batch_size=10, shuffle=True, num_workers=1, drop_last=False)
-imageFolder_dataset = torchvision.datasets.ImageFolder(root=TRAIN_PATH,
-                                                       transform=torchvision.transforms.ToTensor())
-imageFolder_dataloader = DataLoader(imageFolder_dataset, batch_size=10, shuffle=True, num_workers=1)
-print(imageFolder_dataset.__len__(), len(imageFolder_dataset.classes))
+# imageFolder_dataset = torchvision.datasets.ImageFolder(root=TRAIN_PATH,
+#                                                        transform=torchvision.transforms.ToTensor())
+# imageFolder_dataloader = DataLoader(imageFolder_dataset, batch_size=10, shuffle=True, num_workers=1)
+# print(imageFolder_dataset.__len__(), len(imageFolder_dataset.classes))
 
 train_dataset = torchvision.datasets.ImageFolder(root=TRAIN_PATH,
                                                  transform=torchvision.transforms.ToTensor())
@@ -285,6 +285,7 @@ dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=10,
 
 NUM_CLASSES = len(train_dataset.classes)
 print(train_dataset.classes)
+print(NUM_CLASSES)
 sys.exit(1)
 
 
