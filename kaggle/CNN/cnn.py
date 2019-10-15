@@ -9,6 +9,8 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 import sys
 import time
+import datetime
+
 
 NUM_EPOCHS = 10
 NUM_FEATS = 3
@@ -16,7 +18,7 @@ NUM_FEATS = 3
 LEARNING_RATE = 0.002
 WEIGHT_DECAY = 5e-5
 # HIDDEN_SIZE = [32, 64]
-HIDDEN_SIZE = [224, 224, 96, 64]
+HIDDEN_SIZE = [32, 28, 14, 7]
 CLOSS_WEIGHT = 1
 LR_CENT = 0.5
 FEAT_DIM = 30
@@ -207,22 +209,27 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
             del feats
             del labels
             del loss
-        endtime = time.time()
-        print("Epoch {} trained for {} seconds".format(epoch,endtime-start_time))
+        end_time = time.time()
+        print("Epoch {} trained for {} seconds".format(epoch,end_time-start_time))
 
         if task == 'Classification':
+            start_time = time.time()
             val_loss, val_acc = test_classify_closs(model, test_loader)
             train_loss, train_acc = test_classify_closs(model, data_loader)
             print('Train Loss: {:.4f}\tTrain Accuracy: {:.4f}\tVal Loss: {:.4f}\tVal Accuracy: {:.4f}'.
                   format(train_loss, train_acc, val_loss, val_acc))
             # PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
             # torch.save(model.state_dict(), PATH)
-            if train_acc >= 0.5 or val_acc >= 0.5:
-                PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
+            if train_acc >= 0.4 or val_acc >= 0.4:
+                d = datetime.datetime.today()
+                record = "{}-{}-{}-e{}".format(d.day, d.hour, d.minute, epoch)
+                PATH = "saved_models/{}.pt".format(record)
                 torch.save(model.state_dict(), PATH)
                 print("==========================================================================")
                 print("Model Saved with train accuracy {:.5f} and val accuracy {:.5f} at epoch {}".format(train_acc, val_acc, epoch))
                 print("==========================================================================")
+            end_time = time.time()
+            print("Time took for calculate loss:{}".format(end_time-start_time))
         else:
             test_verify(model, test_loader)
 
@@ -301,10 +308,10 @@ if __name__ == "__main__":
 
     criterion_label = nn.CrossEntropyLoss()
     criterion_closs = CenterLoss(NUM_CLASSES, FEAT_DIM, device)
-    optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.9)
-    # optimizer_label = torch.optim.Adam(network.parameters(), lr=LEARNING_RATE)
-    optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=LR_CENT)
-    # optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=LR_CENT)
+    # optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.9)
+    optimizer_label = torch.optim.Adam(network.parameters(), lr=LEARNING_RATE)
+    # optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=LR_CENT)
+    optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=LR_CENT)
 
     network.train()
     network.to(device)
