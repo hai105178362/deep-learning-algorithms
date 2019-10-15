@@ -11,13 +11,13 @@ import sys
 
 NUM_EPOCHS = 10
 # NUM_FEATS = 3
-NUM_FEATS = 3
+NUM_FEATS = 10
 LEARNING_RATE = 0.001
 WEIGHT_DECAY = 5e-5
 # HIDDEN_SIZE = [32, 64]
-HIDDEN_SIZE = [224, 224, 96, 64]
+HIDDEN_SIZE = [224, 96, 64]
 CLOSS_WEIGHT = 1
-LR_CENT = 0.5
+LR_CENT = 0.2
 # feat_dim = 10
 FEAT_DIM = 2300
 
@@ -63,11 +63,11 @@ class BasicBlock(nn.Module):
         super(BasicBlock, self).__init__()
         self.conv1 = nn.Conv2d(channel_size, channel_size, kernel_size=3, stride=stride, padding=1, bias=False)
         # self.bn1 = nn.BatchNorm2d(channel_size)
-        self.dropout1 = nn.Dropout2d(0.5)
+        self.dropout1 = nn.Dropout2d(0.3)
         self.relu = nn.ReLU(inplace=True)
         self.shortcut = nn.Conv2d(channel_size, channel_size, kernel_size=1, stride=stride, bias=False)
         # self.bn2 = nn.BatchNorm2d(channel_size)
-        self.dropout2 = nn.Dropout2d(0.5)
+        self.dropout2 = nn.Dropout2d(0.3)
 
     def forward(self, x):
         out = F.relu(self.dropout1(self.conv1(x)))
@@ -234,8 +234,8 @@ def test_classify_closs(model, test_loader):
 
         _, pred_labels = torch.max(F.softmax(outputs, dim=1), 1)
         pred_labels = pred_labels.view(-1)
-        print("Labels \n",labels)
-        print("Preds \n",pred_labels)
+        # print("Labels \n",labels)
+        # print("Preds \n",pred_labels)
 
         l_loss = criterion_label(outputs, labels.long())
         c_loss = criterion_closs(feature, labels.long())
@@ -296,7 +296,7 @@ if __name__ == "__main__":
     criterion_closs = CenterLoss(NUM_CLASSES, FEAT_DIM, device)
     optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.9)
     # optimizer_label = torch.optim.Adam(network.parameters(), lr=LEARNING_RATE)
-    optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=LR_CENT)
+    optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=LEARNING_RATE)
     # optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=LR_CENT)
 
     network.train()
