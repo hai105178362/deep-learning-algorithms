@@ -199,7 +199,7 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
             avg_loss += loss.item()
 
             if batch_num % 50 == 49:
-                print('Epoch: {}\tBatch: {}\tAvg-Loss: {:.4f}'.format(epoch + 1, (batch_num + 1)*128, avg_loss / 50))
+                print('Epoch: {}\tBatch: {}\tAvg-Loss: {:.4f}'.format(epoch + 1, (batch_num + 1), avg_loss / 50))
                 avg_loss = 0.0
 
             torch.cuda.empty_cache()
@@ -291,12 +291,12 @@ dataloader = DataLoader(trainset, batch_size=10, shuffle=True, num_workers=1, dr
 
 train_dataset = torchvision.datasets.ImageFolder(root=TRAIN_PATH,
                                                  transform=torchvision.transforms.ToTensor())
-train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=128,
+train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=1024,
                                                shuffle=True, num_workers=8)
 
 dev_dataset = torchvision.datasets.ImageFolder(root=VAL_PATH,
                                                transform=torchvision.transforms.ToTensor())
-dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=128,
+dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=1024,
                                              shuffle=True, num_workers=8)
 
 NUM_CLASSES = len(train_dataset.classes)
