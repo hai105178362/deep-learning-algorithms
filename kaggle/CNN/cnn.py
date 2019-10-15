@@ -232,14 +232,8 @@ def test_classify_closs(model, test_loader):
     for batch_num, (feats, labels) in enumerate(test_loader):
         feats, labels = feats.to(device), labels.to(device)
         feature, outputs = model(feats)
-        # print(labels)
-
         _, pred_labels = torch.max(F.softmax(outputs, dim=1), 1)
         pred_labels = pred_labels.view(-1)
-        # print(pred_labels)
-        # pred_arr = (pred_labels.data.cpu().numpy())
-        # ref_arr = (labels.data.cpu().numpy())
-        # for i in
         l_loss = criterion_label(outputs, labels.long())
         c_loss = criterion_closs(feature, labels.long())
         loss = l_loss + CLOSS_WEIGHT * c_loss
@@ -288,11 +282,11 @@ dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=10,
 
 NUM_CLASSES = len(train_dataset.classes)
 
-print(train_dataset.classes)
-print(dev_dataset.classes)
+# print(train_dataset.classes)
+# print(dev_dataset.classes)
 # print(NUM_CLASSES)
 # print(train_dataset.classes.index(str(10)))
-sys.exit(1)
+# sys.exit(1)
 
 if __name__ == "__main__":
     network = Network(NUM_FEATS, HIDDEN_SIZE, NUM_CLASSES, FEAT_DIM)
