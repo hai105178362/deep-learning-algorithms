@@ -15,11 +15,12 @@ NUM_FEATS = 3
 LEARNING_RATE = 0.01
 WEIGHT_DECAY = 5e-5
 # HIDDEN_SIZE = [32, 64]
-HIDDEN_SIZE = [224,224, 96, 64]
+HIDDEN_SIZE = [224, 224, 96, 64]
 CLOSS_WEIGHT = 1
 LR_CENT = 0.5
 feat_dim = 30
 FEAT_DIM = 1500
+
 
 class ImageDataset(Dataset):
     def __init__(self, file_list, target_list):
@@ -122,6 +123,8 @@ class Network(nn.Module):
 def init_weights(m):
     if type(m) == nn.Conv2d or type(m) == nn.Linear:
         torch.nn.init.xavier_normal_(m.weight.data)
+
+
 def test_verify(model, test_loader):
     raise NotImplementedError
 
@@ -233,8 +236,8 @@ def test_classify_closs(model, test_loader):
         _, pred_labels = torch.max(F.softmax(outputs, dim=1), 1)
         pred_labels = pred_labels.view(-1)
         for i in range(len(pred_labels)):
-            print(pred_labels[i],train_dataset.classes.index(pred_labels[i]))
-            pred_labels[i] = train_dataset.classes.index(pred_labels[i])
+            print(pred_labels[i], "to", train_dataset.classes.index(str(pred_labels[i])))
+            pred_labels[i] = train_dataset.classes.index(str(pred_labels[i]))
             sys.exit(1)
         # print("Labels \n",labels)
         # print("Preds \n",pred_labels)
@@ -253,19 +256,18 @@ def test_classify_closs(model, test_loader):
     return np.mean(test_loss), accuracy / total
 
 
-
 # if __name__ == '__main__':
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print("device: ", device)
 # TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/train_data/medium'
 # TRAIN_PATH = 'devset/medium'
-# TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
-TRAIN_PATH = 'dataset/validation_classification/medium'
+TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
+# TRAIN_PATH = 'dataset/validation_classification/medium'
 
 # VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium/'
 # VAL_PATH = 'devset/medium_dev'
-# VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
-VAL_PATH = 'dataset/validation_classification/medium'
+VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
+# VAL_PATH = 'dataset/validation_classification/medium'
 
 img_list, label_list, class_n = parse_data(TRAIN_PATH)
 trainset = ImageDataset(img_list, label_list)
@@ -290,8 +292,8 @@ dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=10,
 NUM_CLASSES = len(train_dataset.classes)
 # print(train_dataset.classes)
 # print(NUM_CLASSES)
+# print(train_dataset.classes.index(str(10)))
 # sys.exit(1)
-
 
 if __name__ == "__main__":
     network = Network(NUM_FEATS, HIDDEN_SIZE, NUM_CLASSES, FEAT_DIM)
