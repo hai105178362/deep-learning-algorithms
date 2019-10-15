@@ -1,0 +1,7 @@
+2019-10-15 20:29:56.135594
+==================
+NUM_EPOCH:10   NUM_FEATS:3   LR:0.001   WEIGHT_DECAY:5e-05
+HIDDEN_SIZE:[224, 96, 96, 64]   LR_CENT:0.2   FEAT_DIM:2300
+Model Saved with train accuracy 0.25781 and val accuracy 0.40000 at epoch 0
+Model Saved with train accuracy 0.47644 and val accuracy 0.50000 at epoch 1
+Model Saved with train accuracy 0.57438 and val accuracy 0.70000 at epoch 2
