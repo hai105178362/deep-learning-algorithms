@@ -298,10 +298,10 @@ if __name__ == "__main__":
 
     criterion_label = nn.CrossEntropyLoss()
     criterion_closs = CenterLoss(NUM_CLASSES, FEAT_DIM, device)
-    # optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.5)
-    optimizer_label = torch.optim.Adam(network.parameters(), lr=LEARNING_RATE)
-    # optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=LEARNING_RATE)
-    optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=LR_CENT)
+    optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.5)
+    # optimizer_label = torch.optim.Adam(network.parameters(), lr=LEARNING_RATE)
+    optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=LR_CENT)
+    # optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=LR_CENT)
 
     network.train()
     network.to(device)
