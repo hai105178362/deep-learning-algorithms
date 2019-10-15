@@ -255,11 +255,13 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print("device: ", device)
 # TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/train_data/medium'
 # TRAIN_PATH = 'devset/medium'
-TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
+# TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
+TRAIN_PATH = 'dataset/validation_classification/medium'
 
 # VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium/'
 # VAL_PATH = 'devset/medium_dev'
-VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
+# VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
+VAL_PATH = 'dataset/validation_classification/medium'
 
 img_list, label_list, class_n = parse_data(TRAIN_PATH)
 trainset = ImageDataset(img_list, label_list)
