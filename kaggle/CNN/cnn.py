@@ -311,7 +311,7 @@ if __name__ == "__main__":
     # optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.9)
     optimizer_label = torch.optim.Adam(network.parameters(), lr=LEARNING_RATE)
     # optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=LR_CENT)
-    optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=LR_CENT)
+    optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=LEARNING_RATE)
 
     network.train()
     network.to(device)
