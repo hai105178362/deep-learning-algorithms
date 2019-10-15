@@ -17,8 +17,8 @@ WEIGHT_DECAY = 5e-5
 # HIDDEN_SIZE = [32, 64]
 HIDDEN_SIZE = [224,224, 96, 64]
 CLOSS_WEIGHT = 1
-LR_CENT = 0.05
-feat_dim = 10
+LR_CENT = 0.5
+feat_dim = 30
 FEAT_DIM = 1500
 
 class ImageDataset(Dataset):
