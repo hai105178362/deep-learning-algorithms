@@ -257,7 +257,8 @@ print("device: ", device)
 # TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/train_data/medium'
 # TRAIN_PATH = 'devset/medium'
 # TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
-TRAIN_PATH = 'dataset/validation_classification/medium'
+# TRAIN_PATH = 'dataset/validation_classification/medium'
+TRAIN_PATH = 'dataset/train_data/medium'
 
 # VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium/'
 # VAL_PATH = 'devset/medium_dev'
