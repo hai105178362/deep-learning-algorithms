@@ -12,14 +12,14 @@ import sys
 NUM_EPOCHS = 10
 NUM_FEATS = 3
 # NUM_FEATS = 10
-LEARNING_RATE = 0.01
+LEARNING_RATE = 0.001
 WEIGHT_DECAY = 5e-5
 # HIDDEN_SIZE = [32, 64]
 HIDDEN_SIZE = [224, 224, 96, 64]
 CLOSS_WEIGHT = 1
 LR_CENT = 0.5
 feat_dim = 30
-FEAT_DIM = 1500
+FEAT_DIM = 10
 
 
 class ImageDataset(Dataset):
@@ -42,7 +42,9 @@ def parse_data(datadir):
     img_list = []
     ID_list = []
     for root, directories, filenames in os.walk(datadir):
-        for filename in filenames:
+        print(root,directories,filenames)
+        sys.exit(1)
+        for filename in sorted(filenames):
             if filename.endswith('.jpg'):
                 filei = os.path.join(root, filename)
                 img_list.append(filei)
@@ -50,6 +52,8 @@ def parse_data(datadir):
 
     # construct a dictionary, where key and value correspond to ID and target
     uniqueID_list = list(set(ID_list))
+    # print(img_list)
+    sys.exit(1)
     class_n = len(uniqueID_list)
     target_dict = dict(zip(uniqueID_list, range(class_n)))
     label_list = [target_dict[ID_key] for ID_key in ID_list]
@@ -263,7 +267,9 @@ VAL_PATH = 'dataset/validation_classification/medium'
 img_list, label_list, class_n = parse_data(TRAIN_PATH)
 trainset = ImageDataset(img_list, label_list)
 train_data_item, train_data_label = trainset.__getitem__(0)
+# print(train_data_item,train_data_label)
 print('data item shape: {}\t data item label: {}'.format(train_data_item.shape, train_data_label))
+
 dataloader = DataLoader(trainset, batch_size=10, shuffle=True, num_workers=1, drop_last=False)
 # imageFolder_dataset = torchvision.datasets.ImageFolder(root=TRAIN_PATH,
 #                                                        transform=torchvision.transforms.ToTensor())
@@ -282,11 +288,11 @@ dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=10,
 
 NUM_CLASSES = len(train_dataset.classes)
 
-# print(train_dataset.classes)
+# print(train_dataset.classes[:50])
+# print(label_list[:50])
 # print(dev_dataset.classes)
 # print(NUM_CLASSES)
 # print(train_dataset.classes.index(str(10)))
-# sys.exit(1)
 
 if __name__ == "__main__":
     network = Network(NUM_FEATS, HIDDEN_SIZE, NUM_CLASSES, FEAT_DIM)
@@ -294,10 +300,10 @@ if __name__ == "__main__":
 
     criterion_label = nn.CrossEntropyLoss()
     criterion_closs = CenterLoss(NUM_CLASSES, FEAT_DIM, device)
-    optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.5)
-    # optimizer_label = torch.optim.Adam(network.parameters(), lr=LEARNING_RATE)
-    optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=LEARNING_RATE)
-    # optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=LR_CENT)
+    # optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.5)
+    optimizer_label = torch.optim.Adam(network.parameters(), lr=LEARNING_RATE)
+    # optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=LEARNING_RATE)
+    optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=LR_CENT)
 
     network.train()
     network.to(device)
