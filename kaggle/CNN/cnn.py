@@ -236,6 +236,7 @@ def test_classify_closs(model, test_loader):
 
         _, pred_labels = torch.max(F.softmax(outputs, dim=1), 1)
         pred_labels = pred_labels.view(-1)
+        print(pred_labels)
         print(pred_labels.data.cpu().numpy())
         sys.exit(1)
         l_loss = criterion_label(outputs, labels.long())
