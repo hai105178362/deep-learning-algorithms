@@ -232,19 +232,16 @@ def test_classify_closs(model, test_loader):
     for batch_num, (feats, labels) in enumerate(test_loader):
         feats, labels = feats.to(device), labels.to(device)
         feature, outputs = model(feats)
-        print(labels)
+        # print(labels)
 
         _, pred_labels = torch.max(F.softmax(outputs, dim=1), 1)
         pred_labels = pred_labels.view(-1)
-        # print("Labels \n",labels)
-        # print("Preds \n",pred_labels)
-
+        print(pred_labels.data.cpu().numpy())
+        sys.exit(1)
         l_loss = criterion_label(outputs, labels.long())
         c_loss = criterion_closs(feature, labels.long())
         loss = l_loss + CLOSS_WEIGHT * c_loss
-
         accuracy += torch.sum(torch.eq(pred_labels, labels)).item()
-        print(pred_labels,labels)
         total += len(labels)
         test_loss.extend([loss.item()] * feats.size()[0])
         del feats
