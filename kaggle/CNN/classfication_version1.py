@@ -53,8 +53,8 @@ if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print("device is: ", device)
     model = Network(num_feats=NUM_FEATS, num_classes=NUM_CLASSES, hidden_sizes=HIDDEN_SIZE)
-    model.load_state_dict(torch.load('saved_models/cnn_epoch5.pt', map_location=device))
-    REF_PATH = 'devset/medium_dev'
+    model.load_state_dict(torch.load('saved_models/cnn_epoch6.pt', map_location=device))
+    REF_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
     dev_dataset = torchvision.datasets.ImageFolder(root=REF_PATH,
                                                    transform=torchvision.transforms.ToTensor())
     img_list, label_list, class_n, ID_list = parse_data(REF_PATH)

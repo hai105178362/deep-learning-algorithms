@@ -17,9 +17,9 @@ WEIGHT_DECAY = 5e-5
 # HIDDEN_SIZE = [32, 64]
 HIDDEN_SIZE = [224, 224, 96, 64]
 CLOSS_WEIGHT = 1
-LR_CENT = 0.3
+LR_CENT = 0.5
 # feat_dim = 10
-FEAT_DIM = 500
+FEAT_DIM = 2300
 
 class ImageDataset(Dataset):
     def __init__(self, file_list, target_list):
@@ -63,11 +63,11 @@ class BasicBlock(nn.Module):
         super(BasicBlock, self).__init__()
         self.conv1 = nn.Conv2d(channel_size, channel_size, kernel_size=3, stride=stride, padding=1, bias=False)
         # self.bn1 = nn.BatchNorm2d(channel_size)
-        self.dropout1 = nn.Dropout2d(0.3)
+        self.dropout1 = nn.Dropout2d(0.5)
         self.relu = nn.ReLU(inplace=True)
         self.shortcut = nn.Conv2d(channel_size, channel_size, kernel_size=1, stride=stride, bias=False)
         # self.bn2 = nn.BatchNorm2d(channel_size)
-        self.dropout2 = nn.Dropout2d(0.1)
+        self.dropout2 = nn.Dropout2d(0.5)
 
     def forward(self, x):
         out = F.relu(self.dropout1(self.conv1(x)))
@@ -210,12 +210,14 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
             train_loss, train_acc = test_classify_closs(model, data_loader)
             print('Train Loss: {:.4f}\tTrain Accuracy: {:.4f}\tVal Loss: {:.4f}\tVal Accuracy: {:.4f}'.
                   format(train_loss, train_acc, val_loss, val_acc))
-            if train_acc >= 0.7 or val_acc >= 0.7:
-                PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
-                torch.save(model.state_dict(), PATH)
-                print("==========================================================================")
-                print("Model Saved with train accuracy {:.5f} and val accuracy {:.5f} at epoch {}".format(train_acc, val_acc, epoch))
-                print("==========================================================================")
+            PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
+            torch.save(model.state_dict(), PATH)
+            # if train_acc >= 0.7 or val_acc >= 0.7:
+            #     PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
+            #     torch.save(model.state_dict(), PATH)
+            #     print("==========================================================================")
+            #     print("Model Saved with train accuracy {:.5f} and val accuracy {:.5f} at epoch {}".format(train_acc, val_acc, epoch))
+            #     print("==========================================================================")
         else:
             test_verify(model, test_loader)
 
@@ -252,10 +254,12 @@ def test_classify_closs(model, test_loader):
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print("device: ", device)
 # TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/train_data/medium'
-TRAIN_PATH = 'devset/medium'
+# TRAIN_PATH = 'devset/medium'
+TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
 
 # VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium/'
-VAL_PATH = 'devset/medium_dev'
+# VAL_PATH = 'devset/medium_dev'
+VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
 
 img_list, label_list, class_n = parse_data(TRAIN_PATH)
 trainset = ImageDataset(img_list, label_list)
