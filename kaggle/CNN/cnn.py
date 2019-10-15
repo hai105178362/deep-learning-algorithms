@@ -210,14 +210,14 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
             train_loss, train_acc = test_classify_closs(model, data_loader)
             print('Train Loss: {:.4f}\tTrain Accuracy: {:.4f}\tVal Loss: {:.4f}\tVal Accuracy: {:.4f}'.
                   format(train_loss, train_acc, val_loss, val_acc))
-            PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
-            torch.save(model.state_dict(), PATH)
-            # if train_acc >= 0.7 or val_acc >= 0.7:
-            #     PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
-            #     torch.save(model.state_dict(), PATH)
-            #     print("==========================================================================")
-            #     print("Model Saved with train accuracy {:.5f} and val accuracy {:.5f} at epoch {}".format(train_acc, val_acc, epoch))
-            #     print("==========================================================================")
+            # PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
+            # torch.save(model.state_dict(), PATH)
+            if train_acc >= 0.5 or val_acc >= 0.5:
+                PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
+                torch.save(model.state_dict(), PATH)
+                print("==========================================================================")
+                print("Model Saved with train accuracy {:.5f} and val accuracy {:.5f} at epoch {}".format(train_acc, val_acc, epoch))
+                print("==========================================================================")
         else:
             test_verify(model, test_loader)
 
@@ -234,6 +234,8 @@ def test_classify_closs(model, test_loader):
 
         _, pred_labels = torch.max(F.softmax(outputs, dim=1), 1)
         pred_labels = pred_labels.view(-1)
+        print("Labels \n",labels)
+        print("Preds \n",pred_labels)
 
         l_loss = criterion_label(outputs, labels.long())
         c_loss = criterion_closs(feature, labels.long())
