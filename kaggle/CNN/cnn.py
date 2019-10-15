@@ -8,6 +8,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 import sys
+import time
 
 NUM_EPOCHS = 10
 NUM_FEATS = 3
@@ -174,6 +175,7 @@ class CenterLoss(nn.Module):
 def train_closs(model, data_loader, test_loader, task='Classification'):
     model.train()
     for epoch in range(NUM_EPOCHS):
+        start_time = time.time()
         avg_loss = 0.0
         for batch_num, (feats, labels) in enumerate(data_loader):
             feats, labels = feats.to(device), labels.to(device)
@@ -205,6 +207,8 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
             del feats
             del labels
             del loss
+        endtime = time.time()
+        print("Epoch {} trained for {} seconds".format(epoch,endtime-start_time))
 
         if task == 'Classification':
             val_loss, val_acc = test_classify_closs(model, test_loader)
