@@ -17,9 +17,9 @@ NUM_FEATS = 3
 LEARNING_RATE = 0.001
 WEIGHT_DECAY = 5e-5
 # HIDDEN_SIZE = [32, 64]
-HIDDEN_SIZE = [224, 224, 224]
-CLOSS_WEIGHT = 1
-LR_CENT = 0.02
+HIDDEN_SIZE = [32, 64, 96, 224]
+CLOSS_WEIGHT = 0.3
+LR_CENT = 0.001
 FEAT_DIM = 2300
 all_spec = "NUM_EPOCH:{}   NUM_FEATS:{}   LR:{}   WEIGHT_DECAY:{}\nHIDDEN_SIZE:{}   LR_CENT:{}   FEAT_DIM:{}\n".format(NUM_EPOCHS, NUM_FEATS \
                                                                                                                        , LEARNING_RATE, WEIGHT_DECAY, HIDDEN_SIZE \
@@ -69,19 +69,19 @@ class BasicBlock(nn.Module):
         super(BasicBlock, self).__init__()
         self.conv1 = nn.Conv2d(channel_size, channel_size, kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(channel_size)
-        self.dropout1 = nn.Dropout2d(0.5)
-        self.relu = nn.ReLU(inplace=True)
+        # self.dropout1 = nn.Dropout2d(0.5)
+        self.relu = nn.ReLU6(inplace=True)
         self.shortcut = nn.Conv2d(channel_size, channel_size, kernel_size=1, stride=stride, bias=False)
         self.bn2 = nn.BatchNorm2d(channel_size)
-        self.dropout2 = nn.Dropout2d(0.5)
+        # self.dropout2 = nn.Dropout2d(0.5)
 
     def forward(self, x):
         # out = F.relu(self.dropout1(self.conv1(x)))
-        out = F.relu(self.bn1(self.conv1(x)))
+        out = F.relu6(self.bn1(self.conv1(x)))
         # out = self.dropout2(self.conv1(out))
         out = self.bn1(self.conv1(out))
         out += self.shortcut(x)
-        out = F.relu(out)
+        out = self.relu(out)
         return out
 
 
@@ -96,7 +96,7 @@ class Network(nn.Module):
             self.layers.append(nn.Conv2d(in_channels=self.hidden_sizes[idx],
                                          out_channels=self.hidden_sizes[idx + 1],
                                          kernel_size=3, stride=2, bias=False))
-            self.layers.append(nn.ReLU(inplace=True))
+            self.layers.append(nn.ReLU6(inplace=True))
             self.layers.append(BasicBlock(channel_size=channel_size))
 
         self.layers = nn.Sequential(*self.layers)
@@ -104,14 +104,15 @@ class Network(nn.Module):
 
         # For creating the embedding to be passed into the Center Loss criterion
         self.linear_closs = nn.Linear(self.hidden_sizes[-2], feat_dim, bias=False)
-        self.relu_closs = nn.ReLU(inplace=True)
+        self.relu_closs = nn.ReLU6(inplace=True)
 
     def forward(self, x, evalMode=False):
         output = x
         output = self.layers(output)
+        # print(output.size(2), output.size(3))
 
-        # output = F.avg_pool2d(output, [output.size(2), output.size(3)], stride=1)
-        output = F.max_pool2d(output, [output.size(2), output.size(3)], stride=1)
+        output = F.avg_pool2d(output, [output.size(2), output.size(3)], stride=1)
+        # output = F.max_pool2d(output, [output.size(2), output.size(3)], stride=1)
         output = output.reshape(output.shape[0], output.shape[1])
 
         label_output = self.linear_label(output)
@@ -197,7 +198,6 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
             optimizer_closs.step()
 
             avg_loss += loss.item()
-
             if batch_num % 10 == 9:
                 print('Epoch: {}\tBatch: {}\tAvg-Loss: {:.4f}'.format(epoch + 1, (batch_num + 1), avg_loss / 50))
                 avg_loss = 0.0
@@ -207,34 +207,33 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
             del labels
             del loss
         end_time = time.time()
-        print("Epoch {} trained for {} seconds".format(epoch+1, end_time - start_time))
+        print("==========================================================================")
+        print("Epoch {} trained for {} seconds".format(epoch + 1, end_time - start_time))
 
         if task == 'Classification':
-            start_time = time.time()
             val_loss, val_acc = test_classify_closs(model, test_loader)
             train_loss, train_acc = test_classify_closs(model, data_loader)
-            print('Train Loss: {:.4f}\tTrain Accuracy: {:.4f}\tVal Loss: {:.4f}\tVal Accuracy: {:.4f}'.
-                  format(train_loss, train_acc, val_loss, val_acc))
+
             # PATH = "saved_models/cnn_epoch{}.pt".format(epoch)
             # torch.save(model.state_dict(), PATH)
             d = datetime.datetime.today()
             record = "{}-{}-{}-e{}".format(d.day, d.hour, d.minute, epoch)
             PATH = "saved_models/{}.pt".format(record)
-            print("==========================================================================\n")
-            print("Train Accuracy {:.5f} \nValidation Accuracy {:.5f} at Epoch {}\n".format(train_acc, val_acc, epoch + 1))
-            print("==========================================================================")
-            cnn_tmplogger = open("cnn_trace.txt", "a")
-            cnn_tmplogger.write("==========================================================================\n")
-            cnn_tmplogger.write("Train Accuracy {:.5f} \nValidation Accuracy {:.5f} at Epoch {}\n".format(train_acc, val_acc, epoch + 1))
-            if train_acc >= 0.4 or val_acc >= 0.4:
-                torch.save(model.state_dict(), PATH)
-                cnn_tmplogger.write("Model Saved\n")
-                print("Model Saved")
-            cnn_tmplogger.write("==========================================================================\n")
-            cnn_tmplogger.close()
+            print("*****")
+            print('Train Loss: {:.4f}\tTrain Accuracy: {:.4f}\tVal Loss: {:.4f}\tVal Accuracy: {:.4f}'.
+                  format(train_loss, train_acc, val_loss, val_acc))
+            print("*****")
+            print("==========================================================================\n\n")
+            # cnn_tmplogger = open("cnn_trace.txt", "a")
+            # cnn_tmplogger.write("==========================================================================\n")
+            # cnn_tmplogger.write("Train Accuracy {:.5f} \nValidation Accuracy {:.5f} at Epoch {}\n".format(train_acc, val_acc, epoch + 1))
+            # if train_acc >= 0.4 or val_acc >= 0.4:
+            #     torch.save(model.state_dict(), PATH)
+            #     cnn_tmplogger.write("Model Saved\n")
+            #     print("Model Saved")
+            # cnn_tmplogger.write("==========================================================================\n")
+            # cnn_tmplogger.close()
 
-            end_time = time.time()
-            print("Time took for calculate loss:{}".format(end_time - start_time))
         else:
             test_verify(model, test_loader)
 
@@ -320,10 +319,10 @@ if __name__ == "__main__":
 
     criterion_label = nn.CrossEntropyLoss()
     criterion_closs = CenterLoss(NUM_CLASSES, FEAT_DIM, device)
-    optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.9)
+    optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.8)
     # optimizer_label = torch.optim.Adam(network.parameters(), lr=LEARNING_RATE)
     optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=LR_CENT)
-    # optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=LEARNING_RATE)
+    # optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=LR_CENT)
 
     network.train()
     network.to(device)
