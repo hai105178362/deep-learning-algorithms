@@ -11,6 +11,7 @@ import sys
 import time
 import datetime
 import cnn_params as P
+import tracewritter as wrt
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -32,17 +33,17 @@ class BasicBlock(nn.Module):
 
     def forward(self, x):
         # out = F.relu(self.bn1(self.conv1(x)),inplace=True)
-        out = F.relu6(self.bn1(self.conv1(x)),inplace=True)
+        out = F.relu6(self.bn1(self.conv1(x)), inplace=True)
         # out = self.bn1(self.conv1(out))
 
         # out = F.relu(self.bn2(self.conv2(out)))
         out = self.bn2(self.conv2(out))
 
         # out = F.relu(self.bn3(self.conv3(out)))
-        out = self.bn3(self.conv3(out))
+        # out = self.bn3(self.conv3(out))
 
         out += self.shortcut(x)
-        out = F.relu(out)
+        out = F.relu6(out)
         return out
 
 
@@ -134,6 +135,13 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
             train_loss, train_acc = test_classify_closs(model, data_loader)
             print('Train Loss: {:.4f}\tTrain Accuracy: {:.4f}\tVal Loss: {:.4f}\tVal Accuracy: {:.4f}'.
                   format(train_loss, train_acc, val_loss, val_acc))
+            if train_acc >= 0.55 or val_acc >= 0.55:
+                d = datetime.datetime.today()
+                record = "{}-{}-{}-e{}".format(d.day, d.hour, d.minute, epoch)
+                modelpath = "saved_models/{}.pt".format(record)
+                torch.save(model.state_dict(), modelpath)
+                print("Model saved at: {}".format(modelpath))
+                wrt.recordtrace(train_acc, train_loss, val_acc, val_loss, epoch)
         # else:
         #     test_verify(model, test_loader)
 
@@ -202,53 +210,8 @@ class CenterLoss(nn.Module):
             dist.append(value)
         dist = torch.cat(dist)
         loss = dist.mean()
-
         return loss
 
-
-def train_closs(model, data_loader, test_loader, task='Classification'):
-    model.train()
-
-    for epoch in range(P.numEpochs):
-        avg_loss = 0.0
-        for batch_num, (feats, labels) in enumerate(data_loader):
-            feats, labels = feats.to(device), labels.to(device)
-
-            optimizer_label.zero_grad()
-            optimizer_closs.zero_grad()
-
-            feature, outputs = model(feats)
-
-            l_loss = criterion_label(outputs, labels.long())
-            c_loss = criterion_closs(feature, labels.long())
-            loss = l_loss + P.closs_weight * c_loss
-
-            loss.backward()
-
-            optimizer_label.step()
-            # by doing so, weight_cent would not impact on the learning of centers
-            for param in criterion_closs.parameters():
-                param.grad.data *= (1. / P.closs_weight)
-            optimizer_closs.step()
-
-            avg_loss += loss.item()
-
-            if batch_num % 50 == 49:
-                print('Epoch: {}\tBatch: {}\tAvg-Loss: {:.4f}'.format(epoch + 1, batch_num + 1, avg_loss / 50))
-                avg_loss = 0.0
-
-            torch.cuda.empty_cache()
-            del feats
-            del labels
-            del loss
-
-        if task == 'Classification':
-            val_loss, val_acc = test_classify_closs(model, test_loader)
-            train_loss, train_acc = test_classify_closs(model, data_loader)
-            print('Train Loss: {:.4f}\tTrain Accuracy: {:.4f}\tVal Loss: {:.4f}\tVal Accuracy: {:.4f}'.
-                  format(train_loss, train_acc, val_loss, val_acc))
-        # else:
-        #     test_verify(model, test_loader)
 
 
 def test_classify_closs(model, test_loader):
@@ -256,7 +219,6 @@ def test_classify_closs(model, test_loader):
     test_loss = []
     accuracy = 0
     total = 0
-
     for batch_num, (feats, labels) in enumerate(test_loader):
         feats, labels = feats.to(device), labels.to(device)
         feature, outputs = model(feats)

@@ -187,15 +187,15 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
                   format(train_loss, train_acc, val_loss, val_acc))
             print("*****")
             print("==========================================================================\n\n")
-            cnn_tmplogger = open("cnn_trace.txt", "a")
-            cnn_tmplogger.write("==========================================================================\n")
-            cnn_tmplogger.write("Train Accuracy {:.5f} \nValidation Accuracy {:.5f} at Epoch {}\n".format(train_acc, val_acc, epoch + 1))
-            if train_acc >= 0.4 or val_acc >= 0.4:
-                torch.save(model.state_dict(), PATH)
-                cnn_tmplogger.write("Model Saved\n")
-                print("Model Saved")
-            cnn_tmplogger.write("==========================================================================\n")
-            cnn_tmplogger.close()
+            # cnn_tmplogger = open("cnn_trace.txt", "a")
+            # cnn_tmplogger.write("==========================================================================\n")
+            # cnn_tmplogger.write("Train Accuracy {:.5f} \nValidation Accuracy {:.5f} at Epoch {}\n".format(train_acc, val_acc, epoch + 1))
+            # if train_acc >= 0.4 or val_acc >= 0.4:
+            #     torch.save(model.state_dict(), PATH)
+            #     cnn_tmplogger.write("Model Saved\n")
+            #     print("Model Saved")
+            # cnn_tmplogger.write("==========================================================================\n")
+            # cnn_tmplogger.close()
 
         else:
             test_verify(model, test_loader)
