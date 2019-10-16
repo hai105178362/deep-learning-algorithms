@@ -1,15 +1,10 @@
-import os
+import datetime
+
 import numpy as np
-from PIL import Image
 import torch
-import torchvision
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
-import sys
-import time
-import datetime
+
 import cnn_params as P
 import tracewritter as wrt
 

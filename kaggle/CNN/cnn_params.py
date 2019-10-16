@@ -1,15 +1,7 @@
-import os
-import numpy as np
-from PIL import Image
 import torch
 import torchvision
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
-import sys
-import time
-import datetime
-import cnnmodel
+from torch.utils.data import Dataset
+
 closs_weight = 0.6
 lr_cent = 0.5
 feat_dim = 10

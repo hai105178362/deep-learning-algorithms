@@ -1,14 +1,6 @@
-import os
-import numpy as np
-from PIL import Image
-from torch.utils.data import Dataset, DataLoader
-import sys
 import torch
 import torchvision
-
-
-
-
+from torch.utils.data import Dataset
 
 if __name__ == "__main__":
     test_dataset = torchvision.datasets.ImageFolder(root='data.nosync/validation_classification/medium', transform=torchvision.transforms.ToTensor())

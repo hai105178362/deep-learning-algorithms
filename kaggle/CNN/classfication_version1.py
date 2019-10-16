@@ -1,13 +1,10 @@
-import os
-import numpy as np
-from PIL import Image
-from torch.utils.data import Dataset, DataLoader
-import sys
 import torch
-import torchvision
-import cnnmodel as M
-import cnn_params as P
 import torch.nn.functional as F
+import torchvision
+from torch.utils.data import Dataset
+
+import cnn_params as P
+import cnnmodel as M
 
 device = M.device
 
