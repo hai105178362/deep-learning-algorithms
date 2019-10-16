@@ -19,7 +19,7 @@ WEIGHT_DECAY = 5e-5
 # HIDDEN_SIZE = [32, 64]
 HIDDEN_SIZE = [32, 64, 96, 224]
 CLOSS_WEIGHT = 0.6
-LR_CENT = 0.001
+LR_CENT = 0.5
 FEAT_DIM = 2300
 all_spec = "NUM_EPOCH:{}   NUM_FEATS:{}   LR:{}   WEIGHT_DECAY:{}\nHIDDEN_SIZE:{}   LR_CENT:{}   FEAT_DIM:{}\n".format(NUM_EPOCHS, NUM_FEATS \
                                                                                                                        , LEARNING_RATE, WEIGHT_DECAY, HIDDEN_SIZE \
