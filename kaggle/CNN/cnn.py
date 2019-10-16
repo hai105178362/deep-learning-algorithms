@@ -17,9 +17,9 @@ NUM_FEATS = 3
 LEARNING_RATE = 0.001
 WEIGHT_DECAY = 5e-5
 # HIDDEN_SIZE = [32, 64]
-HIDDEN_SIZE = [224, 96, 64, 32]
+HIDDEN_SIZE = [224, 224, 224]
 CLOSS_WEIGHT = 1
-LR_CENT = 0.2
+LR_CENT = 0.02
 FEAT_DIM = 2300
 all_spec = "NUM_EPOCH:{}   NUM_FEATS:{}   LR:{}   WEIGHT_DECAY:{}\nHIDDEN_SIZE:{}   LR_CENT:{}   FEAT_DIM:{}\n".format(NUM_EPOCHS, NUM_FEATS \
                                                                                                                        , LEARNING_RATE, WEIGHT_DECAY, HIDDEN_SIZE \
@@ -267,15 +267,15 @@ def test_classify_closs(model, test_loader):
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print("device: ", device)
 # TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/train_data/medium'
-# TRAIN_PATH = 'devset/medium'
+TRAIN_PATH = 'devset/medium'
 # TRAIN_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
 # TRAIN_PATH = 'dataset/validation_classification/medium'
-TRAIN_PATH = 'dataset/train_data/medium'
+# TRAIN_PATH = 'dataset/train_data/medium'
 
 # VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium/'
-# VAL_PATH = 'devset/medium_dev'
+VAL_PATH = 'devset/medium_dev'
 # VAL_PATH = 'data.nosync/11785-f19-hw2p2-classification/11-785hw2p2-f19/validation_classification/medium'
-VAL_PATH = 'dataset/validation_classification/medium'
+# VAL_PATH = 'dataset/validation_classification/medium'
 
 img_list, label_list, class_n = parse_data(TRAIN_PATH)
 trainset = ImageDataset(img_list, label_list)
