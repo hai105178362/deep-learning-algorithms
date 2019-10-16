@@ -14,74 +14,33 @@ import datetime
 NUM_EPOCHS = 20
 # NUM_FEATS = 3
 NUM_FEATS = 3
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.01
 WEIGHT_DECAY = 5e-5
 # HIDDEN_SIZE = [32, 64]
-HIDDEN_SIZE = [32, 64, 96, 224]
-CLOSS_WEIGHT = 0.6
-LR_CENT = 0.005
-FEAT_DIM = 2300
+HIDDEN_SIZE = [16, 16, 32, 64]
+CLOSS_WEIGHT = 1
+LR_CENT = 0.5
+FEAT_DIM = 10
 all_spec = "NUM_EPOCH:{}   NUM_FEATS:{}   LR:{}   WEIGHT_DECAY:{}\nHIDDEN_SIZE:{}   LR_CENT:{}   FEAT_DIM:{}\n".format(NUM_EPOCHS, NUM_FEATS \
                                                                                                                        , LEARNING_RATE, WEIGHT_DECAY, HIDDEN_SIZE \
                                                                                                                        , LR_CENT, FEAT_DIM)
 
 
-class ImageDataset(Dataset):
-    def __init__(self, file_list, target_list):
-        self.file_list = file_list
-        self.target_list = target_list
-        self.n_class = len(list(set(target_list)))
-
-    def __len__(self):
-        return len(self.file_list)
-
-    def __getitem__(self, index):
-        img = Image.open(self.file_list[index])
-        img = torchvision.transforms.ToTensor()(img)
-        label = self.target_list[index]
-        return img, label
-
-
-def parse_data(datadir):
-    img_list = []
-    ID_list = []
-    for root, directories, filenames in os.walk(datadir):
-        for filename in sorted(filenames):
-            if filename.endswith('.jpg'):
-                filei = os.path.join(root, filename)
-                img_list.append(filei)
-                ID_list.append(root.split('/')[-1])
-
-    # construct a dictionary, where key and value correspond to ID and target
-    uniqueID_list = list(set(ID_list))
-    # print(img_list)
-    class_n = len(uniqueID_list)
-    target_dict = dict(zip(uniqueID_list, range(class_n)))
-    label_list = [target_dict[ID_key] for ID_key in ID_list]
-
-    print('{}\t\t{}\n{}\t\t{}'.format('#Images', '#Labels', len(img_list), len(set(label_list))))
-    return img_list, label_list, class_n
-
-
 class BasicBlock(nn.Module):
-
     def __init__(self, channel_size, stride=1):
         super(BasicBlock, self).__init__()
         self.conv1 = nn.Conv2d(channel_size, channel_size, kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(channel_size)
-        # self.dropout1 = nn.Dropout2d(0.5)
-        self.relu = nn.ReLU6(inplace=True)
+        # self.relu = nn.ReLU(inplace=True)
         self.shortcut = nn.Conv2d(channel_size, channel_size, kernel_size=1, stride=stride, bias=False)
-        self.bn2 = nn.BatchNorm2d(channel_size)
-        # self.dropout2 = nn.Dropout2d(0.5)
 
     def forward(self, x):
         # out = F.relu(self.dropout1(self.conv1(x)))
-        out = F.relu6(self.bn1(self.conv1(x)))
+        out = F.relu(self.bn1(self.conv1(x)))
         # out = self.dropout2(self.conv1(out))
         out = self.bn1(self.conv1(out))
         out += self.shortcut(x)
-        out = self.relu(out)
+        out = F.relu(out)
         return out
 
 
@@ -96,15 +55,16 @@ class Network(nn.Module):
             self.layers.append(nn.Conv2d(in_channels=self.hidden_sizes[idx],
                                          out_channels=self.hidden_sizes[idx + 1],
                                          kernel_size=3, stride=2, bias=False))
-            self.layers.append(nn.ReLU6(inplace=True))
+            self.layers.append(nn.ReLU(inplace=True))
             self.layers.append(BasicBlock(channel_size=channel_size))
+            # self.layers.append(BasicBlock(channel_size=channel_size))
 
         self.layers = nn.Sequential(*self.layers)
         self.linear_label = nn.Linear(self.hidden_sizes[-2], self.hidden_sizes[-1], bias=False)
 
         # For creating the embedding to be passed into the Center Loss criterion
         self.linear_closs = nn.Linear(self.hidden_sizes[-2], feat_dim, bias=False)
-        self.relu_closs = nn.ReLU6(inplace=True)
+        self.relu_closs = nn.ReLU(inplace=True)
 
     def forward(self, x, evalMode=False):
         output = x
@@ -117,13 +77,16 @@ class Network(nn.Module):
 
         label_output = self.linear_label(output)
         label_output = label_output / torch.norm(self.linear_label.weight, dim=1)
+        closs_output = self.linear_closs(output)
+        closs_output = self.relu_closs(closs_output)
+        return closs_output, label_output
 
         # Create the feature embedding for the Center Loss
-        if evalMode == False:
-            closs_output = self.linear_closs(output)
-            closs_output = self.relu_closs(closs_output)
-            return closs_output, label_output
-        return label_output
+        # if evalMode == False:
+        #     closs_output = self.linear_closs(output)
+        #     closs_output = self.relu_closs(closs_output)
+        #     return closs_output, label_output
+        # return label_output
 
 
 def init_weights(m):
@@ -265,33 +228,21 @@ def test_classify_closs(model, test_loader):
 # if __name__ == '__main__':
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print("device: ", device)
+TRAIN_PATH = 'data.nosync/validation_classification/medium'
 # TRAIN_PATH = 'devset/medium'
-TRAIN_PATH = 'dataset/train_data/medium'
+# TRAIN_PATH = 'dataset/train_data/medium'
+VAL_PATH = 'data.nosync/validation_classification/medium'
 # VAL_PATH = 'devset/medium_dev'
-VAL_PATH = 'dataset/validation_classification/medium'
 
-img_list, label_list, class_n = parse_data(TRAIN_PATH)
-trainset = ImageDataset(img_list, label_list)
-train_data_item, train_data_label = trainset.__getitem__(0)
-# print(train_data_item,train_data_label)
-print('data item shape: {}\t data item label: {}'.format(train_data_item.shape, train_data_label))
-
-# dataloader = DataLoader(trainset, batch_size=10, shuffle=True, num_workers=1, drop_last=False)
-# imageFolder_dataset = torchvision.datasets.ImageFolder(root=TRAIN_PATH,
-#                                                        transform=torchvision.transforms.ToTensor())
-# imageFolder_dataloader = DataLoader(imageFolder_dataset, batch_size=10, shuffle=True, num_workers=1)
-# print(imageFolder_dataset.__len__(), len(imageFolder_dataset.classes))
-
+# VAL_PATH = 'dataset/validation_classification/medium'
 train_dataset = torchvision.datasets.ImageFolder(root=TRAIN_PATH,
                                                  transform=torchvision.transforms.ToTensor())
-train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=100,
+train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=128,
                                                shuffle=True, num_workers=8)
-
 dev_dataset = torchvision.datasets.ImageFolder(root=VAL_PATH,
                                                transform=torchvision.transforms.ToTensor())
-dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=100,
+dev_dataloader = torch.utils.data.DataLoader(dev_dataset, batch_size=128,
                                              shuffle=True, num_workers=8)
-
 NUM_CLASSES = len(train_dataset.classes)
 
 # print(train_dataset.classes[:50])
@@ -310,14 +261,12 @@ if __name__ == "__main__":
 
     network = Network(NUM_FEATS, HIDDEN_SIZE, NUM_CLASSES, FEAT_DIM)
     network.apply(init_weights)
-
     criterion_label = nn.CrossEntropyLoss()
     criterion_closs = CenterLoss(NUM_CLASSES, FEAT_DIM, device)
-    optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.8)
+    optimizer_label = torch.optim.SGD(network.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY, momentum=0.9)
     # optimizer_label = torch.optim.Adam(network.parameters(), lr=LEARNING_RATE)
     optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=LR_CENT)
     # optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=LR_CENT)
-
     network.train()
     network.to(device)
     train_closs(network, train_dataloader, dev_dataloader)

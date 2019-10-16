@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 import sys
-from cnn import Network, NUM_FEATS, HIDDEN_SIZE, NUM_CLASSES
+from main import Network, NUM_FEATS, HIDDEN_SIZE, NUM_CLASSES
 import csv
 
 
