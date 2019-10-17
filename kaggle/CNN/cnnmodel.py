@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+import time
 import cnn_params as P
 import tracewritter as wrt
 
@@ -93,6 +93,7 @@ def train_closs(model, data_loader, test_loader, task='Classification', prev_acc
     model.train()
 
     for epoch in range(P.numEpochs):
+        start_time = time.time()
         avg_loss = 0.0
         for batch_num, (feats, labels) in enumerate(data_loader):
             feats, labels = feats.to(device), labels.to(device)
@@ -128,8 +129,10 @@ def train_closs(model, data_loader, test_loader, task='Classification', prev_acc
         if task == 'Classification':
             val_loss, val_acc = test_classify_closs(model, test_loader)
             train_loss, train_acc = test_classify_closs(model, data_loader)
+            end_time = time.time()
             print('Train Loss: {:.4f}\tTrain Accuracy: {:.4f}\tVal Loss: {:.4f}\tVal Accuracy: {:.4f}'.
                   format(train_loss, train_acc, val_loss, val_acc))
+            print("Time: {}".format(end_time-start_time))
 
             if train_acc >= 0.45 or val_acc >= 0.45 or (epoch+1 >= 10 and train_acc + val_acc > prev_acc):
                 d = datetime.datetime.today()

@@ -29,3 +29,9 @@ weight_decay:5e-05	hidden_size:[32, 64, 96, 144]
 
 Train Loss: 9.2584	Train Accuracy: 0.1732	Val Loss: 9.2584	Val Accuracy: 0.1732 	 epoch: 10
 Train Loss: 8.8100	Train Accuracy: 0.2306	Val Loss: 8.8100	Val Accuracy: 0.2306 	 epoch: 11
+==========================================================================
+16-23-27
+closs_weight:0.6	lr_cent:0.5	feat_dim:10
+num_feats:3		learningRate:0.01
+weight_decay:5e-05	hidden_size:[32, 64, 96, 144]
+
