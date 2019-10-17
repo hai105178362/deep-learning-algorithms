@@ -1,5 +1,4 @@
 import datetime
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -7,80 +6,129 @@ import torch.nn.functional as F
 import time
 import cnn_params as P
 import tracewritter as wrt
+import sys
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-class BasicBlock(nn.Module):
+def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
+    """3x3 convolution with padding"""
+    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
+                     padding=dilation, groups=groups, bias=False, dilation=dilation)
 
-    def __init__(self, channel_size, stride=1):
-        super(BasicBlock, self).__init__()
-        self.conv1 = nn.Conv2d(channel_size, channel_size, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(channel_size)
-        self.conv2 = nn.Conv2d(channel_size, channel_size, kernel_size=3, stride=stride, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(channel_size)
-        self.conv3 = nn.Conv2d(channel_size, channel_size, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(channel_size)
-        # self.shortcut = nn.Conv2d(channel_size, channel_size, kernel_size=1, stride=1, bias=False)
-        self.shortcut = nn.Sequential(
-            nn.Conv2d(channel_size, channel_size, kernel_size=1, stride=1, bias=False)
-            # , nn.BatchNorm2d(channel_size)
-        )
+
+def conv1x1(in_planes, out_planes, stride=1):
+    """1x1 convolution"""
+    return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=False)
+
+
+class Bottleneck(nn.Module):
+    expansion = 4
+
+    def __init__(self, in_channel, out_channel, stride=1, downsample=None, groups=1, base_width=32, dilation=1, norm_layer=None):
+        super(Bottleneck, self).__init__()
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+        width = int(out_channel * (base_width / 32.)) * groups
+        self.conv1 = conv1x1(in_channel, width)
+        self.bn1 = norm_layer(width)
+        self.conv2 = conv3x3(width, width, stride, groups, dilation)
+        self.bn2 = norm_layer(width)
+        self.conv3 = conv1x1(width, out_channel * self.expansion)
+        self.bn3 = norm_layer(out_channel * self.expansion)
+        self.relu = nn.ReLU(inplace=True)
+        self.downsample = downsample
+        self.stride = stride
 
     def forward(self, x):
         residual = x
-        # out = F.relu(self.bn1(self.conv1(x)),inplace=True)
         out = F.relu6(self.bn1(self.conv1(x)), inplace=True)
-        # out = self.bn1(self.conv1(out))
-
-        # out = F.relu(self.bn2(self.conv2(out)))
-        out = self.bn2(self.conv2(out))
-
-        # out = F.relu(self.bn3(self.conv3(out)))
-        out = self.bn3(self.conv3(out))
-
-        out += self.shortcut(x)
-        # out += residual
-        out = F.relu6(out)
+        out = F.relu6(self.bn2(self.conv2(out)))
+        out = self.conv3(out)
+        out = self.bn3(out)
+        if self.downsample is not None:
+            residual = self.downsample(x)
+        out += residual
+        out = self.relu(out)
         return out
 
 
-class Resnet(nn.Module):
-    def __init__(self, num_feats, hidden_sizes, num_classes, feat_dim=10):
-        super(Resnet, self).__init__()
+class ResNet(nn.Module):
+    def __init__(self, block, layers, num_classes=2300, zero_init_residual=False,
+                 groups=1, width_per_group=P.batch_size, replace_stride_with_dilation=None,
+                 norm_layer=None):
+        super(ResNet, self).__init__()
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+        self._norm_layer = norm_layer
+        self.in_channel = 32
+        self.dilation = 1
+        if replace_stride_with_dilation is None:
+            # each element in the tuple indicates if we should replace
+            # the 2x2 stride with a dilated convolution instead
+            replace_stride_with_dilation = [False, False, False]
+        if len(replace_stride_with_dilation) != 3:
+            raise ValueError("replace_stride_with_dilation should be None "
+                             "or a 3-element tuple, got {}".format(replace_stride_with_dilation))
+        self.groups = groups
+        self.base_width = width_per_group
+        self.conv1 = nn.Conv2d(3, self.in_channel, kernel_size=7, stride=2, padding=3, bias=False)
+        self.bn1 = norm_layer(self.in_channel)
+        self.relu = nn.ReLU(inplace=True)
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        self.layer1 = self.add_layer(block, P.hidden_sizes[0], layers[0])
+        self.layer2 = self.add_layer(block, P.hidden_sizes[1], layers[1], stride=2, dilate=replace_stride_with_dilation[0])
+        self.layer3 = self.add_layer(block, P.hidden_sizes[2], layers[2], stride=2, dilate=replace_stride_with_dilation[1])
+        self.layer4 = self.add_layer(block, P.hidden_sizes[3], layers[3], stride=2, dilate=replace_stride_with_dilation[2])
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            elif isinstance(m, (nn.BatchNorm2d, nn.GroupNorm)):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+        self.linear_label = nn.Linear(P.hidden_sizes[-1] * block.expansion, P.num_classes, bias=False)
+        self.linear_closs = nn.Linear(P.hidden_sizes[-1] * block.expansion, P.feat_dim, bias=False)
+        self.relu_closs = nn.ReLU6(inplace=True)
 
-        self.hidden_sizes = [num_feats] + hidden_sizes + [num_classes]
+    def add_layer(self, block, planes, blocks, stride=1, dilate=False):
+        norm_layer = self._norm_layer
+        downsample = None
+        previous_dilation = self.dilation
+        if dilate:
+            self.dilation *= stride
+            stride = 1
+        if stride != 1 or self.in_channel != planes * block.expansion:
+            downsample = nn.Sequential(
+                conv1x1(self.in_channel, planes * block.expansion, stride),
+                norm_layer(planes * block.expansion),
+            )
 
-        self.layers = []
-        for idx, channel_size in enumerate(hidden_sizes):
-            self.layers.append(nn.Conv2d(in_channels=self.hidden_sizes[idx],
-                                         out_channels=self.hidden_sizes[idx + 1],
-                                         kernel_size=3, stride=2, bias=False))
-            self.layers.append(nn.BatchNorm2d(channel_size))
-            self.layers.append(nn.ReLU(inplace=True))
-            self.layers.append(nn.MaxPool2d(kernel_size=3, stride=1, padding=1))
-            self.layers.append(BasicBlock(channel_size=channel_size))
-            self.layers.append(BasicBlock(channel_size=channel_size))
-            self.layers.append(BasicBlock(channel_size=channel_size))
-            self.layers.append(BasicBlock(channel_size=channel_size))
+        layers = []
+        layers.append(block(self.in_channel, planes, stride, downsample, self.groups,
+                            self.base_width, previous_dilation, norm_layer))
+        self.in_channel = planes * block.expansion
+        for _ in range(1, blocks):
+            layers.append(block(self.in_channel, planes, groups=self.groups,
+                                base_width=self.base_width, dilation=self.dilation,
+                                norm_layer=norm_layer))
 
-            # self.layers.append(nn.BatchNorm2d(channel_size))
-            # self.layers.append(BasicBlock(channel_size=channel_size))
+        return nn.Sequential(*layers)
 
-        self.layers = nn.Sequential(*self.layers)
-        self.linear_label = nn.Linear(self.hidden_sizes[-2], self.hidden_sizes[-1], bias=False)
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.maxpool(x)
 
-        # For creating the embedding to be passed into the Center Loss criterion
-        self.linear_closs = nn.Linear(self.hidden_sizes[-2], feat_dim, bias=False)
-        self.relu_closs = nn.ReLU(inplace=True)
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
 
-    def forward(self, x, evalMode=False):
-        output = x
-        output = self.layers(output)
-
-        output = F.avg_pool2d(output, [output.size(2), output.size(3)], stride=1)
+        output = F.avg_pool2d(x, [x.size(2), x.size(3)], stride=1)
         output = output.reshape(output.shape[0], output.shape[1])
-
+        # print(output.shape)
         label_output = self.linear_label(output)
         label_output = label_output / torch.norm(self.linear_label.weight, dim=1)
 
@@ -137,11 +185,9 @@ def train_closs(model, data_loader, test_loader, task='Classification', prev_acc
             val_loss, val_acc = test_classify_closs(model, test_loader)
             train_loss, train_acc = test_classify_closs(model, data_loader)
             end_time = time.time()
-            print('Train Loss: {:.4f}\tTrain Accuracy: {:.4f}\tVal Loss: {:.4f}\tVal Accuracy: {:.4f}'.
-                  format(train_loss, train_acc, val_loss, val_acc))
-            print("Time: {}".format(end_time - start_time))
-
-            if train_acc >= 0.45 or val_acc >= 0.45 or (epoch + 1 >= 10 and train_acc + val_acc > prev_acc):
+            print('Train Loss: {:.4f}\tTrain Accuracy: {:.4f}\tVal Loss: {:.4f}\tVal Accuracy: {:.4f}\tTime: {}'.
+                  format(train_loss, train_acc, val_loss, val_acc, end_time - start_time))
+            if train_acc >= 0.55 or val_acc >= 0.55 or (epoch + 1 >= 10 and train_acc + val_acc > prev_acc):
                 d = datetime.datetime.today()
                 record = "{}-{}-{}-e{}".format(d.day, d.hour, d.minute, epoch + 1)
                 modelpath = "saved_models/{}.pt".format(record)
@@ -162,14 +208,11 @@ def test_classify_closs(model, test_loader):
     for batch_num, (feats, labels) in enumerate(test_loader):
         feats, labels = feats.to(device), labels.to(device)
         feature, outputs = model(feats)
-
         _, pred_labels = torch.max(F.softmax(outputs, dim=1), 1)
         pred_labels = pred_labels.view(-1)
-
         l_loss = criterion_label(outputs, labels.long())
         c_loss = criterion_closs(feature, labels.long())
         loss = l_loss + P.closs_weight * c_loss
-
         accuracy += torch.sum(torch.eq(pred_labels, labels)).item()
         total += len(labels)
         test_loss.extend([loss.item()] * feats.size()[0])
@@ -246,10 +289,10 @@ def test_classify_closs(model, test_loader):
     return np.mean(test_loss), accuracy / total
 
 
-network = Resnet(P.num_feats, P.hidden_sizes, P.num_classes)
+network = ResNet(Bottleneck, P.layers)
 criterion_label = nn.CrossEntropyLoss()
 criterion_closs = CenterLoss(P.num_classes, P.feat_dim, P.device)
 optimizer_label = torch.optim.SGD(network.parameters(), lr=P.learningRate, weight_decay=P.weightDecay, momentum=0.9)
-# optimizer_label = torch.optim.Adam(network.parameters(), lr=P.learningRate)
+# optimizer_label = torch.optim.Adam(network.parameters(), lr=P.learningRate, weight_decay=P.weightDecay)
 optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=P.lr_cent)
-# optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=P.lr_cent)
+# optimizer_closs = torch.optim.AdamW(criterion_closs.parameters(), lr=P.lr_cent, weigh_decay=P.weightDecay)
