@@ -1,15 +1,20 @@
-import cnnmodel as M
+import model_basic as M
+import model_res50
 from cnn_params import num_feats, hidden_sizes, num_classes, learningRate, weightDecay, device, train_dataloader, dev_dataloader,lr_cent,feat_dim
 import cnn_params as par
 import tracewritter as wrt
+import torch
 
 if __name__ == "__main__":
     prev_acc = 0
     print(device)
-    print("Starting CNN")
     wrt.log_title(par.allspec)
     network = M.network
-    network.apply(M.init_weights)
+    # network = model_res50.network
+    print("Training...")
+    # network.apply(M.init_weights)
+    network.load_state_dict(torch.load('saved_models/17-12-1-e31.pt', map_location=M.device))
     network.train()
     network.to(device)
+    # M.train_closs(network, train_dataloader, dev_dataloader)
     M.train_closs(network, train_dataloader, dev_dataloader)

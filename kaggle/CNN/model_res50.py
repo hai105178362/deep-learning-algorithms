@@ -11,46 +11,10 @@ import tracewritter as wrt
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-# class Bottleneck(nn.Module):
-#     expansion = 4
-#
-#     def __init__(self, inplanes, planes, stride=1, downsample=None):
-#         super(Bottleneck, self).__init__()
-#         self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=3, stride=stride, bias=False)  # change
-#         self.bn1 = nn.BatchNorm2d(planes)
-#         self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1,  padding=1, bias=False)
-#         self.bn2 = nn.BatchNorm2d(planes)
-#         self.conv3 = nn.Conv2d(planes, planes * 4, kernel_size=1, bias=False)
-#         self.bn3 = nn.BatchNorm2d(planes * 4)
-#         self.relu = nn.ReLU(inplace=True)
-#         self.downsample = downsample
-#         self.stride = stride
-#
-#     def forward(self, x):
-#         residual = x
-#
-#         out = self.conv1(x)
-#         out = self.bn1(out)
-#         out = self.relu(out)
-#
-#         out = self.conv2(out)
-#         out = self.bn2(out)
-#         out = self.relu(out)
-#
-#         out = self.conv3(out)
-#         out = self.bn3(out)
-#
-#         if self.downsample is not None:
-#             residual = self.downsample(x)
-#
-#         out += residual
-#         out = self.relu(out)
-
-
-class Bottleneck(nn.Module):
+class BasicBlock(nn.Module):
 
     def __init__(self, channel_size, stride=1):
-        super(Bottleneck, self).__init__()
+        super(BasicBlock, self).__init__()
         self.conv1 = nn.Conv2d(channel_size, channel_size, kernel_size=3, stride=stride, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(channel_size)
         self.conv2 = nn.Conv2d(channel_size, channel_size, kernel_size=3, stride=stride, padding=1, bias=False)
@@ -59,8 +23,9 @@ class Bottleneck(nn.Module):
         self.bn3 = nn.BatchNorm2d(channel_size)
         # self.shortcut = nn.Conv2d(channel_size, channel_size, kernel_size=1, stride=1, bias=False)
         self.shortcut = nn.Sequential(
-            nn.Conv2d(channel_size, channel_size, kernel_size=1, stride=1, bias=False),
-            nn.BatchNorm2d(channel_size))
+            nn.Conv2d(channel_size, channel_size, kernel_size=1, stride=1, bias=False)
+            # , nn.BatchNorm2d(channel_size)
+        )
 
     def forward(self, x):
         residual = x
@@ -74,7 +39,8 @@ class Bottleneck(nn.Module):
         # out = F.relu(self.bn3(self.conv3(out)))
         out = self.bn3(self.conv3(out))
 
-        out += residual
+        out += self.shortcut(x)
+        # out += residual
         out = F.relu6(out)
         return out
 
@@ -92,11 +58,11 @@ class Resnet(nn.Module):
                                          kernel_size=3, stride=2, bias=False))
             self.layers.append(nn.BatchNorm2d(channel_size))
             self.layers.append(nn.ReLU(inplace=True))
-            self.layers.append(nn.MaxPool2d(kernel_size=3, stride=2, padding=1))
-            self.layers.append(Bottleneck(channel_size=3))
-            self.layers.append(Bottleneck(channel_size=3))
-            self.layers.append(Bottleneck(channel_size=3))
-            self.layers.append(Bottleneck(channel_size=3))
+            self.layers.append(nn.MaxPool2d(kernel_size=3, stride=1, padding=1))
+            self.layers.append(BasicBlock(channel_size=channel_size))
+            self.layers.append(BasicBlock(channel_size=channel_size))
+            self.layers.append(BasicBlock(channel_size=channel_size))
+            self.layers.append(BasicBlock(channel_size=channel_size))
 
             # self.layers.append(nn.BatchNorm2d(channel_size))
             # self.layers.append(BasicBlock(channel_size=channel_size))
