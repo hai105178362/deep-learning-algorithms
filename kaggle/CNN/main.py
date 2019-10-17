@@ -4,6 +4,7 @@ import cnn_params as par
 import tracewritter as wrt
 
 if __name__ == "__main__":
+    prev_acc = 0
     print(device)
     print("Starting CNN")
     wrt.log_title(par.allspec)

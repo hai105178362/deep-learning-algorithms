@@ -89,7 +89,7 @@ def init_weights(m):
         torch.nn.init.xavier_normal_(m.weight.data)
 
 
-def train_closs(model, data_loader, test_loader, task='Classification'):
+def train_closs(model, data_loader, test_loader, task='Classification', prev_acc=0):
     model.train()
 
     for epoch in range(P.numEpochs):
@@ -130,13 +130,15 @@ def train_closs(model, data_loader, test_loader, task='Classification'):
             train_loss, train_acc = test_classify_closs(model, data_loader)
             print('Train Loss: {:.4f}\tTrain Accuracy: {:.4f}\tVal Loss: {:.4f}\tVal Accuracy: {:.4f}'.
                   format(train_loss, train_acc, val_loss, val_acc))
-            if train_acc >= 0.55 or val_acc >= 0.55:
+
+            if train_acc >= 0.55 or val_acc >= 0.55 or (epoch+1 >= 10 and train_acc + val_acc > prev_acc):
                 d = datetime.datetime.today()
-                record = "{}-{}-{}-e{}".format(d.day, d.hour, d.minute, epoch)
+                record = "{}-{}-{}-e{}".format(d.day, d.hour, d.minute, epoch+1)
                 modelpath = "saved_models/{}.pt".format(record)
                 torch.save(model.state_dict(), modelpath)
                 print("Model saved at: {}".format(modelpath))
-                wrt.recordtrace(train_acc, train_loss, val_acc, val_loss, epoch)
+                wrt.recordtrace(train_acc, train_loss, val_acc, val_loss, epoch+1)
+                prev_acc = train_acc + val_acc
         # else:
         #     test_verify(model, test_loader)
 
@@ -206,7 +208,6 @@ class CenterLoss(nn.Module):
         dist = torch.cat(dist)
         loss = dist.mean()
         return loss
-
 
 
 def test_classify_closs(model, test_loader):
