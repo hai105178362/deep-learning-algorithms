@@ -5,7 +5,7 @@ from torch.utils.data import Dataset
 closs_weight = 0.6
 lr_cent = 0.5
 feat_dim = 10
-numEpochs = 30
+numEpochs = 100
 num_feats = 3
 learningRate = 1e-2
 weightDecay = 5e-5
