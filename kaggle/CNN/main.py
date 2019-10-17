@@ -13,7 +13,7 @@ if __name__ == "__main__":
     # network = model_res50.network
     print("Training...")
     # network.apply(M.init_weights)
-    network.load_state_dict(torch.load('saved_models/17-12-1-e31.pt', map_location=M.device))
+    network.load_state_dict(torch.load('saved_models/17-12-34-e33.pt', map_location=M.device))
     network.train()
     network.to(device)
     # M.train_closs(network, train_dataloader, dev_dataloader)
