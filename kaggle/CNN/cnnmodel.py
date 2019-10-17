@@ -116,7 +116,7 @@ def train_closs(model, data_loader, test_loader, task='Classification', prev_acc
 
             avg_loss += loss.item()
 
-            if batch_num % 50 == 49:
+            if batch_num % 500 == 499:
                 print('Epoch: {}\tBatch: {}\tAvg-Loss: {:.4f}'.format(epoch + 1, batch_num + 1, avg_loss / 50))
                 avg_loss = 0.0
 
