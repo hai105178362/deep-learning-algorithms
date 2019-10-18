@@ -22,7 +22,7 @@ closs_weight = 0.6
 # layers = [3,4,6,3]
 layers = [3,4,6,3]
 # hidden_sizes = [32, 64, 128, 128]
-hidden_sizes = [32, 64, 128, 128]
+hidden_sizes = [64, 128, 256, 512]
 batch_size = 128
 ###############################
 
