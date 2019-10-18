@@ -11,9 +11,8 @@ import sys
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-def conv3x3(in_channel, out_channel, stride=1, groups=1, inflate=1):
-    return nn.Conv2d(in_channel, out_channel, kernel_size=3, stride=stride,
-                     padding=inflate, groups=groups, bias=False, dilation=inflate)
+def conv3x3(in_channel, out_channel, stride=1, groups=1):
+    return nn.Conv2d(in_channel, out_channel, kernel_size=3, stride=stride, padding=1, bias=False)
 
 
 def conv1x1(in_planes, out_planes, stride=1):
@@ -22,31 +21,25 @@ def conv1x1(in_planes, out_planes, stride=1):
 
 class Bottleneck(nn.Module):
     expansion = 4
-    def __init__(self, in_channel, out_channel, stride=1, downsample=None, groups=1, base_width=32, inflate=1, norm_layer=None):
+
+    def __init__(self, in_channel, out_channel, stride=1, groups=1, base_width=32):
         super(Bottleneck, self).__init__()
-        if norm_layer is None:
-            norm_layer = nn.BatchNorm2d
         width = int(out_channel * (base_width / 32.)) * groups
         self.conv1 = conv1x1(in_channel, width)
-        self.bn1 = norm_layer(width)
-        self.dp1 = nn.Dropout(p=0.2)
-        self.conv2 = conv3x3(width, width, stride, groups, inflate)
-        self.bn2 = norm_layer(width)
+        self.bn1 = nn.BatchNorm2d(width)
+        # self.dp1 = nn.Dropout(p=0.2)
+        self.conv2 = conv3x3(width, width, stride, groups)
+        self.bn2 = nn.BatchNorm2d(width)
         self.conv3 = conv1x1(width, out_channel * self.expansion)
-        self.bn3 = norm_layer(out_channel * self.expansion)
+        self.bn3 = nn.BatchNorm2d(out_channel * self.expansion)
         self.relu = nn.ReLU(inplace=True)
-        self.downsample = downsample
         self.stride = stride
 
     def forward(self, x):
         residual = x
-        out = F.relu6(self.bn1(self.conv1(x)), inplace=True)
-        out = F.relu6(self.bn2(self.conv2(out)))
-        out = self.conv3(out)
-        out = self.bn3(out)
-        out = self.dp1(out)
-        if self.downsample is not None:
-            residual = self.downsample(x)
+        out = nn.ReLU(self.bn1(self.conv1(x)))
+        out = nn.ReLU(self.bn2(self.conv2(out)))
+        out = self.bn3(self.conv3(out))
         out += residual
         out = self.relu(out)
         return out
