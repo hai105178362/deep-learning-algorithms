@@ -29,7 +29,7 @@ batch_size = 128
 
 allspec = "closs_weight:{}\t".format(closs_weight) + "lr_cent:{}\t".format(lr_cent) + "feat_dim:{}\n".format(feat_dim) \
           + "num_feats:{}\t\t".format(num_feats) + "learningRate:{}\n".format(learningRate) + "weight_decay:{}\t".format(weightDecay) + \
-          "hidden_size:{}\t\tbatch_size:{}".format(hidden_sizes, batch_size)
+          "hidden_size:{}\t\tbatch_size:{}\tlayers:{}".format(hidden_sizes, batch_size,layers)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # train_dataset = torchvision.datasets.ImageFolder(root='data.nosync/validation_classification/medium', transform=torchvision.transforms.ToTensor())
