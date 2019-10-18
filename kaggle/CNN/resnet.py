@@ -11,28 +11,25 @@ import sys
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):
-    """3x3 convolution with padding"""
-    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
-                     padding=dilation, groups=groups, bias=False, dilation=dilation)
+def conv3x3(in_channel, out_channel, stride=1, groups=1, inflate=1):
+    return nn.Conv2d(in_channel, out_channel, kernel_size=3, stride=stride,
+                     padding=inflate, groups=groups, bias=False, dilation=inflate)
 
 
 def conv1x1(in_planes, out_planes, stride=1):
-    """1x1 convolution"""
     return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=False)
 
 
 class Bottleneck(nn.Module):
     expansion = 4
-
-    def __init__(self, in_channel, out_channel, stride=1, downsample=None, groups=1, base_width=32, dilation=1, norm_layer=None):
+    def __init__(self, in_channel, out_channel, stride=1, downsample=None, groups=1, base_width=32, inflate=1, norm_layer=None):
         super(Bottleneck, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         width = int(out_channel * (base_width / 32.)) * groups
         self.conv1 = conv1x1(in_channel, width)
         self.bn1 = norm_layer(width)
-        self.conv2 = conv3x3(width, width, stride, groups, dilation)
+        self.conv2 = conv3x3(width, width, stride, groups, inflate)
         self.bn2 = norm_layer(width)
         self.conv3 = conv1x1(width, out_channel * self.expansion)
         self.bn3 = norm_layer(out_channel * self.expansion)
@@ -54,33 +51,29 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, layers, num_classes=2300, zero_init_residual=False,
-                 groups=1, width_per_group=P.batch_size, replace_stride_with_dilation=None,
-                 norm_layer=None):
+    def __init__(self, block, layers, num_classes=2300, zero_init_residual=False, groups=1, width_per_group=P.batch_size, inflate=None, norm_layer=None):
         super(ResNet, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         self._norm_layer = norm_layer
         self.in_channel = 32
-        self.dilation = 1
-        if replace_stride_with_dilation is None:
-            # each element in the tuple indicates if we should replace
-            # the 2x2 stride with a dilated convolution instead
-            replace_stride_with_dilation = [False, False, False]
-        if len(replace_stride_with_dilation) != 3:
+        self.inflation = 1
+        if inflate is None:
+            inflate = [False, False, False]
+        if len(inflate) != 3:
             raise ValueError("replace_stride_with_dilation should be None "
-                             "or a 3-element tuple, got {}".format(replace_stride_with_dilation))
+                             "or a 3-element tuple, got {}".format(inflate))
         self.groups = groups
         self.base_width = width_per_group
-        # self.conv1 = nn.Conv2d(3, self.in_channel, kernel_size=7, stride=2, padding=3, bias=False)
         self.conv1 = nn.Conv2d(3, self.in_channel, kernel_size=3, stride=2, padding=3, bias=False)
+        # self.conv1 = nn.Conv2d(3, self.in_channel, kernel_size=3, stride=2, padding=3, bias=False)
         self.bn1 = norm_layer(self.in_channel)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.layer1 = self.add_layer(block, P.hidden_sizes[0], layers[0])
-        self.layer2 = self.add_layer(block, P.hidden_sizes[1], layers[1], stride=2, dilate=replace_stride_with_dilation[0])
-        self.layer3 = self.add_layer(block, P.hidden_sizes[2], layers[2], stride=2, dilate=replace_stride_with_dilation[1])
-        self.layer4 = self.add_layer(block, P.hidden_sizes[3], layers[3], stride=2, dilate=replace_stride_with_dilation[2])
+        self.layer2 = self.add_layer(block, P.hidden_sizes[1], layers[1], stride=2, inflate=inflate[0])
+        self.layer3 = self.add_layer(block, P.hidden_sizes[2], layers[2], stride=2, inflate=inflate[1])
+        self.layer4 = self.add_layer(block, P.hidden_sizes[3], layers[3], stride=2, inflate=inflate[2])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -92,27 +85,25 @@ class ResNet(nn.Module):
         self.linear_closs = nn.Linear(P.hidden_sizes[-1] * block.expansion, P.feat_dim, bias=False)
         self.relu_closs = nn.ReLU6(inplace=True)
 
-    def add_layer(self, block, planes, blocks, stride=1, dilate=False):
+    def add_layer(self, block, out_channel, blocks, stride=1, inflate=False):
         norm_layer = self._norm_layer
         downsample = None
-        previous_dilation = self.dilation
-        if dilate:
-            self.dilation *= stride
+        prev_inf = self.inflation
+        if inflate:
+            self.inflation *= stride
             stride = 1
-        if stride != 1 or self.in_channel != planes * block.expansion:
+        if stride != 1 or self.in_channel != out_channel * block.expansion:
             downsample = nn.Sequential(
-                conv1x1(self.in_channel, planes * block.expansion, stride),
-                norm_layer(planes * block.expansion),
+                conv1x1(self.in_channel, out_channel * block.expansion, stride),
+                norm_layer(out_channel * block.expansion),
             )
 
         layers = []
-        layers.append(block(self.in_channel, planes, stride, downsample, self.groups,
-                            self.base_width, previous_dilation, norm_layer))
-        self.in_channel = planes * block.expansion
+        layers.append(block(self.in_channel, out_channel, stride, downsample, self.groups,
+                            self.base_width, prev_inf, norm_layer))
+        self.in_channel = out_channel * block.expansion
         for _ in range(1, blocks):
-            layers.append(block(self.in_channel, planes, groups=self.groups,
-                                base_width=self.base_width, dilation=self.dilation,
-                                norm_layer=norm_layer))
+            layers.append(block(self.in_channel, out_channel, groups=self.groups, base_width=self.base_width, inflate=self.inflation, norm_layer=norm_layer))
 
         return nn.Sequential(*layers)
 
@@ -188,13 +179,13 @@ def train_closs(model, data_loader, test_loader, task='Classification', prev_acc
             end_time = time.time()
             print('Train Loss: {:.4f}\tTrain Accuracy: {:.4f}\tVal Loss: {:.4f}\tVal Accuracy: {:.4f}\tTime: {}'.
                   format(train_loss, train_acc, val_loss, val_acc, end_time - start_time))
+            wrt.recordtrace(train_acc, train_loss, val_acc, val_loss, epoch + 1)
             if train_acc >= 0.55 or val_acc >= 0.55 or (epoch + 1 >= 10 and train_acc + val_acc > prev_acc):
                 d = datetime.datetime.today()
                 record = "{}-{}-{}-e{}".format(d.day, d.hour, d.minute, epoch + 1)
                 modelpath = "saved_models/{}.pt".format(record)
                 torch.save(model.state_dict(), modelpath)
                 print("Model saved at: {}".format(modelpath))
-                wrt.recordtrace(train_acc, train_loss, val_acc, val_loss, epoch + 1)
                 prev_acc = train_acc + val_acc
         # else:
         #     test_verify(model, test_loader)
