@@ -24,9 +24,9 @@ def get_output(model, test_loader):
 
 if __name__ == "__main__":
     val_dataset = torchvision.datasets.ImageFolder(root='data.nosync/validation_classification/medium', transform=torchvision.transforms.ToTensor())
-    test_dataset = torchvision.datasets.ImageFolder(root='data.nosync/test_classification', transform=torchvision.transforms.ToTensor())
-    # test_dataset = torchvision.datasets.ImageFolder(root='data.nosync/validation_classification/medium', transform=torchvision.transforms.ToTensor())
-    test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=256, shuffle=False, num_workers=8)
+    # test_dataset = torchvision.datasets.ImageFolder(root='data.nosync/test_classification', transform=torchvision.transforms.ToTensor())
+    test_dataset = torchvision.datasets.ImageFolder(root='data.nosync/validation_classification/medium', transform=torchvision.transforms.ToTensor())
+    # test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=256, shuffle=False, num_workers=8)
     # print(val_dataset.classes)
     val_labels = [i[1] for i in val_dataset.samples]
     # label_ref = [(i, j) for i, j in enumerate(val_dataset.classes)]
