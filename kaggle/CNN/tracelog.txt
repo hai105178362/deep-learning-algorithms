@@ -45,3 +45,9 @@ num_feats:3		learningRate:0.1
 weight_decay:1e-05	hidden_size:[32, 64, 128, 128]		batch_size:256
 
 Train Loss: 104.2383	Train Accuracy: 0.0004	Val Loss: 104.2383	Val Accuracy: 0.0004 	 epoch: 1
+==========================================================================
+18-12-33
+closs_weight:0.6	lr_cent:0.5	feat_dim:10
+num_feats:3		learningRate:0.1
+weight_decay:1e-05	hidden_size:[32, 64, 32, 32]		batch_size:128
+

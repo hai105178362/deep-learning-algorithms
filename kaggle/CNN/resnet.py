@@ -29,6 +29,7 @@ class Bottleneck(nn.Module):
         width = int(out_channel * (base_width / 32.)) * groups
         self.conv1 = conv1x1(in_channel, width)
         self.bn1 = norm_layer(width)
+        self.dp1 = nn.Dropout(p=0.5)
         self.conv2 = conv3x3(width, width, stride, groups, inflate)
         self.bn2 = norm_layer(width)
         self.conv3 = conv1x1(width, out_channel * self.expansion)
@@ -43,6 +44,7 @@ class Bottleneck(nn.Module):
         out = F.relu6(self.bn2(self.conv2(out)))
         out = self.conv3(out)
         out = self.bn3(out)
+        out = self.dp1(out)
         if self.downsample is not None:
             residual = self.downsample(x)
         out += residual
