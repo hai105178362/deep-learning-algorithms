@@ -22,11 +22,11 @@ def conv1x1(in_planes, out_planes, stride=1):
 
 class Bottleneck(nn.Module):
     expansion = 4
-    def __init__(self, in_channel, out_channel, stride=1, downsample=None, groups=1, base_width=32, inflate=1, norm_layer=None):
+    def __init__(self, in_channel, out_channel, stride=1, downsample=None, groups=1, base_width=64, inflate=1, norm_layer=None):
         super(Bottleneck, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
-        width = int(out_channel * (base_width / 32.)) * groups
+        width = int(out_channel * (base_width / 64.)) * groups
         self.conv1 = conv1x1(in_channel, width)
         self.bn1 = norm_layer(width)
         # self.dp1 = nn.Dropout(p=0.2)
@@ -53,12 +53,12 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, layers, num_classes=2300, zero_init_residual=False, groups=1, width_per_group=P.batch_size, inflate=None, norm_layer=None):
+    def __init__(self, block, layers, num_classes=2300, zero_init_residual=False, groups=1, width_per_group=64, inflate=None, norm_layer=None):
         super(ResNet, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         self._norm_layer = norm_layer
-        self.in_channel = 32
+        self.in_channel = 64
         self.inflation = 1
         if inflate is None:
             inflate = [False, False, False]
