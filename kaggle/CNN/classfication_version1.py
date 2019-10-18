@@ -55,7 +55,7 @@ if __name__ == "__main__":
     id_list = [i[0][s1:-4] for i in test_dataset.samples]
     # model = M.Resnet(P.num_feats, P.hidden_sizes, P.num_classes, P.feat_dim)
     model = R.network
-    model.load_state_dict(torch.load('saved_models/17-17-56-e1.pt', map_location=M.device))
+    model.load_state_dict(torch.load('saved_models/model_resnet/18-3-36-e10.pt', map_location=M.device))
     output = get_output(model, test_dataloader)
     result = [label_ref[output[i].item()] for i in range(len(output))]
     print(result)
