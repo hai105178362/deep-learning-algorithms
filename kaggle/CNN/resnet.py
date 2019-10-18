@@ -22,14 +22,14 @@ def conv1x1(in_planes, out_planes, stride=1):
 
 class Bottleneck(nn.Module):
     expansion = 4
-
-    def __init__(self, in_channel, out_channel, stride=1, downsample=None, groups=1, base_width=P.hidden_sizes[0], inflate=1, norm_layer=None):
+    def __init__(self, in_channel, out_channel, stride=1, downsample=None, groups=1, base_width=32, inflate=1, norm_layer=None):
         super(Bottleneck, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
-        width = int(out_channel * (base_width / 64.)) * groups
+        width = int(out_channel * (base_width / 32.)) * groups
         self.conv1 = conv1x1(in_channel, width)
         self.bn1 = norm_layer(width)
+        # self.dp1 = nn.Dropout(p=0.2)
         self.conv2 = conv3x3(width, width, stride, groups, inflate)
         self.bn2 = norm_layer(width)
         self.conv3 = conv1x1(width, out_channel * self.expansion)
@@ -40,10 +40,11 @@ class Bottleneck(nn.Module):
 
     def forward(self, x):
         residual = x
-        out = F.relu(self.bn1(self.conv1(x)), inplace=True)
-        out = F.relu(self.bn2(self.conv2(out)))
+        out = F.relu6(self.bn1(self.conv1(x)), inplace=True)
+        out = F.relu6(self.bn2(self.conv2(out)))
         out = self.conv3(out)
         out = self.bn3(out)
+        # out = self.dp1(out)
         if self.downsample is not None:
             residual = self.downsample(x)
         out += residual
@@ -57,7 +58,7 @@ class ResNet(nn.Module):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         self._norm_layer = norm_layer
-        self.in_channel = P.hidden_sizes[0]
+        self.in_channel = 32
         self.inflation = 1
         if inflate is None:
             inflate = [False, False, False]
@@ -84,7 +85,7 @@ class ResNet(nn.Module):
                 nn.init.constant_(m.bias, 0)
         self.linear_label = nn.Linear(P.hidden_sizes[-1] * block.expansion, P.num_classes, bias=False)
         self.linear_closs = nn.Linear(P.hidden_sizes[-1] * block.expansion, P.feat_dim, bias=False)
-        self.relu_closs = nn.ReLU(inplace=True)
+        self.relu_closs = nn.ReLU6(inplace=True)
 
     def add_layer(self, block, out_channel, blocks, stride=1, inflate=False):
         norm_layer = self._norm_layer
