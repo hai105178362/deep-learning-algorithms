@@ -18,7 +18,7 @@ weightDecay = 1e-5
 #####################################
 
 ######Parameters fo Resnet#####
-closs_weight = 0.6
+closs_weight = 1
 layers = [3,4,6,3]
 # layers = [3, 4, 23, 3]
 # hidden_sizes = [32, 64, 128, 128]
