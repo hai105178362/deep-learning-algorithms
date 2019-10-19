@@ -2,13 +2,13 @@ import torch
 import torchvision
 from torch.utils.data import Dataset
 
-feat_dim = 10
+feat_dim = 2300
 closs_weight = 1
 lr_cent = 0.5
 numEpochs = 100
 num_feats = 3
 learningRate = 0.1
-weightDecay = 1e-6
+weightDecay = 1e-3
 
 ######Parameters fo basic model######
 # closs_weight = 0.6

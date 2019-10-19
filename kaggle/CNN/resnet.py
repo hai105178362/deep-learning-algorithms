@@ -183,7 +183,7 @@ def train_closs(model, data_loader, test_loader, task='Classification', prev_acc
             print('Train Loss: {:.4f}\tTrain Accuracy: {:.4f}\tVal Loss: {:.4f}\tVal Accuracy: {:.4f}\tTime: {}'.
                   format(train_loss, train_acc, val_loss, val_acc, end_time - start_time))
             wrt.recordtrace(train_acc, train_loss, val_acc, val_loss, epoch + 1)
-            if train_acc >= 0.55 or val_acc >= 0.55 or (epoch + 1 >= 10 and train_acc + val_acc > prev_acc):
+            if train_acc >= 0.55 and val_acc >= 0.53 or (epoch + 1 >= 10 and train_acc + val_acc > prev_acc):
                 d = datetime.datetime.today()
                 record = "{}-{}-{}-e{}".format(d.day, d.hour, d.minute, epoch + 1)
                 modelpath = "saved_models/{}.pt".format(record)
