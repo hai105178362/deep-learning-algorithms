@@ -3,12 +3,12 @@ import torchvision
 from torch.utils.data import Dataset
 
 feat_dim = 10
-closs_weight = 0.6
+closs_weight = 1
 lr_cent = 0.5
 numEpochs = 100
 num_feats = 3
 learningRate = 0.1
-weightDecay = 1e-5
+weightDecay = 1e-6
 
 ######Parameters fo basic model######
 # closs_weight = 0.6
@@ -18,9 +18,9 @@ weightDecay = 1e-5
 #####################################
 
 ######Parameters fo Resnet#####
-closs_weight = 0.6
-layers = [3,4,6,3]
-# layers = [3, 4, 23, 3]
+closs_weight = 1
+# layers = [3,4,6,3]
+layers = [3, 4, 23, 3]
 # hidden_sizes = [32, 64, 128, 128]
 hidden_sizes = [64, 128, 256, 512]
 batch_size = 128

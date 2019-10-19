@@ -1,75 +1,12 @@
+==========================================================================
+19-1-19
 closs_weight:0.6	lr_cent:0.5	feat_dim:10
 num_feats:3		learningRate:0.1
-weight_decay:1e-05	hidden_size:[32, 64, 128, 256]		batch_size:128
+weight_decay:1e-06	hidden_size:[64, 128, 256, 512]		batch_size:128	layers:[3, 4, 23, 3]
 
-Train Loss: 1.9719	Train Accuracy: 0.5724	Val Loss: 3.2357	Val Accuracy: 0.3769 	 epoch: 9
-Train Loss: 1.7421	Train Accuracy: 0.6148	Val Loss: 3.1977	Val Accuracy: 0.3914 	 epoch: 10
-Train Loss: 1.5363	Train Accuracy: 0.6549	Val Loss: 3.1434	Val Accuracy: 0.4097 	 epoch: 11
-Train Loss: 1.3688	Train Accuracy: 0.6870	Val Loss: 3.1049	Val Accuracy: 0.4164 	 epoch: 12
-Train Loss: 104.2383	Train Accuracy: 0.0004	Val Loss: 104.2383	Val Accuracy: 0.0004 	 epoch: 1
 ==========================================================================
-18-12-33
-closs_weight:0.6	lr_cent:0.5	feat_dim:10
+19-1-29
+closs_weight:1	lr_cent:0.5	feat_dim:10
 num_feats:3		learningRate:0.1
-weight_decay:1e-05	hidden_size:[32, 64, 32, 32]		batch_size:128
+weight_decay:1e-06	hidden_size:[64, 128, 256, 512]		batch_size:128	layers:[3, 4, 23, 3]
 
-Train Loss: 4.8497	Train Accuracy: 0.1360	Val Loss: 4.9660	Val Accuracy: 0.1306 	 epoch: 1
-Train Loss: 4.1136	Train Accuracy: 0.2208	Val Loss: 4.2520	Val Accuracy: 0.2076 	 epoch: 2
-==========================================================================
-18-13-35
-closs_weight:0.6	lr_cent:0.5	feat_dim:10
-num_feats:3		learningRate:0.1
-weight_decay:1e-05	hidden_size:[32, 64, 32, 32]		batch_size:128	layers:[1, 2, 2, 1]
-
-Train Loss: 5.5269	Train Accuracy: 0.0678	Val Loss: 5.5808	Val Accuracy: 0.0637 	 epoch: 1
-Train Loss: 4.7597	Train Accuracy: 0.1405	Val Loss: 4.8273	Val Accuracy: 0.1350 	 epoch: 2
-Train Loss: 4.3909	Train Accuracy: 0.1904	Val Loss: 4.4548	Val Accuracy: 0.1934 	 epoch: 3
-Train Loss: 3.8693	Train Accuracy: 0.2566	Val Loss: 3.9946	Val Accuracy: 0.2521 	 epoch: 4
-Train Loss: 3.5892	Train Accuracy: 0.2984	Val Loss: 3.7524	Val Accuracy: 0.2808 	 epoch: 5
-Train Loss: 3.5684	Train Accuracy: 0.3021	Val Loss: 3.7504	Val Accuracy: 0.2880 	 epoch: 6
-Train Loss: 3.3321	Train Accuracy: 0.3389	Val Loss: 3.5207	Val Accuracy: 0.3245 	 epoch: 7
-Train Loss: 3.3264	Train Accuracy: 0.3389	Val Loss: 3.5600	Val Accuracy: 0.3182 	 epoch: 8
-Train Loss: 3.1639	Train Accuracy: 0.3627	Val Loss: 3.4379	Val Accuracy: 0.3380 	 epoch: 9
-Train Loss: 3.0896	Train Accuracy: 0.3756	Val Loss: 3.3655	Val Accuracy: 0.3478 	 epoch: 10
-Train Loss: 3.1216	Train Accuracy: 0.3688	Val Loss: 3.4044	Val Accuracy: 0.3341 	 epoch: 11
-Train Loss: 2.9594	Train Accuracy: 0.3960	Val Loss: 3.2764	Val Accuracy: 0.3573 	 epoch: 12
-Train Loss: 2.9034	Train Accuracy: 0.4059	Val Loss: 3.2393	Val Accuracy: 0.3604 	 epoch: 13
-==========================================================================
-18-16-13
-closs_weight:0.6	lr_cent:0.5	feat_dim:10
-num_feats:3		learningRate:0.1
-weight_decay:1e-05	hidden_size:[32, 64, 128, 128]		batch_size:128	layers:[3, 4, 6, 3]
-
-==========================================================================
-18-16-16
-closs_weight:0.6	lr_cent:0.5	feat_dim:10
-num_feats:3		learningRate:0.1
-weight_decay:1e-05	hidden_size:[32, 64, 128, 128]		batch_size:128	layers:[3, 4, 6, 3]
-
-Train Loss: 6.0744	Train Accuracy: 0.0371	Val Loss: 6.1430	Val Accuracy: 0.0350 	 epoch: 1
-Train Loss: 4.9391	Train Accuracy: 0.1213	Val Loss: 5.0223	Val Accuracy: 0.1128 	 epoch: 2
-Train Loss: 4.3483	Train Accuracy: 0.1903	Val Loss: 4.4495	Val Accuracy: 0.1904 	 epoch: 3
-Train Loss: 3.8627	Train Accuracy: 0.2556	Val Loss: 4.0116	Val Accuracy: 0.2499 	 epoch: 4
-Train Loss: 3.4897	Train Accuracy: 0.3097	Val Loss: 3.7021	Val Accuracy: 0.2897 	 epoch: 5
-Train Loss: 3.2149	Train Accuracy: 0.3516	Val Loss: 3.4783	Val Accuracy: 0.3241 	 epoch: 6
-Train Loss: 2.9609	Train Accuracy: 0.3933	Val Loss: 3.3072	Val Accuracy: 0.3562 	 epoch: 7
-Train Loss: 2.7681	Train Accuracy: 0.4227	Val Loss: 3.1738	Val Accuracy: 0.3762 	 epoch: 8
-Train Loss: 2.5202	Train Accuracy: 0.4665	Val Loss: 3.0412	Val Accuracy: 0.4023 	 epoch: 9
-Train Loss: 2.4194	Train Accuracy: 0.4842	Val Loss: 2.9270	Val Accuracy: 0.4230 	 epoch: 10
-Train Loss: 2.2361	Train Accuracy: 0.5153	Val Loss: 2.8390	Val Accuracy: 0.4351 	 epoch: 11
-==========================================================================
-==========================================================================
-18-17-44
-closs_weight:0.6	lr_cent:0.5	feat_dim:10
-num_feats:3		learningRate:0.1
-weight_decay:1e-05	hidden_size:[64, 128, 256, 512]		batch_size:128	layers:[3, 4, 23, 3]
-
-==========================================================================
-18-17-48
-closs_weight:0.6	lr_cent:0.5	feat_dim:10
-num_feats:3		learningRate:0.1
-weight_decay:1e-05	hidden_size:[64, 128, 256, 512]		batch_size:128	layers:[3, 4, 23, 3]
-
-Train Loss: 2105.0693	Train Accuracy: 0.0002	Val Loss: 2105.0693	Val Accuracy: 0.0002 	 epoch: 1
-Train Loss: 14.0997	Train Accuracy: 0.0002	Val Loss: 14.0997	Val Accuracy: 0.0002 	 epoch: 2
-Train Loss: 13.2667	Train Accuracy: 0.0000	Val Loss: 13.2667	Val Accuracy: 0.0000 	 epoch: 3
