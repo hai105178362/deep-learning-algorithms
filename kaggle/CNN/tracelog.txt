@@ -19,3 +19,9 @@ closs_weight:1	lr_cent:0.5	feat_dim:2300
 num_feats:3		learningRate:0.1
 weight_decay:0.001	hidden_size:[64, 128, 256, 512]		batch_size:128	layers:[3, 4, 23, 3]
 
+==========================================================================
+19-3-9
+closs_weight:1	lr_cent:0.5	feat_dim:2300
+num_feats:3		learningRate:0.1
+weight_decay:1e-05	hidden_size:[64, 128, 256, 512]		batch_size:128	layers:[3, 4, 23, 3]
+
