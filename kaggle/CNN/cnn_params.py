@@ -2,7 +2,7 @@ import torch
 import torchvision
 from torch.utils.data import Dataset
 
-feat_dim = 10
+feat_dim = 2300
 closs_weight = 1
 lr_cent = 0.5
 numEpochs = 100
