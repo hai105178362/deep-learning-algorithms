@@ -94,13 +94,13 @@ if __name__ == "__main__":
         testpath = preflex + 'test_verification'
         # img_pil = Image.open(testpath)
         img_list, id_list = parse_data(testpath)
-        print(img_list)
+        # print(img_list)
         model.eval()
         for i in img_list:
             img = Image.open(i)
             t = torchvision.transforms.ToTensor()(img)
-            print(t)
-            cur_result = model(t)
+            # print(t)
+            _,cur_result = model(t.reshape(1,3,32,32))
             print(cur_result)
             # print(t)
             exit(1)
