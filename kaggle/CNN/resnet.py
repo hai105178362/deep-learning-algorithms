@@ -11,29 +11,28 @@ import sys
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-def conv3x3(in_channel, out_channel, stride=1, groups=1, inflate=1):
-    return nn.Conv2d(in_channel, out_channel, kernel_size=3, stride=stride,
-                     padding=inflate, groups=groups, bias=False, dilation=inflate)
+def conv3x3(in_channel, out_channel, stride=1):
+    return nn.Conv2d(in_channel, out_channel, kernel_size=3, stride=stride, padding=1, bias=False)
 
 
-def conv1x1(in_planes, out_planes, stride=1):
-    return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=stride, bias=False)
+def conv1x1(in_planes, out_channel, stride=1):
+    return nn.Conv2d(in_planes, out_channel, kernel_size=1, stride=stride, bias=False)
 
 
 class Bottleneck(nn.Module):
     expansion = 4
-    def __init__(self, in_channel, out_channel, stride=1, downsample=None, groups=1, base_width=64, inflate=1, norm_layer=None):
+
+    def __init__(self, in_channel, out_channel, stride=1, downsample=None, base_width=64, inflate=1):
         super(Bottleneck, self).__init__()
-        if norm_layer is None:
-            norm_layer = nn.BatchNorm2d
-        width = int(out_channel * (base_width / 64.)) * groups
+        bn = nn.BatchNorm2d
+        width = int(out_channel * (base_width / 64.))
         self.conv1 = conv1x1(in_channel, width)
-        self.bn1 = norm_layer(width)
+        self.bn1 = bn(width)
         # self.dp1 = nn.Dropout(p=0.2)
-        self.conv2 = conv3x3(width, width, stride, groups, inflate)
-        self.bn2 = norm_layer(width)
+        self.conv2 = conv3x3(width, width, stride)
+        self.bn2 = bn(width)
         self.conv3 = conv1x1(width, out_channel * self.expansion)
-        self.bn3 = norm_layer(out_channel * self.expansion)
+        self.bn3 = bn(out_channel * self.expansion)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
@@ -53,23 +52,19 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-    def __init__(self, block, layers, num_classes=2300, zero_init_residual=False, groups=1, width_per_group=64, inflate=None, norm_layer=None):
+    def __init__(self, block, layers, num_classes=2300, width=64, inflate=None):
         super(ResNet, self).__init__()
-        if norm_layer is None:
-            norm_layer = nn.BatchNorm2d
-        self._norm_layer = norm_layer
+        bn = nn.BatchNorm2d
+        self._bn = nn.BatchNorm2d
         self.in_channel = 64
         self.inflation = 1
         if inflate is None:
             inflate = [False, False, False]
-        if len(inflate) != 3:
-            raise ValueError("replace_stride_with_dilation should be None "
-                             "or a 3-element tuple, got {}".format(inflate))
-        self.groups = groups
-        self.base_width = width_per_group
-        self.conv1 = nn.Conv2d(3, self.in_channel, kernel_size=3, stride=2, padding=3, bias=False)
+        self.base_width = width
+        self.conv1 = nn.Conv2d(
+            3, self.in_channel, kernel_size=3, stride=2, padding=3, bias=False)
         # self.conv1 = nn.Conv2d(3, self.in_channel, kernel_size=3, stride=2, padding=3, bias=False)
-        self.bn1 = norm_layer(self.in_channel)
+        self.bn1 = bn(self.in_channel)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.layer1 = self.add_layer(block, P.hidden_sizes[0], layers[0])
@@ -78,17 +73,13 @@ class ResNet(nn.Module):
         self.layer4 = self.add_layer(block, P.hidden_sizes[3], layers[3], stride=2, inflate=inflate[2])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-            elif isinstance(m, (nn.BatchNorm2d, nn.GroupNorm)):
-                nn.init.constant_(m.weight, 1)
-                nn.init.constant_(m.bias, 0)
+            init_weights(m)
         self.linear_label = nn.Linear(P.hidden_sizes[-1] * block.expansion, P.num_classes, bias=False)
         self.linear_closs = nn.Linear(P.hidden_sizes[-1] * block.expansion, P.feat_dim, bias=False)
         self.relu_closs = nn.ReLU6(inplace=True)
 
     def add_layer(self, block, out_channel, blocks, stride=1, inflate=False):
-        norm_layer = self._norm_layer
+        bn = self._bn
         downsample = None
         prev_inf = self.inflation
         if inflate:
@@ -96,25 +87,23 @@ class ResNet(nn.Module):
             stride = 1
         if stride != 1 or self.in_channel != out_channel * block.expansion:
             downsample = nn.Sequential(
-                conv1x1(self.in_channel, out_channel * block.expansion, stride),
-                norm_layer(out_channel * block.expansion),
+                conv1x1(self.in_channel, out_channel *
+                        block.expansion, stride),
+                bn(out_channel * block.expansion),
             )
 
         layers = []
-        layers.append(block(self.in_channel, out_channel, stride, downsample, self.groups,
-                            self.base_width, prev_inf, norm_layer))
+        layers.append(block(self.in_channel, out_channel, stride, downsample,
+                            self.base_width, prev_inf))
         self.in_channel = out_channel * block.expansion
         for _ in range(1, blocks):
-            layers.append(block(self.in_channel, out_channel, groups=self.groups, base_width=self.base_width, inflate=self.inflation, norm_layer=norm_layer))
+            layers.append(block(self.in_channel, out_channel,
+                                base_width=self.base_width, inflate=self.inflation))
 
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
-
+        x = self.maxpool(self.relu(self.bn1(self.conv1(x))))
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
@@ -167,7 +156,8 @@ def train_closs(model, data_loader, test_loader, task='Classification', prev_acc
             avg_loss += loss.item()
 
             if batch_num % 500 == 499:
-                print('Epoch: {}\tBatch: {}\tAvg-Loss: {:.4f}'.format(epoch + 1, batch_num + 1, avg_loss / 50))
+                print('Epoch: {}\tBatch: {}\tAvg-Loss: {:.4f}'.format(epoch +
+                                                                      1, batch_num + 1, avg_loss / 50))
                 avg_loss = 0.0
 
             torch.cuda.empty_cache()
@@ -181,10 +171,12 @@ def train_closs(model, data_loader, test_loader, task='Classification', prev_acc
             end_time = time.time()
             print('Train Loss: {:.4f}\tTrain Accuracy: {:.4f}\tVal Loss: {:.4f}\tVal Accuracy: {:.4f}\tTime: {}'.
                   format(train_loss, train_acc, val_loss, val_acc, end_time - start_time))
-            wrt.recordtrace(train_acc, train_loss, val_acc, val_loss, epoch + 1)
+            wrt.recordtrace(train_acc, train_loss,
+                            val_acc, val_loss, epoch + 1)
             if train_acc >= 0.55 or val_acc >= 0.55 or (epoch + 1 >= 10 and train_acc + val_acc > prev_acc):
                 d = datetime.datetime.today()
-                record = "{}-{}-{}-e{}".format(d.day, d.hour, d.minute, epoch + 1)
+                record = "{}-{}-{}-e{}".format(d.day,
+                                               d.hour, d.minute, epoch + 1)
                 modelpath = "saved_models/{}.pt".format(record)
                 torch.save(model.state_dict(), modelpath)
                 print("Model saved at: {}".format(modelpath))
@@ -230,7 +222,8 @@ class CenterLoss(nn.Module):
         self.feat_dim = feat_dim
         self.device = device
 
-        self.centers = nn.Parameter(torch.randn(self.num_classes, self.feat_dim).to(self.device))
+        self.centers = nn.Parameter(torch.randn(
+            self.num_classes, self.feat_dim).to(self.device))
 
     def forward(self, x, labels):
         """
@@ -240,7 +233,8 @@ class CenterLoss(nn.Module):
         """
         batch_size = x.size(0)
         distmat = torch.pow(x, 2).sum(dim=1, keepdim=True).expand(batch_size, self.num_classes) + \
-                  torch.pow(self.centers, 2).sum(dim=1, keepdim=True).expand(self.num_classes, batch_size).t()
+            torch.pow(self.centers, 2).sum(dim=1, keepdim=True).expand(
+                self.num_classes, batch_size).t()
         distmat.addmm_(1, -2, x, self.centers.t())
 
         classes = torch.arange(self.num_classes).long().to(self.device)
@@ -250,7 +244,8 @@ class CenterLoss(nn.Module):
         dist = []
         for i in range(batch_size):
             value = distmat[i][mask[i]]
-            value = value.clamp(min=1e-12, max=1e+12)  # for numerical stability
+            # for numerical stability
+            value = value.clamp(min=1e-12, max=1e+12)
             dist.append(value)
         dist = torch.cat(dist)
         loss = dist.mean()
@@ -287,6 +282,7 @@ network = ResNet(Bottleneck, P.layers)
 criterion_label = nn.CrossEntropyLoss()
 criterion_closs = CenterLoss(P.num_classes, P.feat_dim, P.device)
 # optimizer_label = torch.optim.SGD(network.parameters(), lr=P.learningRate, weight_decay=P.weightDecay, momentum=0.9)
-optimizer_label = torch.optim.Adam(network.parameters(), lr=P.learningRate, weight_decay=P.weightDecay)
+optimizer_label = torch.optim.Adam(
+    network.parameters(), lr=P.learningRate, weight_decay=P.weightDecay)
 # optimizer_closs = torch.optim.SGD(criterion_closs.parameters(), lr=P.lr_cent)
 optimizer_closs = torch.optim.Adam(criterion_closs.parameters(), lr=P.lr_cent)
