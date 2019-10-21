@@ -2,6 +2,8 @@
 *.pdf
 *.npy
 *.png
+*.gz
+*.tar
 */data/
 */local_autograder/
 saved_models/
