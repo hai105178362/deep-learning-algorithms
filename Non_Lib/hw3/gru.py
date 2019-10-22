@@ -180,9 +180,7 @@ def inference(net, inputs):
 
 if __name__ == "__main__":
     cell = GRU_Cell(5, HIDDEN_DIM)
-    # input = np.random.randn(6, 3, 5)
     input = np.ones(shape=(6, 3, 5))
-    # hx = np.random.randn(3, 4)
     hx = np.ones(shape=(3, 4))
     output = []
     for i in range(6):
