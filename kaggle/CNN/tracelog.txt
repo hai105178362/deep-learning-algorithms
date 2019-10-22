@@ -261,3 +261,15 @@ weight_decay:1e-05	hidden_size:[16, 16, 16, 16]		batch_size:128	layers:[3, 4, 6,
 
 Train Loss: 5017.2587	Train Accuracy: 0.0007	Val Loss: 5017.2588	Val Accuracy: 0.0007 	 epoch: 1
 Train Loss: 4010.3175	Train Accuracy: 0.0009	Val Loss: 4010.3174	Val Accuracy: 0.0009 	 epoch: 2
+==========================================================================
+21-20-43
+closs_weight:0.6	lr_cent:1	feat_dim:2300
+num_feats:3		learningRate:0.001
+weight_decay:1e-05	hidden_size:[16, 16, 16, 16]		batch_size:128	layers:[3, 4, 6, 3]
+
+==========================================================================
+21-20-43
+closs_weight:0.6	lr_cent:1	feat_dim:2300
+num_feats:3		learningRate:0.001
+weight_decay:1e-05	hidden_size:[16, 16, 16, 16]		batch_size:128	layers:[3, 4, 6, 3]
+
