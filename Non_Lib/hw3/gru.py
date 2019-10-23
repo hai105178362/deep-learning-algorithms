@@ -118,20 +118,21 @@ class GRU_Cell:
         #
         # output:
         # 	- h_t: hidden state at current time-step
-        # print(x.shape,h.shape)
-        # print(self.Wzh.shape,self.Wzx.shape)
-        # # sys.exit(1)
-        # x: 3,4    h:3,5
-        # Wzh: 4,4  Wzx:4,5
-
+        
+        self.h = np.array([h])
+        self.x = np.array([x])
         # self.z_t = self.z_act(np.dot(self.Wzh, h.T) + np.dot(self.Wzx, x.T))
-        self.z_t = self.z_act(np.dot(h, self.Wzh.T) + np.dot(x, self.Wzx.T))    # 3,4
+        self.z_t = self.z_act(np.dot(self.h, self.Wzh.T) + np.dot(self.x, self.Wzx.T))
         # self.r_t = self.r_act(np.dot(self.Wrh, h.T) + np.dot(self.Wrx, x.T))
-        self.r_t = self.r_act(np.dot(h, self.Wrh.T) + np.dot(x, self.Wrx.T))    # 3,4
+        self.r_t = self.r_act(np.dot(self.h, self.Wrh.T) + np.dot(self.x, self.Wrx.T))
         assert self.z_t.shape == self.r_t.shape, "different shape between z_t and r_t!"
-        self.h_tilde_t = self.h_act(np.dot(np.multiply(self.r_t, h),self.Wh.T) + np.dot(x,self.Wx.T)) # Wh 4,4
-        self.h_t = np.multiply((1 - self.z_t), h) + np.multiply(self.z_t, self.h_tilde_t)
-        return self.h_t
+        self.h_tilde_t = self.h_act(np.dot(np.multiply(self.r_t, self.h), self.Wh.T) + np.dot(self.x, self.Wx.T))  # Wh 4,4
+        self.h_t = np.multiply((1 - self.z_t), self.h) + np.multiply(self.z_t, self.h_tilde_t)
+        
+        # print("self.z_t:{}   self.r_t:{}".format(self.z_t.shape, self.r_t.shape))
+        # print("self.h_tilde_t:{}   self.h_t:{}".format(self.h_tilde_t.shape, self.h_t.shape))
+        # print("==========FORWARD END=========")
+        return self.h_t[0]
     
     # raise NotImplementedError
     
@@ -144,6 +145,36 @@ class GRU_Cell:
         # output:
         #  - dx: Derivative of loss wrt the input x
         #  - dh: Derivative  of loss wrt the input hidden h
+        #########
+        # print("X:{}  H:{} ".format(self.x, self.h))
+        # print("delta: {}".format(delta))
+        # print("Wrx:{}\nWzx:{}\nWx:{}\nWrh:{}\nWzh:{}\nWh:{}".format(self.Wrx, self.Wzx, self.Wx, self.Wrh, self.Wzh, self.Wh))
+        
+        # Part 1
+        dl_dz = np.multiply(delta, -1 * (self.h)) + np.multiply(delta, self.h_tilde_t)
+        assert dl_dz.shape == self.z_t.shape
+        print(self.z_act.backward().shape,self.Wzx.shape)
+        dz_dx, dz_dh = np.multiply(self.z_act.backward().T, self.Wzx), np.multiply(self.z_act.backward().T, self.Wzh)
+        dl_dzx, dl_dzh = np.matmul(dl_dz, dz_dx), np.matmul(dl_dz, dz_dh)
+        assert dl_dzx.shape == self.x.shape and dl_dzh.shape == self.h.shape
+        
+        # Part 2
+        dl_dhtilde = np.multiply(delta, self.z_t)
+        assert dl_dhtilde.shape == self.h_tilde_t.shape
+        dhtilde_dr = np.multiply(self.h_act.backward(), (np.matmul(self.h, self.Wh)))
+        dr_dx, dr_dh = np.multiply(self.r_act.backward().T, self.Wrx), np.multiply(self.r_act.backward().T, self.Wrh)
+        dl_drx, dl_drh = np.matmul(dhtilde_dr, dr_dx), np.matmul(dhtilde_dr, dr_dh)
+        assert dl_drx.shape == self.x.shape and dl_drh.shape == self.h.shape
+        
+        # Part 3
+        dhtilde_dx, dhtilde_dh = np.multiply(self.h_act.backward().T, self.Wx), np.multiply(self.h_act.backward().T, self.Wh)
+        dl_dhtildex, dl_dhtildeh = np.matmul(dl_dhtilde, dhtilde_dx), np.matmul(dl_dhtilde, dhtilde_dh)
+        assert dl_dhtildex.shape == self.x.shape and dl_dhtildeh.shape == self.h.shape
+        dx = dl_dzx + dl_drx + dl_dhtildex
+        dh = dl_dzh + dl_drh + dl_dhtildeh
+        print("dx: {}".format(dx))
+        print("dh: {}".format(dh))
+        return dx, dh
         raise NotImplementedError
 
 
@@ -179,12 +210,32 @@ def inference(net, inputs):
 
 
 if __name__ == "__main__":
-    cell = GRU_Cell(5, HIDDEN_DIM)
-    input = np.ones(shape=(6, 3, 5))
-    hx = np.ones(shape=(3, 4))
-    output = []
-    for i in range(6):
-        fwd = cell.forward(input[i], hx)
-        output.append(fwd)
-    # print(output)
-# assert fwd == ref1.output
+    # cell = GRU_Cell(5, HIDDEN_DIM)
+    cell = GRU_Cell(5, 2)
+    # input = np.ones(shape=(5,))
+    x = [1.62434536, -0.61175641, -0.52817175, -1.07296862, 0.86540763]
+    h = [0.30017032, -0.35224985]
+    cell.Wrx = np.array([[0.31563495, -2.02220122, -0.30620401, 0.82797464, 0.23009474],
+                         [0.76201118, -0.22232814, -0.20075807, 0.18656139, 0.41005165]])
+    cell.Wzx = np.array([[0.48851815, -0.07557171, 1.13162939, 1.51981682, 2.18557541],
+                         [-1.39649634, -1.44411381, -0.50446586, 0.16003707, 0.87616892]])
+    cell.Wx = np.array([[0.19829972, 0.11900865, -0.67066229, 0.37756379, 0.12182127],
+                        [1.12948391, 1.19891788, 0.18515642, -0.37528495, -0.63873041]])
+    cell.Wrh = np.array([[0.83898341, 0.93110208],
+                         [0.28558733, 0.88514116]])
+    cell.Wzh = np.array([[-1.1425182, -0.34934272],
+                         [-0.20889423, 0.58662319]])
+    cell.Wh = np.array([[-0.75439794, 1.25286816],
+                        [0.51292982, -0.29809284]])
+    # hx = np.ones(shape=(1, 2))
+    # hx = np.ones(shape=(2,))
+    # output = []
+    # output = np.array(output)
+    fwd = cell.forward(x, h)
+    # print(output.shape)
+    # delta = np.array([0.52057634, -1.14434139])
+    
+    delta = [0.52057634, -1.14434139]
+    # print(delta)
+    ans = cell.backward(delta)
+    print("Refx:", [0.23557079, 0.31226805, -0.14046534, -0.00406543, -0.2789988])
