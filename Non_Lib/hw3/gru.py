@@ -82,14 +82,6 @@ class GRU_Cell:
         self.Wrx = np.random.randn(h, d)
         self.Wx = np.random.randn(h, d)
         
-        # self.Wzh = np.ones((h, h))
-        # self.Wrh = np.ones((h, h))
-        # self.Wh = np.ones((h, h))
-        #
-        # self.Wzx = np.ones((h, d))
-        # self.Wrx = np.ones((h, d))
-        # self.Wx = np.ones((h, d))
-        
         self.dWzh = np.zeros((h, h))
         self.dWrh = np.zeros((h, h))
         self.dWh = np.zeros((h, h))
@@ -154,12 +146,6 @@ class GRU_Cell:
         #  - dx: Derivative of loss wrt the input x
         #  - dh: Derivative  of loss wrt the input hidden h
         #########
-        print("X:{}  H:{} ".format(self.x, self.h))
-        print("delta: {}".format(delta))
-        print("Wrx:{}\nWzx:{}\nWx:{}\nWrh:{}\nWzh:{}\nWh:{}".format(self.Wrx, self.Wzx, self.Wx, self.Wrh, self.Wzh, self.Wh))
-        # print(self.h)
-        # print(self.x)
-        
         # Part 1
         dl_dz = np.multiply(delta, -1 * (self.h)) + np.multiply(delta, self.h_tilde_t)
         assert dl_dz.shape == self.z_t.shape
@@ -183,7 +169,7 @@ class GRU_Cell:
         print("dh: {}".format(dh))
         
         ## Weight update
-        print((dl_dr * self.r_act.backward()).shape,self.x.shape)
+        print((dl_dr * self.r_act.backward()).shape, self.x.shape)
         self.dWrx, self.dWrh = np.matmul((dl_dr * self.r_act.backward()).T, self.x), np.matmul((dl_dr * self.r_act.backward()).T, self.h)
         self.dWzx, self.dWzh = np.matmul((dl_dz * self.z_act.backward()).T, self.x), np.matmul((dl_dz * self.z_act.backward()).T, self.h)
         self.dWx, self.dWh = np.matmul((dl_dhtilde * self.h_act.backward()).T, self.x), np.matmul((dl_dhtilde * self.h_act.backward()).T, self.h) * self.r_t
@@ -197,6 +183,8 @@ class GRU_Cell:
 class CharacterPredictor(object):
     def __init__(self, input_dim, hidden_dim, num_classes):
         super(CharacterPredictor, self).__init__()
+        self.rnn = GRU_Cell(input_dim, hidden_dim)
+        self.linear = Linear(hidden_dim, num_classes)
     
     # The network consists of a GRU Cell and a linear layer
     
@@ -209,6 +197,9 @@ class CharacterPredictor(object):
     
     def forward(self, x, h):
         # A pass through one time step of the input
+        self.cell_fwd = self.rnn.forward(x, h)
+        linear_fwd = self.linear.forward(self.cell_fwd)
+        return linear_fwd
         raise NotImplementedError
 
 
@@ -219,39 +210,54 @@ def inference(net, inputs):
     #  - inputs - a sequence of inputs of dimensions [seq_len x feature_dim]
     # output:
     #  - logits - one per time step of input. Dimensions [seq_len x num_classes]
+    
+    result = []
+    h = [0] * HIDDEN_DIM
+    for i in range(len(inputs)):
+        print(i)
+        cur_x = inputs[i]
+        cur_net = net.forward(x=cur_x, h=h)
+        h = net.cell_fwd
+        result.append(cur_net)
+    return np.array(result)
+    
     raise NotImplementedError
 
 
 if __name__ == "__main__":
     # cell = GRU_Cell(5, HIDDEN_DIM)
-    cell = GRU_Cell(5, 2)
+    # cell = GRU_Cell(5, 2)
     # input = np.ones(shape=(5,))
-    x = [1.62434536, -0.61175641, -0.52817175, -1.07296862, 0.86540763]
+    # x = [1.62434536, -0.61175641, -0.52817175, -1.07296862, 0.86540763]
     # x = [1, 1, 3, 4, 5]
     # h = [1, 2]
-    h = [0.30017032, -0.35224985]
-    cell.Wrx = np.array([[0.31563495, -2.02220122, -0.30620401, 0.82797464, 0.23009474],
-                         [0.76201118, -0.22232814, -0.20075807, 0.18656139, 0.41005165]])
-    cell.Wzx = np.array([[0.48851815, -0.07557171, 1.13162939, 1.51981682, 2.18557541],
-                         [-1.39649634, -1.44411381, -0.50446586, 0.16003707, 0.87616892]])
-    cell.Wx = np.array([[0.19829972, 0.11900865, -0.67066229, 0.37756379, 0.12182127],
-                        [1.12948391, 1.19891788, 0.18515642, -0.37528495, -0.63873041]])
-    cell.Wrh = np.array([[0.83898341, 0.93110208],
-                         [0.28558733, 0.88514116]])
-    cell.Wzh = np.array([[-1.1425182, -0.34934272],
-                         [-0.20889423, 0.58662319]])
-    cell.Wh = np.array([[-0.75439794, 1.25286816],
-                        [0.51292982, -0.29809284]])
+    # h = [0.30017032, -0.35224985]
+    # cell.Wrx = np.array([[0.31563495, -2.02220122, -0.30620401, 0.82797464, 0.23009474],
+    #                      [0.76201118, -0.22232814, -0.20075807, 0.18656139, 0.41005165]])
+    # cell.Wzx = np.array([[0.48851815, -0.07557171, 1.13162939, 1.51981682, 2.18557541],
+    #                      [-1.39649634, -1.44411381, -0.50446586, 0.16003707, 0.87616892]])
+    # cell.Wx = np.array([[0.19829972, 0.11900865, -0.67066229, 0.37756379, 0.12182127],
+    #                     [1.12948391, 1.19891788, 0.18515642, -0.37528495, -0.63873041]])
+    # cell.Wrh = np.array([[0.83898341, 0.93110208],
+    #                      [0.28558733, 0.88514116]])
+    # cell.Wzh = np.array([[-1.1425182, -0.34934272],
+    #                      [-0.20889423, 0.58662319]])
+    # cell.Wh = np.array([[-0.75439794, 1.25286816],
+    #                     [0.51292982, -0.29809284]])
     # hx = np.ones(shape=(1, 2))
     # hx = np.ones(shape=(2,))
     # output = []
     # output = np.array(output)
-    fwd = cell.forward(x, h)
+    # fwd = cell.forward(x, h)
     # print(output.shape)
     # delta = np.array([0.52057634, -1.14434139])
     
-    delta = [0.52057634, -1.14434139]
+    # delta = [0.52057634, -1.14434139]
     # delta = [1, 2]
     # print(delta)
-    ans = cell.backward(delta)
-    print("Refx:", [0.23557079, 0.31226805, -0.14046534, -0.00406543, -0.2789988])
+    # ans = cell.backward(delta)
+    # print("Refx:", [0.23557079, 0.31226805, -0.14046534, -0.00406543, -0.2789988])
+    x = [[1, 2, 3], [2, 3, 4], [3, 4, 4]]
+    pred = CharacterPredictor(input_dim=3, hidden_dim=4, num_classes=3)
+    ans = inference(pred, x)
+    print(ans)
