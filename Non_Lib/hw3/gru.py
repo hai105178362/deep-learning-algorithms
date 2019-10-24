@@ -165,11 +165,11 @@ class GRU_Cell:
         assert dl_dhtilde_x.shape == self.x.shape and dl_dhtilde_h.shape == self.h.shape
         dx = dl_dzx + dl_drx + dl_dhtilde_x
         dh = dl_dzh + dl_drh + dl_dhtilde_h + (1 - self.z_t) * delta
-        print("dx: {}".format(dx))
-        print("dh: {}".format(dh))
+        # print("dx: {}".format(dx))
+        # print("dh: {}".format(dh))
         
         ## Weight update
-        print((dl_dr * self.r_act.backward()).shape, self.x.shape)
+        # print((dl_dr * self.r_act.backward()).shape, self.x.shape)
         self.dWrx, self.dWrh = np.matmul((dl_dr * self.r_act.backward()).T, self.x), np.matmul((dl_dr * self.r_act.backward()).T, self.h)
         self.dWzx, self.dWzh = np.matmul((dl_dz * self.z_act.backward()).T, self.x), np.matmul((dl_dz * self.z_act.backward()).T, self.h)
         self.dWx, self.dWh = np.matmul((dl_dhtilde * self.h_act.backward()).T, self.x), np.matmul((dl_dhtilde * self.h_act.backward()).T, self.h) * self.r_t

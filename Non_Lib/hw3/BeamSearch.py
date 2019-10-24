@@ -1,3 +1,7 @@
+import numpy as np
+import sys
+
+
 def GreedySearch(SymbolSets, y_probs):
     '''
     SymbolSets: This is the list containing all the symbols i.e. vocabulary (without blank)
@@ -8,7 +12,23 @@ def GreedySearch(SymbolSets, y_probs):
     Return the forward probability of greedy path and corresponding compressed symbol
     sequence i.e. without blanks and repeated symbols.
     '''
-    
+    # print(y_probs)
+    best_path = ""
+    score = np.array([1.])
+    seq_len = len(y_probs[0])
+    # print(seq_len)
+    # print(y_probs)
+    for i in range(seq_len):
+        maxpos = np.argmax(y_probs[:, i])
+        maxprob = np.max(y_probs[:, i])
+        score *= maxprob
+        if maxpos==0:
+            continue
+        best_path += SymbolSets[maxpos-1]
+        # score *= maxprob
+
+
+    return best_path, score
 
 
 def BeamSearch(SymbolSets, y_probs, BeamWidth):
@@ -22,3 +42,13 @@ def BeamSearch(SymbolSets, y_probs, BeamWidth):
     The function should return the symbol sequence with the best path score (forward
     probability) and a dictionary of all the final merged paths with their scores.
     '''
+
+
+if __name__ == "__main__":
+    EPS = np.finfo(np.float).eps
+    y_rands = np.random.uniform(EPS, 1.0, (4, 10, 1))
+    y_sum = np.sum(y_rands, axis=0)
+    y_probs = y_rands / y_sum
+    SymbolSets = ['a', 'b', 'c']
+    best_path, score = GreedySearch(SymbolSets, y_probs)
+    print(best_path, score)
