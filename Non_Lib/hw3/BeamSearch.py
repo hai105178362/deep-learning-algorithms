@@ -33,12 +33,12 @@ def prune(PathWithTerminalBlank, PathWithTerminalSymbol, BlankPathScore, PathSco
     PrunedPathScore = {}
     PrunedPathWithTerminalBlank = set()
     PrunedPathWithTerminalSymbol = set()
-    scorelist = []
+    scorelist = set()
     for p in PathWithTerminalBlank:
-        scorelist.append(BlankPathScore[p])
+        scorelist.add(BlankPathScore[p])
     for p in PathWithTerminalSymbol:
-        scorelist.append(PathScore[p])
-    scorelist.sort()
+        scorelist.add(PathScore[p])
+    scorelist = sorted(scorelist)
     cutoff = scorelist[-BeamWidth]
     for p in PathWithTerminalBlank:
         if BlankPathScore[p] >= cutoff:
@@ -48,6 +48,8 @@ def prune(PathWithTerminalBlank, PathWithTerminalSymbol, BlankPathScore, PathSco
         if PathScore[p] >= cutoff:
             PrunedPathWithTerminalSymbol.add(str(p))
             PrunedPathScore[p] = PathScore[p]
+    # print(PrunedPathWithTerminalBlank)
+    # print(PrunedPathWithTerminalSymbol)
     return PrunedPathWithTerminalBlank, PrunedPathWithTerminalSymbol, PrunedPathScore, PrunedBlankPathScore
 
 
@@ -57,6 +59,7 @@ def Blankextend(PathWithTerminalBlank, PathWithTerminalSymbol, y, PathScore, Bla
     # print(PathWithTerminalBlank,PathWithTerminalSymbol)
     # sys.exit(1)
     for p in PathWithTerminalBlank:
+        # print(p)
         blankpathupdate.add(p)
         blankscoreupdate[p] = (BlankPathScore[p] * y[0])
     for p in PathWithTerminalSymbol:
@@ -122,8 +125,8 @@ def BeamSearch(SymbolSets, y_probs, BeamWidth):
 
     #################################################
     def PathInit(Symbolsets, y_probs, BeamWitdth, PathScore, BlankPathScore):
-        print(BeamWidth)
-        path = " "
+        # print(BeamWidth)
+        path = ""
         BlankPathScore[path] = y_probs[0][0][0]
         InitialPathsWithFinalBlank = set(path)
         InitialPathsWithFinalSymbol = set()
@@ -132,11 +135,14 @@ def BeamSearch(SymbolSets, y_probs, BeamWidth):
             PathScore[path] = y_probs[c + 1][0][0]
             InitialPathsWithFinalSymbol.add(path)
         return prune(InitialPathsWithFinalBlank, InitialPathsWithFinalSymbol, BlankPathScore, PathScore, BeamWidth)
+
     PathWithTerminalBlank, PathWithTerminalSymbol, PathScore, BlankPathScore = PathInit(SymbolSets, y_probs, BeamWidth, PathScore, BlankPathScore)
+    # print("{}\n{}".format(PathWithTerminalBlank, PathWithTerminalSymbol))
+    # print("{}\n{}".format(PathScore, BlankPathScore))
     for i in range(1, seq_len):
         blankupdate, blankscoreupdate = Blankextend(PathWithTerminalBlank, PathWithTerminalSymbol, y=y_probs[0, i], PathScore=PathScore, BlankPathScore=BlankPathScore, SymbolSets=SymbolSets)
         symbolupdate, symbolscoreupdate = Symbolextend(PathWithTerminalBlank, PathWithTerminalSymbol, y=y_probs[1:, i], PathScore=PathScore, BlankPathScore=BlankPathScore, symbolset=SymbolSets)
-        print(blankupdate,symbolupdate)
+        # print(blankupdate, symbolupdate)
         PathWithTerminalBlank, PathWithTerminalSymbol, PathScore, BlankPathScore = prune(blankupdate, symbolupdate, blankscoreupdate, symbolscoreupdate, BeamWidth)
     MergedPaths, FinalPathScore = mergeIdentical(PathWithTerminalBlank, PathWithTerminalSymbol, BlankPathScore, PathScore)
     BestPath, BestScore = max(FinalPathScore.items(), key=lambda k: k[1])
@@ -145,7 +151,7 @@ def BeamSearch(SymbolSets, y_probs, BeamWidth):
 
 
 if __name__ == "__main__":
-    EPS = np.finfo(np.float).eps
+    EPS = sys.float_info.epsilon
     y_rands = np.random.uniform(EPS, 1.0, (6, 20, 1))
     y_sum = np.sum(y_rands, axis=0)
     y_probs = y_rands / y_sum
