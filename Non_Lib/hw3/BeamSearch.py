@@ -97,7 +97,7 @@ def mergeIdentical(PathWithTerminalBlank, PathWithTerminalSymbol, BlankPathScore
     FinalPathScore = {}
     for p in MergedPath:
         FinalPathScore[p] = PathScore[p]
-    for p in PathWithTerminalBlank:
+    for p in BlankPathScore.keys():
         if p in MergedPath:
             FinalPathScore[p] += BlankPathScore[p]
         else:
