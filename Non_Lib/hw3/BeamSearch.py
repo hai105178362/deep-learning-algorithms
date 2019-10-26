@@ -29,38 +29,33 @@ def GreedySearch(SymbolSets, y_probs):
 
 
 def prune(PathWithTerminalBlank, PathWithTerminalSymbol, BlankPathScore, PathScore, BeamWidth):
-    print("Pruning")
     PrunedBlankPathScore = {}
     PrunedPathScore = {}
-    PrunedPathWithTerminalBlank = ""
-    PrunedPathWithTerminalSymbol = ""
-    i = 0
+    PrunedPathWithTerminalBlank = set()
+    PrunedPathWithTerminalSymbol = set()
     scorelist = []
     for p in PathWithTerminalBlank:
         scorelist.append(BlankPathScore[p])
     for p in PathWithTerminalSymbol:
         scorelist.append(PathScore[p])
     scorelist.sort()
-    # print(scorelist)
     cutoff = scorelist[-BeamWidth]
-    # print(cutoff)
-
     for p in PathWithTerminalBlank:
         if BlankPathScore[p] >= cutoff:
-            PrunedPathWithTerminalBlank += str(p)
+            PrunedPathWithTerminalBlank.add(str(p))
             PrunedBlankPathScore[p] = BlankPathScore[p]
     for p in PathWithTerminalSymbol:
         if PathScore[p] >= cutoff:
-            PrunedPathWithTerminalSymbol += str(p)
+            PrunedPathWithTerminalSymbol.add(str(p))
             PrunedPathScore[p] = PathScore[p]
-    return PrunedPathWithTerminalBlank, PrunedPathWithTerminalSymbol, PrunedBlankPathScore, PrunedPathScore
+    return PrunedPathWithTerminalBlank, PrunedPathWithTerminalSymbol, PrunedPathScore, PrunedBlankPathScore
 
 
-def Blankextend(PathWithTerminalBlank, PathWithTerminalSymbol, y, PathScore, BlankPathScore):
+def Blankextend(PathWithTerminalBlank, PathWithTerminalSymbol, y, PathScore, BlankPathScore, SymbolSets):
     blankpathupdate = set()
     blankscoreupdate = {}
-    print("=============Extending==============")
-    print(PathWithTerminalBlank, " | ", PathWithTerminalSymbol, " | ", y, " | ", PathScore, " | ", BlankPathScore)
+    # print(PathWithTerminalBlank,PathWithTerminalSymbol)
+    # sys.exit(1)
     for p in PathWithTerminalBlank:
         blankpathupdate.add(p)
         blankscoreupdate[p] = (BlankPathScore[p] * y[0])
@@ -73,19 +68,42 @@ def Blankextend(PathWithTerminalBlank, PathWithTerminalSymbol, y, PathScore, Bla
     return blankpathupdate, blankscoreupdate
 
 
-def Symbolextedn(PathWithTerminalBlank, PathWithTerminalSymbol, y, PathScore, BlankPathScore):
-    # pathupdate = set()
-    # scoreupdate = {}
-    # for p in PathWithTerminalBlank:
-    #     pathupdate.add(p)
-    #     scoreupdate[p] = (BlankPathScore[p] * y[0])
-    # for p in PathWithTerminalSymbol:
-    #     if p in pathupdate:
-    #         scoreupdate[p] += PathScore[p] * y[0]
-    #     else:
-    #         pathupdate.add(p)
-    #         scoreupdate[p] = PathScore[p] * y[0]
-    # return pathupdate, scoreupdate
+def Symbolextend(PathWithTerminalBlank, PathWithTerminalSymbol, y, PathScore, BlankPathScore, symbolset):
+    pathupdate = set()
+    scoreupdate = {}
+    newpath = ""
+
+    for p in PathWithTerminalSymbol:
+        for c in range(len(symbolset)):
+            if symbolset[c] == p[-1]:
+                newpath = p
+            else:
+                newpath = p + symbolset[c]
+            pathupdate.add(newpath)
+            scoreupdate[newpath] = PathScore[p] * y[c][0]
+    for p in PathWithTerminalBlank:
+        for c in range(len(symbolset)):
+            newpath = p + symbolset[c]
+            if newpath in pathupdate:
+                scoreupdate[newpath] += BlankPathScore[p] * y[c][0]
+            else:
+                pathupdate.add(newpath)
+                scoreupdate[newpath] = BlankPathScore[p] * y[c][0]
+    return pathupdate, scoreupdate
+
+
+def mergeIdentical(PathWithTerminalBlank, PathWithTerminalSymbol, BlankPathScore, PathScore):
+    MergedPath = PathWithTerminalSymbol
+    FinalPathScore = {}
+    for p in MergedPath:
+        FinalPathScore[p] = PathScore[p]
+    for p in PathWithTerminalBlank:
+        if p in MergedPath:
+            FinalPathScore[p] += BlankPathScore[p]
+        else:
+            MergedPath.add(p)
+            FinalPathScore[p] = BlankPathScore[p]
+    return MergedPath, FinalPathScore
 
 
 def BeamSearch(SymbolSets, y_probs, BeamWidth):
@@ -104,44 +122,37 @@ def BeamSearch(SymbolSets, y_probs, BeamWidth):
 
     #################################################
     def PathInit(Symbolsets, y_probs, BeamWitdth, PathScore, BlankPathScore):
+        print(BeamWidth)
         path = " "
-        # BlanckPathScore = {}
-        # print(y_probs[:, 0])
         BlankPathScore[path] = y_probs[0][0][0]
         InitialPathsWithFinalBlank = set(path)
         InitialPathsWithFinalSymbol = set()
-        # print(y_probs)
-        # sys.exit(1)
         for c in range(len(SymbolSets)):
             path = SymbolSets[c]
             PathScore[path] = y_probs[c + 1][0][0]
             InitialPathsWithFinalSymbol.add(path)
         return prune(InitialPathsWithFinalBlank, InitialPathsWithFinalSymbol, BlankPathScore, PathScore, BeamWidth)
-
-    #################################################
-    PathWithTerminalBlank, PathWithTerminalSymbol, PrunedBlankPathScore, PrunedPathScore = PathInit(SymbolSets, y_probs, BeamWidth, PathScore, BlankPathScore)
-    # print(PathWithTerminalBlank)
-    # print(PathWithTerminalSymbol)
-    # print(PrunedBlankPathScore)
-    # print(PrunedPathScore)
-    ##############################################
-    print(y_probs[0])
+    PathWithTerminalBlank, PathWithTerminalSymbol, PathScore, BlankPathScore = PathInit(SymbolSets, y_probs, BeamWidth, PathScore, BlankPathScore)
     for i in range(1, seq_len):
-        blankupdate, blankscoreupdate = Blankextend(PathWithTerminalBlank, PathWithTerminalSymbol, y_probs[0][i], PathScore, BlankPathScore)
-        print(blankupdate, blankscoreupdate)
-        sys.exit(1)
-
-    return
+        blankupdate, blankscoreupdate = Blankextend(PathWithTerminalBlank, PathWithTerminalSymbol, y=y_probs[0, i], PathScore=PathScore, BlankPathScore=BlankPathScore, SymbolSets=SymbolSets)
+        symbolupdate, symbolscoreupdate = Symbolextend(PathWithTerminalBlank, PathWithTerminalSymbol, y=y_probs[1:, i], PathScore=PathScore, BlankPathScore=BlankPathScore, symbolset=SymbolSets)
+        print(blankupdate,symbolupdate)
+        PathWithTerminalBlank, PathWithTerminalSymbol, PathScore, BlankPathScore = prune(blankupdate, symbolupdate, blankscoreupdate, symbolscoreupdate, BeamWidth)
+    MergedPaths, FinalPathScore = mergeIdentical(PathWithTerminalBlank, PathWithTerminalSymbol, BlankPathScore, PathScore)
+    BestPath, BestScore = max(FinalPathScore.items(), key=lambda k: k[1])
+    print(FinalPathScore)
+    return BestPath, FinalPathScore
 
 
 if __name__ == "__main__":
     EPS = np.finfo(np.float).eps
-    y_rands = np.random.uniform(EPS, 1.0, (4, 10, 1))
+    y_rands = np.random.uniform(EPS, 1.0, (6, 20, 1))
     y_sum = np.sum(y_rands, axis=0)
     y_probs = y_rands / y_sum
-    SymbolSets = ['a', 'b', 'c']
+    SymbolSets = ['a', 'b', 'c', 'd', 'e']
     # best_path, score = GreedySearch(SymbolSets, y_probs)
-    BeamWidth = 2
-    BeamSearch(SymbolSets, y_probs, BeamWidth)
+    BeamWidth = 3
+    BestPath, BestScore = BeamSearch(SymbolSets, y_probs, BeamWidth)
+    # print(BestPath,BestScore)
     # BestPath, MergedPathScores = BeamSearch(SymbolSets, y_probs, BeamWidth)
     # print(BestPath, MergedPathScores)
