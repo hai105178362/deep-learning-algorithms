@@ -62,3 +62,23 @@ for epoch in range(50):
     print('Epoch', epoch + 1, 'Loss', loss.item())
     loss.backward()
     optimizer.step()
+
+
+import torch
+from ctcdecode import CTCBeamDecoder
+
+decoder = CTCBeamDecoder([' ', 'A'], beam_width=4)
+probs = torch.Tensor([[0.2, 0.8], [0.8, 0.2]]).unsqueeze(0)
+print(probs.size())
+out, _, _, out_lens = decoder.decode(probs, torch.LongTensor([2]))
+print(out[0, 0, :out_lens[0, 0]])
+print(out)
+# import numpy as np
+# y_s = np.load('table_of_ys_brand_new.npy')
+# #y_s = np.array([[1/6,4/6,2/6,1/6],[2/6,1/6,1/6,4/6],[3/6,1/6,3/6,1/6]])
+# #y_s = y_s.reshape(y_s.shape[0],y_s.shape[1],1)
+# y_sT = np.transpose(y_s, (2,1,0))
+# tensor_y = torch.Tensor(y_sT)
+# decoder = CTCBeamDecoder([' ','a','b','c'], beam_width=2)
+# out, _, _, out_lens = decoder.decode(tensor_y, torch.LongTensor([10]))
+# print(out[0, 0, :out_lens[0, 0]])
