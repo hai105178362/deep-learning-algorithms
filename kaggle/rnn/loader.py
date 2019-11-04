@@ -8,6 +8,14 @@ import time
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 
+def load_data(xpath, ypath=None):
+    x = np.load(xpath, allow_pickle=True, encoding="bytes")
+    if ypath != None:
+        y = np.load(ypath, allow_pickle=True, encoding="bytes")
+        return x, y
+    return x
+
+
 class LinesDataset(Dataset):
     def __init__(self, lines):
         self.lines = [torch.tensor(l) for l in lines]
@@ -29,3 +37,21 @@ def collate_lines(seq_list):
     inputs = [inputs[i] for i in seq_order]
     targets = [targets[i] for i in seq_order]
     return inputs, targets
+
+
+# l = DataLoader()
+
+
+devxpath = "dataset.nosync/HW3P2_Data/wsj0_dev.npy"
+devypath = "dataset.nosync/HW3P2_Data/wsj0_dev_merged_labels.npy"
+trainxpath = "dataset.nosync/HW3P2_Data/wsj0_train.npy"
+trainypath = "dataset.nosync/HW3P2_Data/wsj0_train_merged_labels.npy"
+task = "dev"
+if task == "train":
+    xpath = trainxpath
+    ypath = trainypath
+else:
+    xpath = devxpath
+    ypath = devypath
+X, Y = load_data(xpath, ypath)
+X = LinesDataset(X)

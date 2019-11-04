@@ -22,23 +22,7 @@ def load_data(xpath, ypath=None):
     return x
 
 
-class Model(nn.Module):
-    def __init__(self, in_vocab, out_vocab, embed_size, hidden_size):
-        super(Model, self).__init__()
-        # self.embed = nn.Embedding(in_vocab, embed_size)
-        self.lstm = nn.LSTM(embed_size, hidden_size, bidirectional=True)
-        self.output = nn.Linear(hidden_size * 2, out_vocab)
 
-    def forward(self, X, lengths):
-        # X = self.embed(X)
-        X = X.type(torch.FloatTensor)
-        packed_X = pack_padded_sequence(X, lengths, enforce_sorted=False)
-        print(packed_X[0].shape)
-        packed_out = self.lstm(packed_X)[0]
-        out, out_lens = pad_packed_sequence(packed_out)
-        # Log softmax after output layer is required for use in `nn.CTCLoss`.
-        out = self.output(out).log_softmax(2)
-        return out, out_lens
 
 
 if __name__ == "__main__":
@@ -67,18 +51,18 @@ if __name__ == "__main__":
     # X = X.reshape(X.shape[1], X.shape[0], X.shape[2])
     Y = pad_sequence([Variable(torch.LongTensor(i)) for i in Y], batch_first=True)
     print(X.shape, Y.shape)
-    exit(1)
-    model = Model(PL.N_STATES, PL.N_PHONEMES, 40, 40)
-    # print(model)
-    criterion = nn.CTCLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
-
-    for epoch in range(50):
-        model.zero_grad()
-        print(X.shape)
-        print(X_lens.shape)
-        out, out_lens = model(X, X_lens)
-        loss = criterion(out, Y, out_lens, Y_lens)
-        print('Epoch', epoch + 1, 'Loss', loss.item())
-        loss.backward()
-        optimizer.step()
+    # exit(1)
+    # model = Model(PL.N_STATES, PL.N_PHONEMES, 40, 40)
+    # # print(model)
+    # criterion = nn.CTCLoss()
+    # optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
+    #
+    # for epoch in range(50):
+    #     model.zero_grad()
+    #     print(X.shape)
+    #     print(X_lens.shape)
+    #     out, out_lens = model(X, X_lens)
+    #     loss = criterion(out, Y, out_lens, Y_lens)
+    #     print('Epoch', epoch + 1, 'Loss', loss.item())
+    #     loss.backward()
+    #     optimizer.step()
