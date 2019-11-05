@@ -123,7 +123,7 @@ if __name__ == "__main__":
     # devypath = "/content/drive/My Drive/datasets/hw3p2/wsj0_dev_merged_labels.npy"
     trainxpath = "dataset.nosync/HW3P2_Data/wsj0_train.npy"
     trainypath = "dataset.nosync/HW3P2_Data/wsj0_train_merged_labels.npy"
-    task = "dev"
+    task = "train"
     if task == "train":
         xpath = trainxpath
         ypath = trainypath
@@ -148,4 +148,5 @@ if __name__ == "__main__":
     model = Model(in_vocab=40, out_vocab=47, embed_size=40, hidden_size=64)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-6)
     for i in range(20):
+        print("==========Epoch {}==========".format(i + 1))
         train_epoch_packed(model, optimizer, train_loader, val_loader, X_lens)
