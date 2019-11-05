@@ -1,5 +1,5 @@
 import time
-
+import datetime
 import numpy as np
 import torch
 import torch.nn as nn
@@ -14,11 +14,12 @@ from torch.autograd import Variable
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 64
 
+
 class Model(torch.nn.Module):
     def __init__(self, in_vocab, out_vocab, embed_size, hidden_size):
         super(Model, self).__init__()
         self.embed_size = embed_size
-        self.lstm = torch.nn.LSTM(embed_size, hidden_size, bidirectional=True,dropout=0.5)
+        self.lstm = torch.nn.LSTM(embed_size, hidden_size, bidirectional=True, dropout=0.5)
         self.output = torch.nn.Linear(hidden_size * 2, out_vocab)
 
     def forward(self, X, lengths):
@@ -34,7 +35,7 @@ class Model(torch.nn.Module):
         return out, out_lens
 
 
-def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len,val_inputs_len, n_epoch):
+def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len, val_inputs_len, n_epoch):
     # criterion = nn.CrossEntropyLoss(reduction="sum")  # sum instead of averaging, to take into account the different lengths
     criterion = nn.CTCLoss()
     criterion = criterion.to(DEVICE)
@@ -91,10 +92,10 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len,va
     val_lpw = val_loss / nwords
     print("\nValidation loss per word:", val_lpw)
     print("Validation perplexity :", np.exp(val_lpw), "\n")
-    if n_epoch>0 and (n_epoch+1)%5==0:
+    if n_epoch > 0 and (n_epoch + 1) % 5 == 0:
         modelpath = "saved_models/{}.pt".format(n_epoch)
         torch.save(model.state_dict(), modelpath)
-        print("Model saved at: {}".format(modelpath))
+        print("Model saved at: {}".format(jobtime + modelpath))
     return val_lpw
 
 
@@ -131,6 +132,8 @@ def collate_lines(seq_list):
 
 if __name__ == "__main__":
     print("Net is running...")
+    now = datetime.datetime.now()
+    jobtime = str(now.hour) + ":" + str(now.minute)
     valxpath = "dataset.nosync/HW3P2_Data/wsj0_dev.npy"
     # devxpath = "/content/drive/My Drive/datasets/hw3p2/wsj0_dev.npy"
     valypath = "dataset.nosync/HW3P2_Data/wsj0_dev_merged_labels.npy"
@@ -160,8 +163,8 @@ if __name__ == "__main__":
 
     train_loader = DataLoader(X, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     val_loader = DataLoader(valX, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
-    model = Model(in_vocab=40, out_vocab=46, embed_size=128, hidden_size=256)
+    model = Model(in_vocab=40, out_vocab=46, embed_size=40, hidden_size=256)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-6)
     for i in range(150):
         print("==========Epoch {}==========".format(i + 1))
-        train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len=X_lens,val_inputs_len=valX_lens ,n_epoch=i)
+        train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len=X_lens, val_inputs_len=valX_lens, n_epoch=i)
