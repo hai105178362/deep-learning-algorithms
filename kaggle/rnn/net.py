@@ -110,7 +110,7 @@ def collate_lines(seq_list):
 
 
 if __name__ == "__main__":
-    BATCH_SIZE = 1
+    BATCH_SIZE = 64
     valxpath = "dataset.nosync/HW3P2_Data/wsj0_dev.npy"
     # devxpath = "/content/drive/My Drive/datasets/hw3p2/wsj0_dev.npy"
     valypath = "dataset.nosync/HW3P2_Data/wsj0_dev_merged_labels.npy"
