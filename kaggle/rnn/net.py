@@ -20,11 +20,12 @@ class Model(torch.nn.Module):
         self.output = torch.nn.Linear(hidden_size * 2, out_vocab)
 
     def forward(self, X, lengths):
+        self.lstm.to(DEVICE)
         X = torch.nn.utils.rnn.pad_sequence(X)
         xlens = torch.Tensor([len(X) for _ in range(BATCH_SIZE)]).to(DEVICE)
         packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, xlens, enforce_sorted=False).to(DEVICE)
         packed_out = self.lstm(packed_X)[0]
-        out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out).to(DEVICE)
+        out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
         out = self.output(out).log_softmax(2)
         # print(out)
         return out, out_lens
@@ -108,7 +109,7 @@ def collate_lines(seq_list):
 
 
 if __name__ == "__main__":
-    BATCH_SIZE = 64
+    BATCH_SIZE = 1
     valxpath = "dataset.nosync/HW3P2_Data/wsj0_dev.npy"
     # devxpath = "/content/drive/My Drive/datasets/hw3p2/wsj0_dev.npy"
     valypath = "dataset.nosync/HW3P2_Data/wsj0_dev_merged_labels.npy"
