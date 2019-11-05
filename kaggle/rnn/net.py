@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
+
 # import decode
 
 # import helper.phoneme_list as PL
@@ -34,7 +35,7 @@ class Model(torch.nn.Module):
         return out, out_lens
 
 
-def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len):
+def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len, n_epoch):
     # criterion = nn.CrossEntropyLoss(reduction="sum")  # sum instead of averaging, to take into account the different lengths
     criterion = nn.CTCLoss()
     criterion = criterion.to(DEVICE)
@@ -59,10 +60,10 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len):
         loss.backward()
         optimizer.step()
         ###########################
-        modelpath = "saved_models/tmp.pt"
-        torch.save(model.state_dict(), modelpath)
-        print("Model saved at: {}".format(modelpath))
-        exit()
+        # modelpath = "saved_models/tmp.pt"
+        # torch.save(model.state_dict(), modelpath)
+        # print("Model saved at: {}".format(modelpath))
+        # exit()
         ###############################
         if batch_id % 10 == 0:
             after = time.time()
@@ -91,9 +92,10 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len):
     val_lpw = val_loss / nwords
     print("\nValidation loss per word:", val_lpw)
     print("Validation perplexity :", np.exp(val_lpw), "\n")
-    # modelpath = "saved_models/tmp.pt"
-    # torch.save(model.state_dict(), modelpath)
-    # print("Model saved at: {}".format(modelpath))
+    if n_epoch%5==0:
+        modelpath = "saved_models/{}.pt".format(n_epoch)
+        torch.save(model.state_dict(), modelpath)
+        print("Model saved at: {}".format(modelpath))
     return val_lpw
 
 
@@ -156,11 +158,10 @@ if __name__ == "__main__":
     valY_lens = torch.IntTensor([len(seq) for seq in valY]).to(DEVICE)
     valX = LinesDataset(valX)
 
-
     train_loader = DataLoader(X, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     val_loader = DataLoader(valX, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     model = Model(in_vocab=40, out_vocab=46, embed_size=40, hidden_size=64)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-6)
-    for i in range(20):
+    for i in range(30):
         print("==========Epoch {}==========".format(i + 1))
-        train_epoch_packed(model, optimizer, train_loader, val_loader, X_lens)
+        train_epoch_packed(model, optimizer, train_loader, val_loader, X_lens, n_epoch=i)
