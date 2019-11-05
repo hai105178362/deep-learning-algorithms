@@ -21,7 +21,7 @@ class Model(torch.nn.Module):
 
     def forward(self, X, lengths):
         X = torch.nn.utils.rnn.pad_sequence(X)
-        xlens = torch.Tensor([len(X) for _ in range(BATCH_SIZE)])
+        xlens = torch.Tensor([len(X) for _ in range(BATCH_SIZE)]).to(DEVICE)
         packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, xlens, enforce_sorted=False)
         packed_out = self.lstm(packed_X)[0]
         out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
