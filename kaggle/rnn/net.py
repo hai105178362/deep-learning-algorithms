@@ -24,7 +24,7 @@ class Model(torch.nn.Module):
         self.output.to(DEVICE)
         X = torch.nn.utils.rnn.pad_sequence(X)
         # print(len(X))
-        # print(len(lengths))
+        print(len(lengths))
         # print(lengths)
         xlens = torch.Tensor([len(X) for _ in range(len(lengths))]).to(DEVICE)
         # exit()
