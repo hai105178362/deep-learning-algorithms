@@ -35,7 +35,7 @@ class Model(torch.nn.Module):
         return out, out_lens
 
 
-def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len, n_epoch):
+def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len,val_inputs_len, n_epoch):
     # criterion = nn.CrossEntropyLoss(reduction="sum")  # sum instead of averaging, to take into account the different lengths
     criterion = nn.CTCLoss()
     criterion = criterion.to(DEVICE)
@@ -81,7 +81,7 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len, n
     for inputs, targets in val_loader:
         nwords += np.sum(np.array([len(l) for l in inputs]))
         batch_id += 1
-        new_inputlen = inputs_len[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
+        new_inputlen = val_inputs_len[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
         outputs, outlens = model(inputs, new_inputlen)
         cur_Y = Y[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
         cur_Y_len = Y_lens[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
@@ -164,4 +164,4 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-6)
     for i in range(30):
         print("==========Epoch {}==========".format(i + 1))
-        train_epoch_packed(model, optimizer, train_loader, val_loader, X_lens, n_epoch=i)
+        train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len=X_lens,val_inputs_len=valX_lens ,n_epoch=i)
