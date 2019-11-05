@@ -12,7 +12,7 @@ from torch.autograd import Variable
 
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE = 64
+BATCH_SIZE = 128
 
 
 class Model(torch.nn.Module):
@@ -26,7 +26,7 @@ class Model(torch.nn.Module):
         self.lstm.to(DEVICE)
         self.output.to(DEVICE)
         X = torch.nn.utils.rnn.pad_sequence(X)
-        print(X.shape)
+        # print(X.shape)
         xlens = torch.Tensor([len(X) for _ in range(len(lengths))]).to(DEVICE)
         packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, xlens, enforce_sorted=False).to(DEVICE)
         packed_out = self.lstm(packed_X)[0]
@@ -65,7 +65,7 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len, n
         # print("Model saved at: {}".format(modelpath))
         # exit()
         ###############################
-        if batch_id % 10 == 0:
+        if batch_id % 100 == 0:
             after = time.time()
             nwords = np.sum(np.array([len(l) for l in inputs]))
             lpw = loss.item() / nwords
