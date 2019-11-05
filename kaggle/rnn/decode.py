@@ -23,8 +23,6 @@ def run_decoder(model, test_data, test_X, test_X_lens):
         return best_pron
 
 
-
-
 if __name__ == "__main__":
     testpath = "dataset.nosync/HW3P2_Data/wsj0_test.npy"
     testX = net.load_data(xpath=testpath, ypath=None)
@@ -32,8 +30,8 @@ if __name__ == "__main__":
     testX = net.LinesDataset(testX)
     # test_loader = net.DataLoader(testX, shuffle=False, batch_size=net.BATCH_SIZE, collate_fn=net.collate_lines)
     test_loader = net.DataLoader(testX, shuffle=False, batch_size=1, collate_fn=net.collate_lines)
-    M = net.Model(in_vocab=40, out_vocab=46, embed_size=40, hidden_size=64)
-    M.load_state_dict(state_dict=torch.load('saved_models/9.pt', map_location=net.DEVICE))
+    M = net.Model(in_vocab=40, out_vocab=47, embed_size=40, hidden_size=256)
+    M.load_state_dict(state_dict=torch.load('saved_models/4.pt', map_location=net.DEVICE))
     batch_id = 0
     ans = []
     print(len(testX))
