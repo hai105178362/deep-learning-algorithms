@@ -83,8 +83,8 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len,va
         batch_id += 1
         new_inputlen = val_inputs_len[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
         outputs, outlens = model(inputs, new_inputlen)
-        cur_Y = Y[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
-        cur_Y_len = Y_lens[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
+        cur_Y = valY[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
+        cur_Y_len = valY_lens[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
         cur_Y = torch.nn.utils.rnn.pad_sequence(cur_Y).T
         loss = criterion(outputs, cur_Y, outlens, cur_Y_len)  # criterion of the concatenated output
         # loss = criterion(outputs, torch.cat(targets))
