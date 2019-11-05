@@ -24,7 +24,7 @@ class Model(torch.nn.Module):
         self.output.to(DEVICE)
         X = torch.nn.utils.rnn.pad_sequence(X)
         # print(len(X))
-        print(len(lengths))
+        # print(len(lengths))
         # print(lengths)
         xlens = torch.Tensor([len(X) for _ in range(len(lengths))]).to(DEVICE)
         # exit()
@@ -54,7 +54,7 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        if batch_id % 1 == 0:
+        if batch_id % 10 == 0:
             after = time.time()
             nwords = np.sum(np.array([len(l) for l in inputs]))
             lpw = loss.item() / nwords
