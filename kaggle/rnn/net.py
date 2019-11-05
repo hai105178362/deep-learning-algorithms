@@ -21,35 +21,33 @@ class Model(torch.nn.Module):
 
     def forward(self, X, lengths):
         X = torch.nn.utils.rnn.pad_sequence(X)
-        xlens = torch.Tensor([len(X) for _ in range(5)])
+        xlens = torch.Tensor([len(X) for _ in range(BATCH_SIZE)])
         packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, xlens, enforce_sorted=False)
         packed_out = self.lstm(packed_X)[0]
         out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
         out = self.output(out).log_softmax(2)
         # print(out)
-        return out,out_lens
+        return out, out_lens
 
 
 def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len):
-    criterion = nn.CrossEntropyLoss(reduction="sum")  # sum instead of averaging, to take into account the different lengths
+    # criterion = nn.CrossEntropyLoss(reduction="sum")  # sum instead of averaging, to take into account the different lengths
+    criterion = nn.CTCLoss()
     criterion = criterion.to(DEVICE)
     batch_id = 0
     before = time.time()
     print("Training", len(train_loader), "number of batches")
     for inputs, targets in train_loader:  # lists, presorted, preloaded on GPU
-        print(batch_id)
         batch_id += 1
-        outputs,lens = model(inputs, inputs_len)
-        print(targets[2].shape)
-        exit()
-        print(torch.cat(targets).shape)
-        print(torch.cat(outputs).shape)
-        exit()
-        loss = criterion(torch.cat(outputs), torch.cat(targets))  # criterion of the concatenated output
+        outputs, outlens = model(inputs, inputs_len)
+        cur_Y = Y[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
+        cur_Y_len = Y_lens[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
+        cur_Y = torch.nn.utils.rnn.pad_sequence(cur_Y).T
+        loss = criterion(outputs, cur_Y, outlens, cur_Y_len)  # criterion of the concatenated output
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        if batch_id % 100 == 0:
+        if batch_id % 1 == 0:
             after = time.time()
             nwords = np.sum(np.array([len(l) for l in inputs]))
             lpw = loss.item() / nwords
@@ -65,8 +63,12 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len):
     for inputs, targets in val_loader:
         nwords += np.sum(np.array([len(l) for l in inputs]))
         batch_id += 1
-        outputs = model(inputs, inputs_len)
-        loss = criterion(outputs, torch.cat(targets))
+        outputs, outlens = model(inputs, inputs_len)
+        cur_Y = Y[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
+        cur_Y_len = Y_lens[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
+        cur_Y = torch.nn.utils.rnn.pad_sequence(cur_Y).T
+        loss = criterion(outputs, cur_Y, outlens, cur_Y_len)  # criterion of the concatenated output
+        # loss = criterion(outputs, torch.cat(targets))
         val_loss += loss.item()
     val_lpw = val_loss / nwords
     print("\nValidation loss per word:", val_lpw)
@@ -106,9 +108,10 @@ def collate_lines(seq_list):
 
 
 if __name__ == "__main__":
-    devxpath = "dataset.nosync/HW3P2_Data/wsj0_dev.npy"
+    BATCH_SIZE = 64
+    valxpath = "dataset.nosync/HW3P2_Data/wsj0_dev.npy"
     # devxpath = "/content/drive/My Drive/datasets/hw3p2/wsj0_dev.npy"
-    devypath = "dataset.nosync/HW3P2_Data/wsj0_dev_merged_labels.npy"
+    valypath = "dataset.nosync/HW3P2_Data/wsj0_dev_merged_labels.npy"
     # devypath = "/content/drive/My Drive/datasets/hw3p2/wsj0_dev_merged_labels.npy"
     trainxpath = "dataset.nosync/HW3P2_Data/wsj0_train.npy"
     trainypath = "dataset.nosync/HW3P2_Data/wsj0_train_merged_labels.npy"
@@ -117,16 +120,23 @@ if __name__ == "__main__":
         xpath = trainxpath
         ypath = trainypath
     else:
-        xpath = devxpath
-        ypath = devypath
+        xpath = valxpath
+        ypath = valypath
     X, Y = load_data(xpath=xpath, ypath=ypath)
+    valX, valY = load_data(xpath=valxpath, ypath=valypath)
+    for i in range(len(Y)):
+        Y[i] = torch.IntTensor(Y[i])
+    for i in range(len(valY)):
+        valY[i] = torch.IntTensor(valY[i])
     X_lens = torch.Tensor([len(seq) for seq in X])
-    print(X_lens[:5])
-    Y_lens = torch.Tensor([len(seq) for seq in Y])
-    print(type(X), type(Y))
+    Y_lens = torch.IntTensor([len(seq) for seq in Y])
     X = LinesDataset(X)
-    train_loader = DataLoader(X, shuffle=False, batch_size=5, collate_fn=collate_lines)
-    model = Model(in_vocab=40, out_vocab=46, embed_size=40, hidden_size=64)
+    valX_lens = torch.Tensor([len(seq) for seq in valX])
+    valY_lens = torch.IntTensor([len(seq) for seq in valY])
+    valX = LinesDataset(valX)
+    train_loader = DataLoader(X, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
+    val_loader = DataLoader(valX, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
+    model = Model(in_vocab=40, out_vocab=47, embed_size=40, hidden_size=64)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-6)
     for i in range(20):
-        train_epoch_packed(model, optimizer, train_loader, train_loader, X_lens)
+        train_epoch_packed(model, optimizer, train_loader, val_loader, X_lens)
