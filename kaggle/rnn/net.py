@@ -23,7 +23,11 @@ class Model(torch.nn.Module):
         self.lstm.to(DEVICE)
         self.output.to(DEVICE)
         X = torch.nn.utils.rnn.pad_sequence(X)
-        xlens = torch.Tensor([len(X) for _ in range(BATCH_SIZE)]).to(DEVICE)
+        # print(len(X))
+        # print(len(lengths))
+        # print(lengths)
+        xlens = torch.Tensor([len(X) for _ in range(len(lengths))]).to(DEVICE)
+        # exit()
         packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, xlens, enforce_sorted=False).to(DEVICE)
         packed_out = self.lstm(packed_X)[0]
         out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
@@ -41,7 +45,8 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len):
     print("Training", len(train_loader), "number of batches")
     for inputs, targets in train_loader:  # lists, presorted, preloaded on GPU
         batch_id += 1
-        outputs, outlens = model(inputs, inputs_len)
+        new_inputlen = inputs_len[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
+        outputs, outlens = model(inputs, new_inputlen)
         cur_Y = Y[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
         cur_Y_len = Y_lens[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
         cur_Y = torch.nn.utils.rnn.pad_sequence(cur_Y).T
@@ -131,6 +136,7 @@ if __name__ == "__main__":
     for i in range(len(valY)):
         valY[i] = torch.IntTensor(valY[i]).to(DEVICE)
     X_lens = torch.Tensor([len(seq) for seq in X]).to(DEVICE)
+    print(X_lens)
     Y_lens = torch.IntTensor([len(seq) for seq in Y]).to(DEVICE)
     X = LinesDataset(X)
     valX_lens = torch.Tensor([len(seq) for seq in valX]).to(DEVICE)
