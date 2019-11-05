@@ -12,14 +12,13 @@ from torch.autograd import Variable
 
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE = 128
-
+BATCH_SIZE = 64
 
 class Model(torch.nn.Module):
     def __init__(self, in_vocab, out_vocab, embed_size, hidden_size):
         super(Model, self).__init__()
         self.embed_size = embed_size
-        self.lstm = torch.nn.LSTM(embed_size, hidden_size, bidirectional=True)
+        self.lstm = torch.nn.LSTM(embed_size, hidden_size, bidirectional=True,dropout=0.5)
         self.output = torch.nn.Linear(hidden_size * 2, out_vocab)
 
     def forward(self, X, lengths):
@@ -161,8 +160,8 @@ if __name__ == "__main__":
 
     train_loader = DataLoader(X, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     val_loader = DataLoader(valX, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
-    model = Model(in_vocab=40, out_vocab=46, embed_size=40, hidden_size=64)
+    model = Model(in_vocab=40, out_vocab=46, embed_size=128, hidden_size=256)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-6)
-    for i in range(50):
+    for i in range(150):
         print("==========Epoch {}==========".format(i + 1))
         train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len=X_lens,val_inputs_len=valX_lens ,n_epoch=i)
