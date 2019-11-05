@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
     train_loader = DataLoader(X, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     val_loader = DataLoader(valX, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
-    model = Model(in_vocab=40, out_vocab=47, hidden_size=128)
+    model = Model(in_vocab=40, out_vocab=47, hidden_size=196)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-6)
     for i in range(1000):
         print("==========Epoch {}==========".format(i + 1))
