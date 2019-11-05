@@ -25,7 +25,6 @@ class Model(torch.nn.Module):
         self.lstm.to(DEVICE)
         self.output.to(DEVICE)
         X = torch.nn.utils.rnn.pad_sequence(X)
-        # print(X.shape)
         xlens = torch.Tensor([len(X) for _ in range(len(lengths))]).to(DEVICE)
         packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, xlens, enforce_sorted=False).to(DEVICE)
         packed_out = self.lstm(packed_X)[0]
@@ -76,7 +75,6 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len, v
         cur_Y_len = valY_lens[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
         cur_Y = torch.nn.utils.rnn.pad_sequence(cur_Y).T
         loss = criterion(outputs, cur_Y, outlens, cur_Y_len)  # criterion of the concatenated output
-        # loss = criterion(outputs, torch.cat(targets))
         val_loss += loss.item()
     val_lpw = val_loss / nwords
     print("\nValidation loss per word:", val_lpw)
