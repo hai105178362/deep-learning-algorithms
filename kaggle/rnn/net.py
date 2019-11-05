@@ -92,7 +92,7 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len,va
     val_lpw = val_loss / nwords
     print("\nValidation loss per word:", val_lpw)
     print("Validation perplexity :", np.exp(val_lpw), "\n")
-    if n_epoch>0 and n_epoch%5==0:
+    if n_epoch>0 and (n_epoch+1)%5==0:
         modelpath = "saved_models/{}.pt".format(n_epoch)
         torch.save(model.state_dict(), modelpath)
         print("Model saved at: {}".format(modelpath))
@@ -162,6 +162,6 @@ if __name__ == "__main__":
     val_loader = DataLoader(valX, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     model = Model(in_vocab=40, out_vocab=46, embed_size=40, hidden_size=64)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-6)
-    for i in range(30):
+    for i in range(50):
         print("==========Epoch {}==========".format(i + 1))
         train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len=X_lens,val_inputs_len=valX_lens ,n_epoch=i)
