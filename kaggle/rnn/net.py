@@ -51,20 +51,10 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len, v
         cur_Y_len = Y_lens[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
         cur_Y = torch.nn.utils.rnn.pad_sequence(cur_Y).T
 
-        ####
-        # decode.run_decoder(model=model, test_data=inputs, test_X=inputs, test_X_lens=new_inputlen)
-        # exit()
-        ####
         loss = criterion(outputs, cur_Y, outlens, cur_Y_len)  # criterion of the concatenated output
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        ###########################
-        # modelpath = "saved_models/tmp.pt"
-        # torch.save(model.state_dict(), modelpath)
-        # print("Model saved at: {}".format(modelpath))
-        # exit()
-        ###############################
         if batch_id % 100 == 0:
             after = time.time()
             nwords = np.sum(np.array([len(l) for l in inputs]))
