@@ -70,6 +70,7 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len):
     for inputs, targets in val_loader:
         nwords += np.sum(np.array([len(l) for l in inputs]))
         batch_id += 1
+        new_inputlen = inputs_len[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
         outputs, outlens = model(inputs, new_inputlen)
         cur_Y = Y[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
         cur_Y_len = Y_lens[(batch_id - 1) * BATCH_SIZE:batch_id * BATCH_SIZE]
