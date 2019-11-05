@@ -31,7 +31,7 @@ if __name__ == "__main__":
     # test_loader = net.DataLoader(testX, shuffle=False, batch_size=net.BATCH_SIZE, collate_fn=net.collate_lines)
     test_loader = net.DataLoader(testX, shuffle=False, batch_size=1, collate_fn=net.collate_lines)
     M = net.Model(in_vocab=40, out_vocab=47, hidden_size=256)
-    M.load_state_dict(state_dict=torch.load('saved_models/21:404.pt', map_location=net.DEVICE))
+    M.load_state_dict(state_dict=torch.load('saved_models/21:409.pt', map_location=net.DEVICE))
     batch_id = 0
     ans = []
     print(len(testX))

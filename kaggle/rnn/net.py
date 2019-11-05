@@ -18,7 +18,7 @@ BATCH_SIZE = 64
 class Model(torch.nn.Module):
     def __init__(self, in_vocab, out_vocab, hidden_size):
         super(Model, self).__init__()
-        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, dropout=0.5)
+        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3)
         self.output = torch.nn.Linear(hidden_size * 2, out_vocab)
 
     def forward(self, X, lengths):
@@ -80,7 +80,7 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len, v
     print("\nValidation loss per word:", val_lpw)
     print("Validation perplexity :", np.exp(val_lpw), "\n")
     if n_epoch > 0 and (n_epoch + 1) % 5 == 0:
-        modelpath = "saved_models/{}.pt".format(str(jobtime) + str(n_epoch))
+        modelpath = "saved_models/{}.pt".format(str(jobtime) + "-" + str(n_epoch))
         torch.save(model.state_dict(), modelpath)
         print("Model saved at: {}".format(jobtime + modelpath))
     return val_lpw
