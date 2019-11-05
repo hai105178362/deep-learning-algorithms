@@ -16,7 +16,7 @@ class Model(torch.nn.Module):
     def __init__(self, in_vocab, out_vocab, embed_size, hidden_size):
         super(Model, self).__init__()
         self.embed_size = embed_size
-        self.lstm = torch.nn.LSTM(embed_size, hidden_size, bidirectional=True).to(DEVICE)
+        self.lstm = torch.nn.LSTM(embed_size, hidden_size, bidirectional=True)
         self.output = torch.nn.Linear(hidden_size * 2, out_vocab)
 
     def forward(self, X, lengths):
