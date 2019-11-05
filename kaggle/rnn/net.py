@@ -12,7 +12,7 @@ from torch.autograd import Variable
 
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 
 
 class Model(torch.nn.Module):
@@ -54,7 +54,7 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len, v
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        if batch_id % 100 == 0:
+        if batch_id % 200 == 0:
             after = time.time()
             nwords = np.sum(np.array([len(l) for l in inputs]))
             lpw = loss.item() / nwords
