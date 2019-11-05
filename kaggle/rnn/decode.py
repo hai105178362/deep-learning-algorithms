@@ -30,17 +30,16 @@ if __name__ == "__main__":
     testX = net.load_data(xpath=testpath, ypath=None)
     testX_lens = torch.Tensor([len(seq) for seq in testX]).to(net.DEVICE)
     testX = net.LinesDataset(testX)
-    print(testX_lens)
-    exit()
     # test_loader = net.DataLoader(testX, shuffle=False, batch_size=net.BATCH_SIZE, collate_fn=net.collate_lines)
     test_loader = net.DataLoader(testX, shuffle=False, batch_size=1, collate_fn=net.collate_lines)
     M = net.Model(in_vocab=40, out_vocab=46, embed_size=40, hidden_size=64)
-    M.load_state_dict(state_dict=torch.load('saved_models/tmp.pt', map_location=net.DEVICE))
+    M.load_state_dict(state_dict=torch.load('saved_models/5.pt', map_location=net.DEVICE))
     batch_id = 0
     ans = []
     print(len(testX))
     for inputs, targets in test_loader:
         batch_id += 1
+        print(batch_id)
         # new_inputlen = testX_lens[(batch_id - 1) * net.BATCH_SIZE:batch_id * net.BATCH_SIZE]
         new_inputlen = testX_lens[(batch_id - 1) * 1:batch_id * 1]
         cur_result = run_decoder(model=M, test_data=inputs, test_X=inputs, test_X_lens=new_inputlen)
