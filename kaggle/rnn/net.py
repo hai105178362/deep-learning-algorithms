@@ -131,6 +131,7 @@ def collate_lines(seq_list):
 
 
 if __name__ == "__main__":
+    print("Net is running...")
     valxpath = "dataset.nosync/HW3P2_Data/wsj0_dev.npy"
     # devxpath = "/content/drive/My Drive/datasets/hw3p2/wsj0_dev.npy"
     valypath = "dataset.nosync/HW3P2_Data/wsj0_dev_merged_labels.npy"
