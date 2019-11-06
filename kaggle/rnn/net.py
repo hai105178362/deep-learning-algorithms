@@ -12,14 +12,14 @@ from torch.autograd import Variable
 
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE = 32
-HIDDEN_SIZE = 128
+BATCH_SIZE = 64
+HIDDEN_SIZE = 256
 
 
 class Model(torch.nn.Module):
     def __init__(self, in_vocab, out_vocab, hidden_size):
         super(Model, self).__init__()
-        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=2, dropout=0.2)
+        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3, dropout=0.2)
         # self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True)
         self.output = torch.nn.Linear(hidden_size * 2, out_vocab)
 
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     valypath = "dataset.nosync/HW3P2_Data/wsj0_dev_merged_labels.npy"
     trainxpath = "dataset.nosync/HW3P2_Data/wsj0_train.npy"
     trainypath = "dataset.nosync/HW3P2_Data/wsj0_train_merged_labels.npy"
-    task = "val"
+    task = "train"
     if task == "train":
         xpath = trainxpath
         ypath = trainypath
