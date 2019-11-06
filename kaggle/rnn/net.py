@@ -27,8 +27,8 @@ class Model(torch.nn.Module):
         self.lstm.to(DEVICE)
         self.output.to(DEVICE)
         X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
-        xlens = torch.Tensor([len(seq) for seq in X]).to(DEVICE)
-        packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, xlens, enforce_sorted=False).to(DEVICE)
+        # xlens = torch.Tensor([len(seq) for seq in X]).to(DEVICE)
+        packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, lengths, enforce_sorted=False).to(DEVICE)
         packed_out = self.lstm(packed_X)[0]
         out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
         out = self.output(out).log_softmax(2)
