@@ -7,8 +7,6 @@ import net
 
 
 def run_decoder(model, test_data, test_X):
-    print(test_X[0].shape)
-    exit()
     inputlen = torch.IntTensor([len(seq) for seq in test_X]).to(net.DEVICE)
     phonemes = [' '] + PL.PHONEME_MAP
     decoder = CTCBeamDecoder(['$'] * (len(phonemes)), beam_width=100, log_probs_input=True)
@@ -36,8 +34,8 @@ if __name__ == "__main__":
         for i in range(len(inputs)):
             inputs[i] = torch.cat(inputs[i])
         test_loader = net.DataLoader(inputs, shuffle=False, batch_size=1)
-        M = net.Model(in_vocab=40, out_vocab=47, hidden_size=256)
-        M.load_state_dict(state_dict=torch.load('saved_models/2:15-4.pt', map_location=net.DEVICE))
+        M = net.Model(in_vocab=40, out_vocab=47, hidden_size=net.HIDDEN_SIZE)
+        M.load_state_dict(state_dict=torch.load('saved_models/6:21-4.pt', map_location=net.DEVICE))
         batch_id = 0
         ans = []
         print(len(testX))
@@ -47,9 +45,6 @@ if __name__ == "__main__":
             cur_result = run_decoder(model=M, test_data=inputs, test_X=inputs)
             print("{}:{}".format(batch_id, cur_result))
             ans.append(cur_result)
-
-        # print(cur_result)
-        # print(len(cur_result))
         print(ans)
         print(len(ans))
         with open("hw3p2_submission.csv", 'w+') as f:
@@ -65,9 +60,12 @@ if __name__ == "__main__":
         # valX_lens = torch.Tensor([len(seq) for seq in valX]).to(net.DEVICE)
         # valY_lens = torch.IntTensor([len(seq) for seq in valY]).to(net.DEVICE)
         valX = net.LinesDataset(valX)
-        val_loader = DataLoader(valX, shuffle=False, batch_size=1)
-        M = net.Model(in_vocab=40, out_vocab=47, hidden_size=256)
-        M.load_state_dict(state_dict=torch.load('saved_models/2:15-4.pt', map_location=net.DEVICE))
+        inputs = list(valX)
+        for i in range(len(inputs)):
+            inputs[i] = torch.cat(inputs[i])
+        val_loader = DataLoader(inputs, shuffle=False, batch_size=1)
+        M = net.Model(in_vocab=40, out_vocab=47, hidden_size=net.HIDDEN_SIZE)
+        M.load_state_dict(state_dict=torch.load('saved_models/6:21-4.pt', map_location=net.DEVICE))
         batch_id = 0
         ans = []
         n = 0

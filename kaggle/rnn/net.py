@@ -13,6 +13,7 @@ from torch.autograd import Variable
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 16
+HIDDEN_SIZE = 32
 
 
 class Model(torch.nn.Module):
@@ -147,7 +148,7 @@ if __name__ == "__main__":
     # exit()
     train_loader = DataLoader(traindata, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     val_loader = DataLoader(valdata, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
-    model = Model(in_vocab=40, out_vocab=47, hidden_size=32)
+    model = Model(in_vocab=40, out_vocab=47, hidden_size=HIDDEN_SIZE)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=0)
     for i in range(1000):
         print("==========Epoch {}==========".format(i + 1))
