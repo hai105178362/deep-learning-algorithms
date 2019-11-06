@@ -31,10 +31,11 @@ class Model(torch.nn.Module):
         packed_out = self.lstm(packed_X)[0]
         out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
         out = self.output(out).log_softmax(2).to(DEVICE)
+        print(out)
         return out, out_lens
 
 
-def train_epoch_packed(model, optimizer, train_loader, val_loader, n_epoch):
+def train_epoch_packed(model, optimizer, train_loader, n_epoch):
     # criterion = nn.CrossEntropyLoss(reduction="sum")  # sum instead of averaging, to take into account the different lengths
     criterion = nn.CTCLoss()
     criterion = criterion.to(DEVICE)
@@ -51,7 +52,7 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, n_epoch):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        if batch_id % 1 == 0:
+        if batch_id % 10 == 0:
             after = time.time()
             nwords = np.sum(np.array([len(l) for l in inputs]))
             lpw = loss.item() / nwords
@@ -64,24 +65,25 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, n_epoch):
     val_loss = 0
     batch_id = 0
     nwords = 0
-    for inputs, targets in val_loader:
-        nwords += np.sum(np.array([len(l) for l in inputs]))
-        batch_id += 1
-        batch_id += 1
-        inputlen = torch.IntTensor([len(seq) for seq in inputs])
-        targetlen = torch.IntTensor([len(seq) for seq in targets])
-        outputs, outlens = model(inputs, inputlen)
-        targets = torch.nn.utils.rnn.pad_sequence(targets).T
-        loss = criterion(outputs, targets, outlens, targetlen)  # criterion of the concatenated output
-        val_loss += loss.item()
-    val_lpw = val_loss / nwords
-    print("\nValidation loss per word:", val_lpw)
-    print("Validation perplexity :", np.exp(val_lpw), "\n")
+    # for inputs, targets in val_loader:
+    #     nwords += np.sum(np.array([len(l) for l in inputs]))
+    #     batch_id += 1
+    #     batch_id += 1
+    #     inputlen = torch.IntTensor([len(seq) for seq in inputs])
+    #     targetlen = torch.IntTensor([len(seq) for seq in targets])
+    #     outputs, outlens = model(inputs, inputlen)
+    #     targets = torch.nn.utils.rnn.pad_sequence(targets).T
+    #     loss = criterion(outputs, targets, outlens, targetlen)  # criterion of the concatenated output
+    #     val_loss += loss.item()
+    # val_lpw = val_loss / nwords
+    # print("\nValidation loss per word:", val_lpw)
+    # print("Validation perplexity :", np.exp(val_lpw), "\n")
     if n_epoch > 0 and (n_epoch + 1) % 5 == 0:
         modelpath = "saved_models/{}.pt".format(str(jobtime) + "-" + str(n_epoch))
         torch.save(model.state_dict(), modelpath)
         print("Model saved at: {}".format(jobtime + modelpath))
-    return val_lpw
+    # return val_lpw
+    return
 
 
 def load_data(xpath, ypath=None):
@@ -130,21 +132,21 @@ if __name__ == "__main__":
         xpath = valxpath
         ypath = valypath
     X, Y = load_data(xpath=xpath, ypath=ypath)
-    valX, valY = load_data(xpath=valxpath, ypath=valypath)
+    # valX, valY = load_data(xpath=valxpath, ypath=valypath)
     X = LinesDataset(X)
-    valX = LinesDataset(valX)
+    # valX = LinesDataset(valX)
     traindata = []
     valdata = []
     for i, j in zip(X, Y):
         traindata.append((i, torch.IntTensor(j).to(DEVICE)))
-    for i, j in zip(valX, valY):
-        valdata.append((i, torch.IntTensor(j).to(DEVICE)))
+    # for i, j in zip(valX, valY):
+    #     valdata.append((i, torch.IntTensor(j).to(DEVICE)))
 
     # exit()
     train_loader = DataLoader(traindata, shuffle=True, batch_size=BATCH_SIZE, collate_fn=collate_lines)
-    val_loader = DataLoader(valdata, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
+    # val_loader = DataLoader(valdata, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     model = Model(in_vocab=40, out_vocab=47, hidden_size=HIDDEN_SIZE)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=0)
     for i in range(1000):
         print("==========Epoch {}==========".format(i + 1))
-        train_epoch_packed(model, optimizer, train_loader, val_loader, n_epoch=i)
+        train_epoch_packed(model, optimizer, train_loader, n_epoch=i)
