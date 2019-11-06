@@ -17,7 +17,7 @@ def run_decoder(model, test_data, test_X, test_X_lens):
         best_seq = test_Y[i, 0, :test_Y_lens[i, 0]]
         # print(best_seq)
         # exit()
-        best_pron = ''.join(PL.PHONEME_MAP[i] for i in best_seq)
+        best_pron = ''.join(phonemes[i] for i in best_seq)
         # print(test_data[i], '->', best_pron)
         # print(best_pron)
         return best_pron
@@ -30,8 +30,8 @@ if __name__ == "__main__":
     testX = net.LinesDataset(testX)
     # test_loader = net.DataLoader(testX, shuffle=False, batch_size=net.BATCH_SIZE, collate_fn=net.collate_lines)
     test_loader = net.DataLoader(testX, shuffle=False, batch_size=1, collate_fn=net.collate_lines)
-    M = net.Model(in_vocab=40, out_vocab=47, hidden_size=196)
-    M.load_state_dict(state_dict=torch.load('saved_models/23:12-9.pt', map_location=net.DEVICE))
+    M = net.Model(in_vocab=40, out_vocab=47, hidden_size=256)
+    M.load_state_dict(state_dict=torch.load('saved_models/2:15-4.pt', map_location=net.DEVICE))
     batch_id = 0
     ans = []
     print(len(testX))
