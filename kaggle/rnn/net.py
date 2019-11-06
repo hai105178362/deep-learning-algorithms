@@ -152,7 +152,7 @@ if __name__ == "__main__":
     train_loader = DataLoader(X, shuffle=True, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     val_loader = DataLoader(valX, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     model = Model(in_vocab=40, out_vocab=47, hidden_size=256)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-6)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=0)
     for i in range(1000):
         print("==========Epoch {}==========".format(i + 1))
         train_epoch_packed(model, optimizer, train_loader, val_loader, inputs_len=X_lens, val_inputs_len=valX_lens, n_epoch=i)
