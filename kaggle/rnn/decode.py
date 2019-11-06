@@ -8,6 +8,8 @@ import net
 
 def run_decoder(model, test_data, test_X):
     inputlen = torch.IntTensor([len(seq) for seq in test_X]).to(net.DEVICE)
+    print(inputlen)
+    exit()
     phonemes = [' '] + PL.PHONEME_MAP
     decoder = CTCBeamDecoder(['$'] * (len(phonemes)), beam_width=100, log_probs_input=True)
     with torch.no_grad():
@@ -25,7 +27,7 @@ def run_decoder(model, test_data, test_X):
 
 
 if __name__ == "__main__":
-    mode = "val"
+    mode = "test"
     if mode == "test":
         testpath = "dataset.nosync/HW3P2_Data/wsj0_test.npy"
         testX = net.load_data(xpath=testpath, ypath=None)
