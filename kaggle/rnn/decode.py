@@ -6,14 +6,16 @@ import stringdist
 import net
 
 
-def run_decoder(model, test_data, test_X):
-    inputlen = torch.IntTensor([len(seq) for seq in test_X]).to(net.DEVICE)
+def run_decoder(model, inputs):
+    inputlen = torch.IntTensor([len(seq) for seq in inputs]).to(net.DEVICE)
     phonemes = [' '] + PL.PHONEME_MAP
     decoder = CTCBeamDecoder(['$'] * (len(phonemes)), beam_width=100, log_probs_input=True)
     with torch.no_grad():
-        out, out_lens = model(test_X, inputlen)
+        out, out_lens = model(inputs, inputlen)
     test_Y, _, _, test_Y_lens = decoder.decode(out.transpose(0, 1), out_lens)
-    for i in range(len(test_data)):
+    print(test_Y)
+    exit()
+    for i in range(len(inputs)):
         # For the i-th sample in the batch, get the best output
         best_seq = test_Y[i, 0, :test_Y_lens[i, 0]]
         best_pron = ''.join(phonemes[i + 1] for i in best_seq)
@@ -21,7 +23,7 @@ def run_decoder(model, test_data, test_X):
 
 
 if __name__ == "__main__":
-    mode = "test"
+    mode = "val"
     if mode == "test":
         testpath = "dataset.nosync/HW3P2_Data/wsj0_test.npy"
         testX = net.load_data(xpath=testpath, ypath=None)
@@ -38,7 +40,7 @@ if __name__ == "__main__":
         for inputs in test_loader:
             batch_id += 1
             # new_inputlen = testX_lens[(batch_id - 1) * net.BATCH_SIZE:batch_id * net.BATCH_SIZE]
-            cur_result = run_decoder(model=M, test_data=inputs, test_X=inputs)
+            cur_result = run_decoder(model=M,inputs=inputs)
             print("{}:{}".format(batch_id, cur_result))
             ans.append(cur_result)
         print(ans)
@@ -57,9 +59,10 @@ if __name__ == "__main__":
         inputs = list(valX)
         for i in range(len(inputs)):
             inputs[i] = torch.cat(inputs[i])
+        inputs=torch.nn.utils.rnn.pad_sequence(inputs)
         val_loader = DataLoader(inputs, shuffle=False, batch_size=1)
         M = net.Model(in_vocab=40, out_vocab=47, hidden_size=net.HIDDEN_SIZE)
-        M.load_state_dict(state_dict=torch.load('saved_models/6:21-4.pt', map_location=net.DEVICE))
+        M.load_state_dict(state_dict=torch.load('saved_models/6:50-4.pt', map_location=net.DEVICE))
         batch_id = 0
         ans = []
         n = 0
@@ -68,7 +71,8 @@ if __name__ == "__main__":
             batch_id += 1
             # new_inputlen = testX_lens[(batch_id - 1) * net.BATCH_SIZE:batch_id * net.BATCH_SIZE]
             ref_result = ''.join(PL.PHONEME_MAP[i] for i in valY[n])
-            cur_result = run_decoder(model=M, test_data=inputs, test_X=inputs)
+            # print(ref_result)
+            cur_result = run_decoder(model=M, inputs=inputs)
             n += 1
             print(cur_result, ref_result)
             lev_distance = stringdist.levenshtein(cur_result, ref_result)

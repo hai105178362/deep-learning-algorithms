@@ -48,6 +48,7 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, n_epoch):
         targetlen = torch.IntTensor([len(seq) for seq in targets]).to(DEVICE)
         outputs, outlens = model(inputs, inputlen)
         targets = torch.nn.utils.rnn.pad_sequence(targets).T
+        print(outputs,targets)
         loss = criterion(outputs, targets, outlens, targetlen)  # criterion of the concatenated output
         optimizer.zero_grad()
         loss.backward()
@@ -132,10 +133,6 @@ if __name__ == "__main__":
         ypath = valypath
     X, Y = load_data(xpath=xpath, ypath=ypath)
     valX, valY = load_data(xpath=valxpath, ypath=valypath)
-    # for i in range(len(Y)):
-    #     Y[i] = torch.IntTensor(Y[i]).to(DEVICE)
-    # for i in range(len(valY)):
-    #     valY[i] = torch.IntTensor(valY[i]).to(DEVICE)
     X = LinesDataset(X)
     valX = LinesDataset(valX)
     traindata = []
