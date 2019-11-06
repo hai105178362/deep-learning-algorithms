@@ -8,7 +8,6 @@ import net
 
 def run_decoder(model, test_data, test_X):
     inputlen = torch.IntTensor([len(seq) for seq in test_X]).to(net.DEVICE)
-
     phonemes = [' '] + PL.PHONEME_MAP
     decoder = CTCBeamDecoder(['$'] * (len(phonemes)), beam_width=100, log_probs_input=True)
     with torch.no_grad():
