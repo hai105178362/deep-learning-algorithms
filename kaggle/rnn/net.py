@@ -19,7 +19,7 @@ HIDDEN_SIZE = 128
 class Model(torch.nn.Module):
     def __init__(self, in_vocab, out_vocab, hidden_size):
         super(Model, self).__init__()
-        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=2,dropout=0.2)
+        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=2, dropout=0.2)
         # self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True)
         self.output = torch.nn.Linear(hidden_size * 2, out_vocab)
 
@@ -132,18 +132,18 @@ if __name__ == "__main__":
         ypath = valypath
     X, Y = load_data(xpath=xpath, ypath=ypath)
     valX, valY = load_data(xpath=valxpath, ypath=valypath)
-    for i in range(len(Y)):
-        Y[i] = torch.IntTensor(Y[i]).to(DEVICE)
-    for i in range(len(valY)):
-        valY[i] = torch.IntTensor(valY[i]).to(DEVICE)
+    # for i in range(len(Y)):
+    #     Y[i] = torch.IntTensor(Y[i]).to(DEVICE)
+    # for i in range(len(valY)):
+    #     valY[i] = torch.IntTensor(valY[i]).to(DEVICE)
     X = LinesDataset(X)
     valX = LinesDataset(valX)
     traindata = []
     valdata = []
     for i, j in zip(X, Y):
-        traindata.append((i, j))
+        traindata.append((i, torch.IntTensor(j).to(DEVICE)))
     for i, j in zip(valX, valY):
-        valdata.append((i, j))
+        valdata.append((i, torch.IntTensor(j).to(DEVICE)))
 
     # exit()
     train_loader = DataLoader(traindata, shuffle=True, batch_size=BATCH_SIZE, collate_fn=collate_lines)
