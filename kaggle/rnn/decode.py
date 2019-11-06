@@ -6,17 +6,17 @@ import net
 
 def run_decoder(model, test_data, test_X, test_X_lens):
     phonemes = PL.PHONEME_LIST
-    decoder = CTCBeamDecoder(['$'] * (len(phonemes)+1), beam_width=4, log_probs_input=True)
+    decoder = CTCBeamDecoder(['$'] * (len(phonemes)+1), beam_width=100, log_probs_input=True)
     with torch.no_grad():
         out, out_lens = model(test_X, test_X_lens)
-    # print(out.transpose(0,1).shape)
-    # print("decoding..")
     test_Y, _, _, test_Y_lens = decoder.decode(out.transpose(0, 1), out_lens)
-    # print("decoding finished")
     for i in range(len(test_data)):
-        # visualize(test_data[i], out[:len(test_data[i]), i, :])
         # For the i-th sample in the batch, get the best output
+        print(len(test_data))
+        print(len(test_Y[0][0]))
         best_seq = test_Y[i, 0, :test_Y_lens[i, 0]]
+        print(best_seq)
+        exit()
         best_pron = ''.join(PL.PHONEME_MAP[i] for i in best_seq)
         # print(test_data[i], '->', best_pron)
         # print(best_pron)
@@ -30,8 +30,8 @@ if __name__ == "__main__":
     testX = net.LinesDataset(testX)
     # test_loader = net.DataLoader(testX, shuffle=False, batch_size=net.BATCH_SIZE, collate_fn=net.collate_lines)
     test_loader = net.DataLoader(testX, shuffle=False, batch_size=1, collate_fn=net.collate_lines)
-    M = net.Model(in_vocab=40, out_vocab=47, hidden_size=256)
-    M.load_state_dict(state_dict=torch.load('saved_models/22:51-4.pt', map_location=net.DEVICE))
+    M = net.Model(in_vocab=40, out_vocab=47, hidden_size=196)
+    M.load_state_dict(state_dict=torch.load('saved_models/23:12-9.pt', map_location=net.DEVICE))
     batch_id = 0
     ans = []
     print(len(testX))

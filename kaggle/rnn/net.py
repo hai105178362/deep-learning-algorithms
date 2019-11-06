@@ -149,7 +149,7 @@ if __name__ == "__main__":
     valY_lens = torch.IntTensor([len(seq) for seq in valY]).to(DEVICE)
     valX = LinesDataset(valX)
 
-    train_loader = DataLoader(X, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
+    train_loader = DataLoader(X, shuffle=True, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     val_loader = DataLoader(valX, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     model = Model(in_vocab=40, out_vocab=47, hidden_size=196)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=1e-6)
