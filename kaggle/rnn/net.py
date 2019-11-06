@@ -24,8 +24,8 @@ class Model(torch.nn.Module):
         self.output = torch.nn.Linear(hidden_size * 2, out_vocab)
 
     def forward(self, X, lengths):
-        # self.lstm.to(DEVICE)
-        # self.output.to(DEVICE)
+        self.lstm.to(DEVICE)
+        self.output.to(DEVICE)
         X = torch.nn.utils.rnn.pad_sequence(X)
         packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, lengths, enforce_sorted=False)
         packed_out = self.lstm(packed_X)[0]
