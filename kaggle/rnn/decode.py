@@ -14,8 +14,6 @@ def run_decoder(model, test_data, test_X, test_X_lens):
     test_Y, _, _, test_Y_lens = decoder.decode(out.transpose(0, 1), out_lens)
     for i in range(len(test_data)):
         # For the i-th sample in the batch, get the best output
-        # print(len(test_data))
-        # print(len(test_Y[0][0]))
         best_seq = test_Y[i, 0, :test_Y_lens[i, 0]]
         # print(best_seq)
         # exit()
@@ -26,7 +24,7 @@ def run_decoder(model, test_data, test_X, test_X_lens):
 
 
 if __name__ == "__main__":
-    mode = "test"
+    mode = "val"
     if mode == "test":
         testpath = "dataset.nosync/HW3P2_Data/wsj0_test.npy"
         testX = net.load_data(xpath=testpath, ypath=None)
@@ -76,8 +74,9 @@ if __name__ == "__main__":
             batch_id += 1
             # new_inputlen = testX_lens[(batch_id - 1) * net.BATCH_SIZE:batch_id * net.BATCH_SIZE]
             new_inputlen = valX_lens[(batch_id - 1) * 1:batch_id * 1]
-            cur_result = run_decoder(model=M, test_data=inputs, test_X=inputs, test_X_lens=new_inputlen)
             ref_result = ''.join(PL.PHONEME_MAP[i] for i in valY[n])
+            cur_result = run_decoder(model=M, test_data=inputs, test_X=inputs, test_X_lens=new_inputlen)
+            n+=1
             print(cur_result,ref_result)
             lev_distance = stringdist.levenshtein(cur_result, ref_result)
             tot_levd += lev_distance
