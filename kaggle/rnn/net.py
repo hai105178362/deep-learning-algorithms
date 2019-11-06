@@ -48,7 +48,6 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, n_epoch):
         targetlen = torch.IntTensor([len(seq) for seq in targets]).to(DEVICE)
         outputs, outlens = model(inputs, inputlen)
         targets = torch.nn.utils.rnn.pad_sequence(targets).T
-        print(outputs,targets)
         loss = criterion(outputs, targets, outlens, targetlen)  # criterion of the concatenated output
         optimizer.zero_grad()
         loss.backward()
