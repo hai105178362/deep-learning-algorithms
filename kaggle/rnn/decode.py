@@ -13,17 +13,22 @@ def run_decoder(model, inputs):
     with torch.no_grad():
         out, out_lens = model(inputs, inputlen)
     test_Y, _, _, test_Y_lens = decoder.decode(out.transpose(0, 1), out_lens)
-    print(test_Y)
-    exit()
     for i in range(len(inputs)):
         # For the i-th sample in the batch, get the best output
         best_seq = test_Y[i, 0, :test_Y_lens[i, 0]]
         best_pron = ''.join(phonemes[i + 1] for i in best_seq)
         return best_pron
 
+def collate_lines(seq_list):
+    inputs = seq_list
+    inputs = list(inputs)
+    for i in range(len(inputs)):
+        inputs[i] = torch.cat(inputs[i])
+    return inputs
+
 
 if __name__ == "__main__":
-    mode = "val"
+    mode = "test"
     if mode == "test":
         testpath = "dataset.nosync/HW3P2_Data/wsj0_test.npy"
         testX = net.load_data(xpath=testpath, ypath=None)
@@ -34,7 +39,7 @@ if __name__ == "__main__":
         inputlen = torch.IntTensor([len(seq) for seq in inputs]).to(net.DEVICE)
         test_loader = net.DataLoader(inputs, shuffle=False, batch_size=1)
         M = net.Model(in_vocab=40, out_vocab=47, hidden_size=net.HIDDEN_SIZE)
-        M.load_state_dict(state_dict=torch.load('saved_models/6:21-4.pt', map_location=net.DEVICE))
+        M.load_state_dict(state_dict=torch.load('saved_models/7:59-39.pt', map_location=net.DEVICE))
         batch_id = 0
         ans = []
         for inputs in test_loader:
@@ -56,13 +61,9 @@ if __name__ == "__main__":
         for i in range(len(valY)):
             valY[i] = torch.IntTensor(valY[i]).to(net.DEVICE)
         valX = net.LinesDataset(valX)
-        inputs = list(valX)
-        for i in range(len(inputs)):
-            inputs[i] = torch.cat(inputs[i])
-        inputs=torch.nn.utils.rnn.pad_sequence(inputs)
-        val_loader = DataLoader(inputs, shuffle=False, batch_size=1)
+        val_loader = DataLoader(valX, shuffle=False, batch_size=1,collate_fn=collate_lines)
         M = net.Model(in_vocab=40, out_vocab=47, hidden_size=net.HIDDEN_SIZE)
-        M.load_state_dict(state_dict=torch.load('saved_models/6:50-4.pt', map_location=net.DEVICE))
+        M.load_state_dict(state_dict=torch.load('saved_models/7:59-39.pt', map_location=net.DEVICE))
         batch_id = 0
         ans = []
         n = 0
