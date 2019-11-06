@@ -5,18 +5,18 @@ import net
 
 
 def run_decoder(model, test_data, test_X, test_X_lens):
-    phonemes = PL.PHONEME_LIST
-    decoder = CTCBeamDecoder(['$'] * (len(phonemes)+1), beam_width=100, log_probs_input=True)
+    phonemes = [' '] + PL.PHONEME_LIST
+    decoder = CTCBeamDecoder(['$'] * (len(phonemes)), beam_width=100, log_probs_input=True)
     with torch.no_grad():
         out, out_lens = model(test_X, test_X_lens)
     test_Y, _, _, test_Y_lens = decoder.decode(out.transpose(0, 1), out_lens)
     for i in range(len(test_data)):
         # For the i-th sample in the batch, get the best output
-        print(len(test_data))
-        print(len(test_Y[0][0]))
+        # print(len(test_data))
+        # print(len(test_Y[0][0]))
         best_seq = test_Y[i, 0, :test_Y_lens[i, 0]]
-        print(best_seq)
-        exit()
+        # print(best_seq)
+        # exit()
         best_pron = ''.join(PL.PHONEME_MAP[i] for i in best_seq)
         # print(test_data[i], '->', best_pron)
         # print(best_pron)
