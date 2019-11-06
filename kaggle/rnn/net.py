@@ -18,7 +18,7 @@ BATCH_SIZE = 32
 class Model(torch.nn.Module):
     def __init__(self, in_vocab, out_vocab, hidden_size):
         super(Model, self).__init__()
-        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3)
+        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3,dropout=0.15)
         # self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True)
         self.output = torch.nn.Linear(hidden_size*2, out_vocab)
 
@@ -123,9 +123,7 @@ if __name__ == "__main__":
     now = datetime.datetime.now()
     jobtime = str(now.hour) + ":" + str(now.minute)
     valxpath = "dataset.nosync/HW3P2_Data/wsj0_dev.npy"
-    # devxpath = "/content/drive/My Drive/datasets/hw3p2/wsj0_dev.npy"
     valypath = "dataset.nosync/HW3P2_Data/wsj0_dev_merged_labels.npy"
-    # devypath = "/content/drive/My Drive/datasets/hw3p2/wsj0_dev_merged_labels.npy"
     trainxpath = "dataset.nosync/HW3P2_Data/wsj0_train.npy"
     trainypath = "dataset.nosync/HW3P2_Data/wsj0_train_merged_labels.npy"
     task = "train"
