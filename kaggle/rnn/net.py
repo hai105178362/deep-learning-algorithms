@@ -13,7 +13,7 @@ from torch.autograd import Variable
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 64
-HIDDEN_SIZE = 256
+HIDDEN_SIZE = 128
 
 
 class Model(torch.nn.Module):
