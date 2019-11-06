@@ -28,18 +28,16 @@ def collate_lines(seq_list):
 
 
 if __name__ == "__main__":
-    mode = "val"
+    mode = "test"
     if mode == "test":
         testpath = "dataset.nosync/HW3P2_Data/wsj0_test.npy"
         testX = net.load_data(xpath=testpath, ypath=None)
         testX = net.LinesDataset(testX)
         inputs = list(testX)
-        for i in range(len(inputs)):
-            inputs[i] = torch.cat(inputs[i])
-        inputlen = torch.IntTensor([len(seq) for seq in inputs]).to(net.DEVICE)
-        test_loader = net.DataLoader(inputs, shuffle=False, batch_size=1)
+        # inputlen = torch.IntTensor([len(seq) for seq in inputs]).to(net.DEVICE)
+        test_loader = net.DataLoader(testX, shuffle=False, batch_size=1,collate_fn=collate_lines)
         M = net.Model(in_vocab=40, out_vocab=47, hidden_size=net.HIDDEN_SIZE)
-        M.load_state_dict(state_dict=torch.load('saved_models/16:41-9.pt', map_location=net.DEVICE))
+        M.load_state_dict(state_dict=torch.load('saved_models/16:41-19.pt', map_location=net.DEVICE))
         batch_id = 0
         ans = []
         for inputs in test_loader:
@@ -63,7 +61,7 @@ if __name__ == "__main__":
         valX = net.LinesDataset(valX)
         val_loader = DataLoader(valX, shuffle=False, batch_size=1,collate_fn=collate_lines)
         M = net.Model(in_vocab=40, out_vocab=47, hidden_size=net.HIDDEN_SIZE)
-        M.load_state_dict(state_dict=torch.load('saved_models/7:59-9.pt', map_location=net.DEVICE))
+        M.load_state_dict(state_dict=torch.load('saved_models/16:41-19.pt', map_location=net.DEVICE))
         batch_id = 0
         ans = []
         n = 0
