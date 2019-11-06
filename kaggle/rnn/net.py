@@ -43,8 +43,8 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, n_epoch):
     print("Training", len(train_loader), "number of batches")
     for inputs, targets in (train_loader):  # lists, presorted, preloaded on GPU
         batch_id += 1
-        inputlen = torch.IntTensor([len(seq) for seq in inputs]).to(DEVICE)
-        targetlen = torch.IntTensor([len(seq) for seq in targets]).to(DEVICE)
+        inputlen = torch.IntTensor([len(seq) for seq in inputs])
+        targetlen = torch.IntTensor([len(seq) for seq in targets])
         outputs, outlens = model(inputs, inputlen)
         targets = torch.nn.utils.rnn.pad_sequence(targets).T
         loss = criterion(outputs, targets, outlens, targetlen)  # criterion of the concatenated output
@@ -68,8 +68,8 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, n_epoch):
         nwords += np.sum(np.array([len(l) for l in inputs]))
         batch_id += 1
         batch_id += 1
-        inputlen = torch.IntTensor([len(seq) for seq in inputs]).to(DEVICE)
-        targetlen = torch.IntTensor([len(seq) for seq in targets]).to(DEVICE)
+        inputlen = torch.IntTensor([len(seq) for seq in inputs])
+        targetlen = torch.IntTensor([len(seq) for seq in targets])
         outputs, outlens = model(inputs, inputlen)
         targets = torch.nn.utils.rnn.pad_sequence(targets).T
         loss = criterion(outputs, targets, outlens, targetlen)  # criterion of the concatenated output
