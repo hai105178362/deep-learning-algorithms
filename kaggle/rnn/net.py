@@ -51,7 +51,7 @@ def train_epoch_packed(model, optimizer, train_loader, val_loader, n_epoch):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        if batch_id % 1 == 0:
+        if batch_id % 10 == 0:
             after = time.time()
             nwords = np.sum(np.array([len(l) for l in inputs]))
             lpw = loss.item() / nwords
