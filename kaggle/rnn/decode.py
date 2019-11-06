@@ -8,8 +8,7 @@ import net
 
 def run_decoder(model, test_data, test_X):
     inputlen = torch.IntTensor([len(seq) for seq in test_X]).to(net.DEVICE)
-    print(inputlen)
-    exit()
+
     phonemes = [' '] + PL.PHONEME_MAP
     decoder = CTCBeamDecoder(['$'] * (len(phonemes)), beam_width=100, log_probs_input=True)
     with torch.no_grad():
@@ -35,6 +34,10 @@ if __name__ == "__main__":
         inputs = list(testX)
         for i in range(len(inputs)):
             inputs[i] = torch.cat(inputs[i])
+        inputlen = torch.IntTensor([len(seq) for seq in inputs]).to(net.DEVICE)
+        print(len(inputs))
+        print(inputlen)
+        exit()
         test_loader = net.DataLoader(inputs, shuffle=False, batch_size=1)
         M = net.Model(in_vocab=40, out_vocab=47, hidden_size=net.HIDDEN_SIZE)
         M.load_state_dict(state_dict=torch.load('saved_models/6:21-4.pt', map_location=net.DEVICE))
