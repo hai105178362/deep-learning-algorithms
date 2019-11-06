@@ -25,11 +25,11 @@ class Model(torch.nn.Module):
     def forward(self, X, lengths):
         self.lstm.to(DEVICE)
         self.output.to(DEVICE)
-        X = torch.nn.utils.rnn.pad_sequence(X)
+        X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
         xlens = torch.Tensor([len(X) for _ in range(len(lengths))]).to(DEVICE)
         packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, xlens, enforce_sorted=False).to(DEVICE)
         packed_out = self.lstm(packed_X)[0]
-        out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
+        out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out).to(DEVICE)
         out = self.output(out).log_softmax(2)
         return out, out_lens
 
