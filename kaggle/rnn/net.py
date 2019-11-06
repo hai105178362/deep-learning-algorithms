@@ -12,8 +12,8 @@ from torch.autograd import Variable
 
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE = 16
-HIDDEN_SIZE = 32
+BATCH_SIZE = 64
+HIDDEN_SIZE = 256
 
 
 class Model(torch.nn.Module):
@@ -146,7 +146,7 @@ if __name__ == "__main__":
         valdata.append((i, j))
 
     # exit()
-    train_loader = DataLoader(traindata, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
+    train_loader = DataLoader(traindata, shuffle=True, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     val_loader = DataLoader(valdata, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     model = Model(in_vocab=40, out_vocab=47, hidden_size=HIDDEN_SIZE)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=0)
