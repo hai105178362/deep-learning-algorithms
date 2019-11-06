@@ -20,7 +20,7 @@ class Model(torch.nn.Module):
         super(Model, self).__init__()
         self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3)
         # self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True)
-        self.output = torch.nn.Linear(hidden_size*3, out_vocab)
+        self.output = torch.nn.Linear(hidden_size*2, out_vocab)
 
     def forward(self, X, lengths):
         self.lstm.to(DEVICE)
@@ -30,7 +30,7 @@ class Model(torch.nn.Module):
         packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, xlens, enforce_sorted=False).to(DEVICE)
         packed_out = self.lstm(packed_X)[0]
         out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
-        out = self.output(out).log_softmax(3)
+        out = self.output(out).log_softmax(2)
         return out, out_lens
 
 
