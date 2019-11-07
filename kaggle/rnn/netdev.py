@@ -26,7 +26,7 @@ class Model(torch.nn.Module):
         # self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True)
         self.lf = torch.nn.Linear(out_vocab,out_vocab).to(DEVICE)
         ###
-        self.output = torch.nn.Linear(hidden_size * 2, out_vocab)
+        self.output = torch.nn.Linear(hidden_size * 2, out_vocab).to(DEVICE)
 
     def forward(self, X, lengths):
         X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
