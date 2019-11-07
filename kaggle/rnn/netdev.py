@@ -104,7 +104,7 @@ def train_epoch_packed(model, optimizer, train_loader, n_epoch):
     # val_lpw = val_loss / nwords
     # print("\nValidation loss per word:", val_lpw)
     # print("Validation perplexity :", np.exp(val_lpw), "\n")
-    if n_epoch > 0 and (n_epoch + 1) % 5 == 0:
+    if n_epoch > 0 and (n_epoch + 1) % 100 == 0:
         modelpath = "saved_models/{}.pt".format(str(jobtime) + "-" + str(n_epoch))
         torch.save(model.state_dict(), modelpath)
         print("Model saved at: {}".format(jobtime + modelpath))
