@@ -174,8 +174,8 @@ if __name__ == "__main__":
     train_loader = DataLoader(traindata, shuffle=True, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     # val_loader = DataLoader(valdata, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     model = Model(in_vocab=40, out_vocab=47, hidden_size=HIDDEN_SIZE)
-    # optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=0)
-    optimizer = torch.optim.Adadelta(model.parameters(),lr=1.0, rho=0.9, eps=1e-06, weight_decay=0)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=0)
+    # optimizer = torch.optim.Adadelta(model.parameters(),lr=1.0, rho=0.9, eps=1e-06, weight_decay=0)
     for i in range(1000):
         print("==========Epoch {}==========".format(i + 1))
         train_epoch_packed(model, optimizer, train_loader, n_epoch=i)
