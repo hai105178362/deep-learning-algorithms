@@ -10,6 +10,7 @@ import torch.nn.functional as F
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 32
 HIDDEN_SIZE = 512
+BATCH_PRINT = 1
 
 
 class Model(torch.nn.Module):
@@ -55,7 +56,7 @@ def train_epoch_packed(model, optimizer, train_loader, n_epoch):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        if batch_id % 100 == 0:
+        if batch_id % BATCH_PRINT == 0:
         # if batch_id % 5 == 0:
             after = time.time()
             nwords = np.sum(np.array([len(l) for l in inputs]))
