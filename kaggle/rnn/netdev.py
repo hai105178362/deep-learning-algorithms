@@ -77,8 +77,8 @@ def train_epoch_packed(model, optimizer, train_loader, n_epoch):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        # if batch_id % 100 == 0:
-        if batch_id % 1 == 0:
+        if batch_id % 100 == 0:
+        # if batch_id % 5 == 0:
             after = time.time()
             nwords = np.sum(np.array([len(l) for l in inputs]))
             lpw = loss.item() / nwords
@@ -104,7 +104,7 @@ def train_epoch_packed(model, optimizer, train_loader, n_epoch):
     # val_lpw = val_loss / nwords
     # print("\nValidation loss per word:", val_lpw)
     # print("Validation perplexity :", np.exp(val_lpw), "\n")
-    if n_epoch > 0 and (n_epoch + 1) % 5 == 0:
+    if n_epoch == 0 or (n_epoch + 1) % 5 == 0:
         modelpath = "saved_models/{}.pt".format(str(jobtime) + "-" + str(n_epoch))
         torch.save(model.state_dict(), modelpath)
         print("Model saved at: {}".format(jobtime + modelpath))
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     valypath = "dataset.nosync/HW3P2_Data/wsj0_dev_merged_labels.npy"
     trainxpath = "dataset.nosync/HW3P2_Data/wsj0_train.npy"
     trainypath = "dataset.nosync/HW3P2_Data/wsj0_train_merged_labels.npy"
-    task = "d"
+    task = "train"
     if task == "train":
         xpath = trainxpath
         ypath = trainypath
