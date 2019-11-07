@@ -8,7 +8,7 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 HIDDEN_SIZE = 512
 BATCH_PRINT = 100
 task = "train"
