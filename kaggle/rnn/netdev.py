@@ -46,8 +46,8 @@ class Model(torch.nn.Module):
         packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, lengths, enforce_sorted=False).to(DEVICE)
         packed_out = self.lstm(packed_X)[0]
         out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
-        # out = self.output(out).log_softmax(2).to(DEVICE)
-        out = self.lf(self.output(out)).log_softmax(2).to(DEVICE)
+        out = self.output(out).log_softmax(2).to(DEVICE)
+        # out = self.lf(self.output(out)).log_softmax(2).to(DEVICE)
         # print(out)
         return out, out_lens
         # X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
