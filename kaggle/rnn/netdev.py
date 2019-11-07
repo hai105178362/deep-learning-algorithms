@@ -7,17 +7,9 @@ from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
 import torch.nn.functional as F
 
-# import decode
-
-# import helper.phoneme_list as PL
-
-
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-# BATCH_SIZE = 64
 BATCH_SIZE = 32
-# HIDDEN_SIZE = 256
-# HIDDEN_SIZE = 16
-HIDDEN_SIZE = 256
+HIDDEN_SIZE = 512
 
 
 class Model(torch.nn.Module):
@@ -25,14 +17,11 @@ class Model(torch.nn.Module):
         super(Model, self).__init__()
         self.in_vocab = in_vocab
         # self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3)
-        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3).to(DEVICE)
+        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=5).to(DEVICE)
         self.output = torch.nn.Linear(hidden_size * 2, out_vocab).to(DEVICE)
 
         ####################
-        # self.c1 = nn.Conv1d(in_vocab, hidden_size, 2)
         self.lf = torch.nn.Linear(out_vocab, out_vocab).to(DEVICE)
-        # self.lf.to(DEVICE)
-        # self.c1.to(DEVICE)
         ########
 
     def forward(self, X, lengths):
@@ -47,18 +36,7 @@ class Model(torch.nn.Module):
         out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
         # out = self.output(out).log_softmax(2).to(DEVICE)
         out = self.lf(self.output(out)).log_softmax(2).to(DEVICE)
-        # print(out)
         return out, out_lens
-        # X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
-        # X = self.c1(X)
-        # packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, lengths, enforce_sorted=False).to(DEVICE)
-        # packed_out = self.lstm(packed_X)[0]
-        # out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
-        # # out = self.output(out).log_softmax(2).to(DEVICE)
-        # out = self.lf(self.output(out)).log_softmax(2).to(DEVICE)
-        # print(out)
-        # return out, out_lens
-
 
 def train_epoch_packed(model, optimizer, train_loader, n_epoch):
     # criterion = nn.CrossEntropyLoss(reduction="sum")  # sum instead of averaging, to take into account the different lengths
@@ -168,7 +146,6 @@ if __name__ == "__main__":
     # for i, j in zip(valX, valY):
     #     valdata.append((i, torch.IntTensor(j).to(DEVICE)))
 
-    # exit()
     train_loader = DataLoader(traindata, shuffle=True, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     # val_loader = DataLoader(valdata, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     model = Model(in_vocab=40, out_vocab=47, hidden_size=HIDDEN_SIZE)
