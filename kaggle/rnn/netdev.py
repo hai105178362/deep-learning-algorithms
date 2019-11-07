@@ -38,7 +38,7 @@ class Model(torch.nn.Module):
 
 
     def forward(self, X, lengths):
-        X = torch.nn.utils.rnn.pad_sequence(X)
+        X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
         cv1 = nn.Conv1d(X.shape[1], HIDDEN_SIZE, 2).to(DEVICE)
         X = F.relu(F.max_pool2d(cv1(X), 2)).to(DEVICE)
         fc2 = nn.Linear(X.shape[2],self.in_vocab).to(DEVICE)
