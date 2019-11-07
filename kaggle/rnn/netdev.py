@@ -22,7 +22,7 @@ batch_print = 100
 class Model(torch.nn.Module):
     def __init__(self, in_vocab, out_vocab, hidden_size):
         super(Model, self).__init__()
-        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3,dropout=0.1).to(DEVICE)
+        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3,dropout=0.2).to(DEVICE)
         self.lf = torch.nn.Linear(out_vocab,out_vocab).to(DEVICE)
         ###
         self.output = torch.nn.Linear(hidden_size * 2, out_vocab).to(DEVICE)
@@ -82,7 +82,7 @@ def train_epoch_packed(model, optimizer, train_loader, n_epoch):
     # val_lpw = val_loss / nwords
     # print("\nValidation loss per word:", val_lpw)
     # print("Validation perplexity :", np.exp(val_lpw), "\n")
-    if n_epoch > 0 and (n_epoch + 1) % 5 == 0:
+    if n_epoch > 0 and (n_epoch + 1) % 2 == 0:
         modelpath = "saved_models/{}.pt".format(str(jobtime) + "-" + str(n_epoch))
         torch.save(model.state_dict(), modelpath)
         print("Model saved at: {}".format(jobtime + modelpath))
