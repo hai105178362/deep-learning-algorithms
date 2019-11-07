@@ -26,24 +26,20 @@ class Model(torch.nn.Module):
         super(Model, self).__init__()
         self.in_vocab = in_vocab
         # self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3)
-        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3)
-        self.output = torch.nn.Linear(hidden_size * 2, out_vocab)
+        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3).to(DEVICE)
+        self.output = torch.nn.Linear(hidden_size * 2, out_vocab).to(DEVICE)
 
         ####################
         # self.c1 = nn.Conv1d(in_vocab, hidden_size, 2)
-        self.lf = torch.nn.Linear(out_vocab,out_vocab)
+        self.lf = torch.nn.Linear(out_vocab,out_vocab).to(DEVICE)
         # self.lf.to(DEVICE)
         # self.c1.to(DEVICE)
         ########
 
 
     def forward(self, X, lengths):
-        self.lstm.to(DEVICE)
-        self.output.to(DEVICE)
-        self.lf.to(DEVICE)
-        X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
-        # print(X.shape)
-        cv1 = nn.Conv1d(X.shape[1], HIDDEN_SIZE, 5).to(DEVICE)
+        X = torch.nn.utils.rnn.pad_sequence(X)
+        cv1 = nn.Conv1d(X.shape[1], HIDDEN_SIZE, 2).to(DEVICE)
         X = F.relu(F.max_pool2d(cv1(X), 2))
         fc2 = nn.Linear(X.shape[2],self.in_vocab).to(DEVICE)
         X = fc2(X)
