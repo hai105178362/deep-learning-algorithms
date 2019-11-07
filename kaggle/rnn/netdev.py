@@ -11,6 +11,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 32
 HIDDEN_SIZE = 512
 BATCH_PRINT = 1
+task = "d"
 
 
 class Model(torch.nn.Module):
@@ -35,8 +36,8 @@ class Model(torch.nn.Module):
         # packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, inputlen, enforce_sorted=False).to(DEVICE)
         packed_out = self.lstm(packed_X)[0]
         out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
-        # out = self.output(out).log_softmax(2).to(DEVICE)
-        out = self.lf(self.output(out)).log_softmax(2).to(DEVICE)
+        out = self.output(out).log_softmax(2).to(DEVICE)
+        # out = self.lf(self.output(out)).log_softmax(2).to(DEVICE)
         return out, out_lens
 
 def train_epoch_packed(model, optimizer, train_loader, n_epoch):
@@ -129,7 +130,6 @@ if __name__ == "__main__":
     valypath = "dataset.nosync/HW3P2_Data/wsj0_dev_merged_labels.npy"
     trainxpath = "dataset.nosync/HW3P2_Data/wsj0_train.npy"
     trainypath = "dataset.nosync/HW3P2_Data/wsj0_train_merged_labels.npy"
-    task = "d"
     if task == "train":
         xpath = trainxpath
         ypath = trainypath
