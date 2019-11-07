@@ -12,7 +12,8 @@ from torch.autograd import Variable
 
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE = 64
+# BATCH_SIZE = 64
+BATCH_SIZE = 128
 HIDDEN_SIZE = 256
 # HIDDEN_SIZE = 16
 # HIDDEN_SIZE = 128
@@ -132,7 +133,7 @@ if __name__ == "__main__":
     valypath = "dataset.nosync/HW3P2_Data/wsj0_dev_merged_labels.npy"
     trainxpath = "dataset.nosync/HW3P2_Data/wsj0_train.npy"
     trainypath = "dataset.nosync/HW3P2_Data/wsj0_train_merged_labels.npy"
-    task = "dev"
+    task = "train"
     if task == "train":
         xpath = trainxpath
         ypath = trainypath
