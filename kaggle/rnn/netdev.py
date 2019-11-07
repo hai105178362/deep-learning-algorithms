@@ -11,7 +11,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 32
 HIDDEN_SIZE = 512
 BATCH_PRINT = 1
-task = "d"
+task = "train"
 
 
 class Model(torch.nn.Module):
