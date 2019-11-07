@@ -22,9 +22,7 @@ batch_print = 100
 class Model(torch.nn.Module):
     def __init__(self, in_vocab, out_vocab, hidden_size):
         super(Model, self).__init__()
-        # self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3)
-        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=4).to(DEVICE)
-        # self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True)
+        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=5,dropout=0.1).to(DEVICE)
         self.lf = torch.nn.Linear(out_vocab,out_vocab).to(DEVICE)
         ###
         self.output = torch.nn.Linear(hidden_size * 2, out_vocab).to(DEVICE)
