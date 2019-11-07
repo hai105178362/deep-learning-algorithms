@@ -27,7 +27,7 @@ class Model(torch.nn.Module):
 
         ####################
         # self.c1 = nn.Conv1d(in_vocab, hidden_size, 2)
-        # self.lf = torch.nn.Linear(out_vocab,out_vocab)
+        self.lf = torch.nn.Linear(out_vocab,out_vocab)
         # self.lf.to(DEVICE)
         # self.c1.to(DEVICE)
         ########
@@ -36,12 +36,13 @@ class Model(torch.nn.Module):
     def forward(self, X, lengths):
         self.lstm.to(DEVICE)
         self.output.to(DEVICE)
+        self.lf.to(DEVICE)
         X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
         packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, lengths, enforce_sorted=False).to(DEVICE)
         packed_out = self.lstm(packed_X)[0]
         out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
-        out = self.output(out).log_softmax(2).to(DEVICE)
-        # out = self.lf(self.output(out)).log_softmax(2).to(DEVICE)
+        # out = self.output(out).log_softmax(2).to(DEVICE)
+        out = self.lf(self.output(out)).log_softmax(2).to(DEVICE)
         # print(out)
         return out, out_lens
         # X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
