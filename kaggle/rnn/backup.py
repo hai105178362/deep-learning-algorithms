@@ -5,37 +5,39 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
-
-# import decode
-
-# import helper.phoneme_list as PL
-
+import torch.nn.functional as F
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 16
 HIDDEN_SIZE = 512
-# HIDDEN_SIZE = 16
-# HIDDEN_SIZE = 128
+BATCH_PRINT = int((64 / BATCH_SIZE) * 100)
+task = "train"
 
 
 class Model(torch.nn.Module):
     def __init__(self, in_vocab, out_vocab, hidden_size):
         super(Model, self).__init__()
+        self.in_vocab = in_vocab
         # self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3)
-        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=5,dropout=0.3).to(DEVICE)
-        # self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True)
-        self.lf = torch.nn.Linear(out_vocab,out_vocab).to(DEVICE)
-        ###
-        self.output = torch.nn.Linear(hidden_size * 2, out_vocab)
+        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3).to(DEVICE)
+        self.output = torch.nn.Linear(hidden_size * 2, out_vocab).to(DEVICE)
+
+        ####################
+        # self.lf = torch.nn.Linear(out_vocab, out_vocab).to(DEVICE)
+        ########
 
     def forward(self, X, lengths):
         X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
+        cv1 = nn.Conv1d(X.shape[1], HIDDEN_SIZE, kernel_size=1, stride=1).to(DEVICE)
+        X = F.relu(F.max_pool2d(cv1(X), 2)).to(DEVICE)
+        fc2 = nn.Linear(X.shape[-1], self.in_vocab).to(DEVICE)
+        X = fc2(X)
         packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, lengths, enforce_sorted=False).to(DEVICE)
+        # packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, inputlen, enforce_sorted=False).to(DEVICE)
         packed_out = self.lstm(packed_X)[0]
         out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
-        # out = self.output(out).log_softmax(2).to(DEVICE)
-        out = self.lf(self.output(out)).log_softmax(2).to(DEVICE)
-        # print(out)
+        out = self.output(out).log_softmax(2).to(DEVICE)
+        # out = self.lf(self.output(out)).log_softmax(2).to(DEVICE)
         return out, out_lens
 
 
@@ -56,8 +58,8 @@ def train_epoch_packed(model, optimizer, train_loader, n_epoch):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        # if batch_id % 100 == 0:
-        if batch_id % 1 == 0:
+        if batch_id % BATCH_PRINT == 0:
+            # if batch_id % 5 == 0:
             after = time.time()
             nwords = np.sum(np.array([len(l) for l in inputs]))
             lpw = loss.item() / nwords
@@ -83,7 +85,7 @@ def train_epoch_packed(model, optimizer, train_loader, n_epoch):
     # val_lpw = val_loss / nwords
     # print("\nValidation loss per word:", val_lpw)
     # print("Validation perplexity :", np.exp(val_lpw), "\n")
-    if n_epoch > 0 and (n_epoch + 1) % 5 == 0:
+    if n_epoch == 0 or (n_epoch + 1) % 5 == 0:
         modelpath = "saved_models/{}.pt".format(str(jobtime) + "-" + str(n_epoch))
         torch.save(model.state_dict(), modelpath)
         print("Model saved at: {}".format(jobtime + modelpath))
@@ -129,7 +131,6 @@ if __name__ == "__main__":
     valypath = "dataset.nosync/HW3P2_Data/wsj0_dev_merged_labels.npy"
     trainxpath = "dataset.nosync/HW3P2_Data/wsj0_train.npy"
     trainypath = "dataset.nosync/HW3P2_Data/wsj0_train_merged_labels.npy"
-    task = "dev"
     if task == "train":
         xpath = trainxpath
         ypath = trainypath
@@ -147,12 +148,11 @@ if __name__ == "__main__":
     # for i, j in zip(valX, valY):
     #     valdata.append((i, torch.IntTensor(j).to(DEVICE)))
 
-    # exit()
     train_loader = DataLoader(traindata, shuffle=True, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     # val_loader = DataLoader(valdata, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     model = Model(in_vocab=40, out_vocab=47, hidden_size=HIDDEN_SIZE)
-    # optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=0)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=5e-7)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=0)
+    # optimizer = torch.optim.Adadelta(model.parameters(),lr=1.0, rho=0.9, eps=1e-06, weight_decay=0)
     for i in range(1000):
         print("==========Epoch {}==========".format(i + 1))
         train_epoch_packed(model, optimizer, train_loader, n_epoch=i)
