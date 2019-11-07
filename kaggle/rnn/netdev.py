@@ -15,7 +15,7 @@ import torch.nn.functional as F
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 # BATCH_SIZE = 64
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 # HIDDEN_SIZE = 256
 # HIDDEN_SIZE = 16
 HIDDEN_SIZE = 256
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     # val_loader = DataLoader(valdata, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     model = Model(in_vocab=40, out_vocab=47, hidden_size=HIDDEN_SIZE)
     # optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=0)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-7)
+    optimizer = torch.optim.Adadelta(lr=1.0, rho=0.9, eps=1e-06, weight_decay=0)
     for i in range(1000):
         print("==========Epoch {}==========".format(i + 1))
         train_epoch_packed(model, optimizer, train_loader, n_epoch=i)
