@@ -12,7 +12,7 @@ from torch.autograd import Variable
 
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE = 16
+BATCH_SIZE = 64
 HIDDEN_SIZE = 512
 # HIDDEN_SIZE = 16
 # HIDDEN_SIZE = 128
@@ -22,7 +22,7 @@ class Model(torch.nn.Module):
     def __init__(self, in_vocab, out_vocab, hidden_size):
         super(Model, self).__init__()
         # self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3)
-        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=5,dropout=0.3).to(DEVICE)
+        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=4,dropout=0.3).to(DEVICE)
         # self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True)
         self.lf = torch.nn.Linear(out_vocab,out_vocab).to(DEVICE)
         ###
