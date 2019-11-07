@@ -7,7 +7,6 @@ from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
 import torch.nn.functional as F
 
-
 # import decode
 
 # import helper.phoneme_list as PL
@@ -31,19 +30,19 @@ class Model(torch.nn.Module):
 
         ####################
         # self.c1 = nn.Conv1d(in_vocab, hidden_size, 2)
-        self.lf = torch.nn.Linear(out_vocab,out_vocab).to(DEVICE)
+        self.lf = torch.nn.Linear(out_vocab, out_vocab).to(DEVICE)
         # self.lf.to(DEVICE)
         # self.c1.to(DEVICE)
         ########
 
-
     def forward(self, X, lengths):
         X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
-        cv1 = nn.Conv1d(X.shape[1], HIDDEN_SIZE, 5).to(DEVICE)
+        cv1 = nn.Conv1d(X.shape[1], HIDDEN_SIZE, kernel_size=1, stride=1).to(DEVICE)
         X = F.relu(F.max_pool2d(cv1(X), 2)).to(DEVICE)
-        fc2 = nn.Linear(X.shape[2],self.in_vocab).to(DEVICE)
+        fc2 = nn.Linear(X.shape[-1], self.in_vocab).to(DEVICE)
         X = fc2(X)
         packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, lengths, enforce_sorted=False).to(DEVICE)
+        # packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, inputlen, enforce_sorted=False).to(DEVICE)
         packed_out = self.lstm(packed_X)[0]
         out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
         out = self.output(out).log_softmax(2).to(DEVICE)
@@ -59,7 +58,6 @@ class Model(torch.nn.Module):
         # out = self.lf(self.output(out)).log_softmax(2).to(DEVICE)
         # print(out)
         # return out, out_lens
-
 
 
 def train_epoch_packed(model, optimizer, train_loader, n_epoch):
