@@ -45,8 +45,8 @@ class Model(torch.nn.Module):
         # packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, inputlen, enforce_sorted=False).to(DEVICE)
         packed_out = self.lstm(packed_X)[0]
         out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
-        out = self.output(out).log_softmax(2).to(DEVICE)
-        # out = self.lf(self.output(out)).log_softmax(2).to(DEVICE)
+        # out = self.output(out).log_softmax(2).to(DEVICE)
+        out = self.lf(self.output(out)).log_softmax(2).to(DEVICE)
         # print(out)
         return out, out_lens
         # X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
@@ -150,7 +150,7 @@ if __name__ == "__main__":
     valypath = "dataset.nosync/HW3P2_Data/wsj0_dev_merged_labels.npy"
     trainxpath = "dataset.nosync/HW3P2_Data/wsj0_train.npy"
     trainypath = "dataset.nosync/HW3P2_Data/wsj0_train_merged_labels.npy"
-    task = "train"
+    task = "d"
     if task == "train":
         xpath = trainxpath
         ypath = trainypath
