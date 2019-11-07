@@ -14,7 +14,7 @@ import torch.nn.functional as F
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 # BATCH_SIZE = 64
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 # HIDDEN_SIZE = 256
 # HIDDEN_SIZE = 16
 HIDDEN_SIZE = 256

@@ -3,7 +3,8 @@ from ctcdecode import CTCBeamDecoder
 from torch.utils.data import Dataset, DataLoader
 import helper.phoneme_list as PL
 import stringdist
-import net
+# import net
+import netdev as net
 
 
 def run_decoder(model, inputs):
