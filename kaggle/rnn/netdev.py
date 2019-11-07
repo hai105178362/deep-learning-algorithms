@@ -12,7 +12,7 @@ from torch.autograd import Variable
 
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE = 60
+BATCH_SIZE = 48
 HIDDEN_SIZE = 384
 # HIDDEN_SIZE = 16
 # HIDDEN_SIZE = 128
