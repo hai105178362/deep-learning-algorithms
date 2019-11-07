@@ -8,9 +8,9 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE = 16
+BATCH_SIZE = 32
 HIDDEN_SIZE = 512
-BATCH_PRINT = 200
+BATCH_PRINT = 100
 task = "train"
 
 
@@ -19,7 +19,7 @@ class Model(torch.nn.Module):
         super(Model, self).__init__()
         self.in_vocab = in_vocab
         # self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3)
-        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=5).to(DEVICE)
+        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3).to(DEVICE)
         self.output = torch.nn.Linear(hidden_size * 2, out_vocab).to(DEVICE)
 
         ####################
@@ -28,10 +28,10 @@ class Model(torch.nn.Module):
 
     def forward(self, X, lengths):
         X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
-        # cv1 = nn.Conv1d(X.shape[1], HIDDEN_SIZE, kernel_size=1, stride=1).to(DEVICE)
-        # X = F.relu(F.max_pool2d(cv1(X), 2)).to(DEVICE)
-        # fc2 = nn.Linear(X.shape[-1], self.in_vocab).to(DEVICE)
-        # X = fc2(X)
+        cv1 = nn.Conv1d(X.shape[1], HIDDEN_SIZE, kernel_size=1, stride=1).to(DEVICE)
+        X = F.relu(F.max_pool2d(cv1(X), 2)).to(DEVICE)
+        fc2 = nn.Linear(X.shape[-1], self.in_vocab).to(DEVICE)
+        X = fc2(X)
         packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, lengths, enforce_sorted=False).to(DEVICE)
         # packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, inputlen, enforce_sorted=False).to(DEVICE)
         packed_out = self.lstm(packed_X)[0]
