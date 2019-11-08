@@ -5,12 +5,13 @@ import helper.phoneme_list as PL
 import stringdist
 # import net
 import netdev as net
+# import net5layers as net
 
 
 def run_decoder(model, inputs):
     inputlen = torch.IntTensor([len(seq) for seq in inputs]).to(net.DEVICE)
     phonemes = [' '] + PL.PHONEME_MAP
-    decoder = CTCBeamDecoder(['$'] * (len(phonemes)), beam_width=100, log_probs_input=True)
+    decoder = CTCBeamDecoder(['$'] * (len(phonemes)), beam_width=200, log_probs_input=True)
     with torch.no_grad():
         out, out_lens = model(inputs, inputlen)
     test_Y, _, _, test_Y_lens = decoder.decode(out.transpose(0, 1), out_lens)
@@ -38,7 +39,7 @@ if __name__ == "__main__":
         # inputlen = torch.IntTensor([len(seq) for seq in inputs]).to(net.DEVICE)
         test_loader = net.DataLoader(testX, shuffle=False, batch_size=1,collate_fn=collate_lines)
         M = net.Model(in_vocab=40, out_vocab=47, hidden_size=net.HIDDEN_SIZE)
-        M.load_state_dict(state_dict=torch.load('saved_models/2034-19.pt', map_location=net.DEVICE))
+        M.load_state_dict(state_dict=torch.load('saved_models/2034-23.pt', map_location=net.DEVICE))
         batch_id = 0
         ans = []
         for inputs in test_loader:
@@ -62,7 +63,8 @@ if __name__ == "__main__":
         valX = net.LinesDataset(valX)
         val_loader = DataLoader(valX, shuffle=False, batch_size=1,collate_fn=collate_lines)
         M = net.Model(in_vocab=40, out_vocab=47, hidden_size=net.HIDDEN_SIZE)
-        M.load_state_dict(state_dict=torch.load('saved_models/2034-19.pt', map_location=net.DEVICE))
+        M.load_state_dict(state_dict=torch.load('saved_models/2034-23.pt', map_location=net.DEVICE))
+        # M.load_state_dict(state_dict=torch.load('saved_models/cnn_layers/1525_5.pt', map_location=net.DEVICE))
         batch_id = 0
         ans = []
         n = 0

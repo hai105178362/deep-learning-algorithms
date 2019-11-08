@@ -3,7 +3,6 @@ import datetime
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from torch.autograd import Variable
 
@@ -17,34 +16,25 @@ BATCH_SIZE = 32
 HIDDEN_SIZE = 512
 # HIDDEN_SIZE = 16
 # HIDDEN_SIZE = 128
-batch_print = 200
-task = "train"
+batch_print = 100
 
 
 class Model(torch.nn.Module):
     def __init__(self, in_vocab, out_vocab, hidden_size):
         super(Model, self).__init__()
-        self.in_vocab = in_vocab
-        # self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3)
-        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=3).to(DEVICE)
+        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=5,dropout=0.5).to(DEVICE)
+        self.lf = torch.nn.Linear(out_vocab,out_vocab).to(DEVICE)
+        ###
         self.output = torch.nn.Linear(hidden_size * 2, out_vocab).to(DEVICE)
-
-        ####################
-        # self.lf = torch.nn.Linear(out_vocab, out_vocab).to(DEVICE)
-        ########
 
     def forward(self, X, lengths):
         X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
-        cv1 = nn.Conv1d(X.shape[1], HIDDEN_SIZE, kernel_size=1, stride=1).to(DEVICE)
-        X = F.relu(F.max_pool2d(cv1(X), 2)).to(DEVICE)
-        fc2 = nn.Linear(X.shape[-1], self.in_vocab).to(DEVICE)
-        X = fc2(X)
         packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, lengths, enforce_sorted=False).to(DEVICE)
-        # packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, inputlen, enforce_sorted=False).to(DEVICE)
         packed_out = self.lstm(packed_X)[0]
         out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
-        out = self.output(out).log_softmax(2).to(DEVICE)
-        # out = self.lf(self.output(out)).log_softmax(2).to(DEVICE)
+        # out = self.output(out).log_softmax(2).to(DEVICE)
+        out = self.lf(self.lf(self.output(out)).log_softmax(2).to(DEVICE))
+        # print(out)
         return out, out_lens
 
 
@@ -73,7 +63,7 @@ def train_epoch_packed(model, optimizer, train_loader, n_epoch):
             print("Time elapsed: ", after - before)
             print("At batch", batch_id)
             print("Training loss per word:", lpw)
-            # print("Training perplexity :", np.exp(lpw))
+            print("Training perplexity :", np.exp(lpw))
             before = after
 
     val_loss = 0
@@ -93,7 +83,7 @@ def train_epoch_packed(model, optimizer, train_loader, n_epoch):
     # print("\nValidation loss per word:", val_lpw)
     # print("Validation perplexity :", np.exp(val_lpw), "\n")
     if n_epoch > 0 and (n_epoch + 1) % 2 == 0:
-        modelpath = "saved_models/{}.pt".format(str(jobtime) + "_" + str(n_epoch))
+        modelpath = "saved_models/{}.pt".format(str(jobtime) + "-" + str(n_epoch))
         torch.save(model.state_dict(), modelpath)
         print("Model saved at: {}".format(jobtime + modelpath))
     # return val_lpw
@@ -138,6 +128,7 @@ if __name__ == "__main__":
     valypath = "dataset.nosync/HW3P2_Data/wsj0_dev_merged_labels.npy"
     trainxpath = "dataset.nosync/HW3P2_Data/wsj0_train.npy"
     trainypath = "dataset.nosync/HW3P2_Data/wsj0_train_merged_labels.npy"
+    task = "train"
     if task == "train":
         xpath = trainxpath
         ypath = trainypath
