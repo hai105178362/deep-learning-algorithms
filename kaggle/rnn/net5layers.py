@@ -63,7 +63,7 @@ def train_epoch_packed(model, optimizer, train_loader, n_epoch):
             print("Time elapsed: ", after - before)
             print("At batch", batch_id)
             print("Training loss per word:", lpw)
-            print("Training perplexity :", np.exp(lpw))
+            # print("Training perplexity :", np.exp(lpw))
             before = after
 
     val_loss = 0
