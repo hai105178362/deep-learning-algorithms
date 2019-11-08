@@ -29,7 +29,7 @@ def collate_lines(seq_list):
 
 
 if __name__ == "__main__":
-    mode = "val"
+    mode = "test"
     if mode == "test":
         testpath = "dataset.nosync/HW3P2_Data/wsj0_test.npy"
         testX = net.load_data(xpath=testpath, ypath=None)
@@ -38,7 +38,7 @@ if __name__ == "__main__":
         # inputlen = torch.IntTensor([len(seq) for seq in inputs]).to(net.DEVICE)
         test_loader = net.DataLoader(testX, shuffle=False, batch_size=1,collate_fn=collate_lines)
         M = net.Model(in_vocab=40, out_vocab=47, hidden_size=net.HIDDEN_SIZE)
-        M.load_state_dict(state_dict=torch.load('saved_models/16:41-59.pt', map_location=net.DEVICE))
+        M.load_state_dict(state_dict=torch.load('saved_models/2034-11.pt', map_location=net.DEVICE))
         batch_id = 0
         ans = []
         for inputs in test_loader:
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         valX = net.LinesDataset(valX)
         val_loader = DataLoader(valX, shuffle=False, batch_size=1,collate_fn=collate_lines)
         M = net.Model(in_vocab=40, out_vocab=47, hidden_size=net.HIDDEN_SIZE)
-        M.load_state_dict(state_dict=torch.load('saved_models/16:41-34.pt', map_location=net.DEVICE))
+        M.load_state_dict(state_dict=torch.load('saved_models/2034-9.pt', map_location=net.DEVICE))
         batch_id = 0
         ans = []
         n = 0
