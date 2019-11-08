@@ -16,7 +16,7 @@ BATCH_SIZE = 16
 HIDDEN_SIZE = 512
 # HIDDEN_SIZE = 16
 # HIDDEN_SIZE = 128
-batch_print = 100
+batch_print = 200
 
 
 class Model(torch.nn.Module):
