@@ -18,7 +18,7 @@ HIDDEN_SIZE = 512
 # HIDDEN_SIZE = 16
 # HIDDEN_SIZE = 128
 batch_print = 200
-task = "v"
+task = "train"
 
 
 class Model(torch.nn.Module):
