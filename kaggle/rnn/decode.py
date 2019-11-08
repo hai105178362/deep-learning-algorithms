@@ -62,7 +62,7 @@ if __name__ == "__main__":
         valX = net.LinesDataset(valX)
         val_loader = DataLoader(valX, shuffle=False, batch_size=1,collate_fn=collate_lines)
         M = net.Model(in_vocab=40, out_vocab=47, hidden_size=net.HIDDEN_SIZE)
-        M.load_state_dict(state_dict=torch.load('saved_models/2034-9.pt', map_location=net.DEVICE))
+        M.load_state_dict(state_dict=torch.load('saved_models/2034-17.pt', map_location=net.DEVICE))
         batch_id = 0
         ans = []
         n = 0
