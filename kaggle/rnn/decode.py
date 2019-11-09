@@ -30,6 +30,7 @@ def collate_lines(seq_list):
 
 
 if __name__ == "__main__":
+    # mode = "v"
     mode = "test"
     if mode == "test":
         testpath = "dataset.nosync/HW3P2_Data/wsj0_test.npy"
@@ -39,7 +40,7 @@ if __name__ == "__main__":
         # inputlen = torch.IntTensor([len(seq) for seq in inputs]).to(net.DEVICE)
         test_loader = net.DataLoader(testX, shuffle=False, batch_size=1,collate_fn=collate_lines)
         M = net.Model(in_vocab=40, out_vocab=47, hidden_size=net.HIDDEN_SIZE)
-        M.load_state_dict(state_dict=torch.load('saved_models/2034-23.pt', map_location=net.DEVICE))
+        M.load_state_dict(state_dict=torch.load('saved_models/2034-37.pt', map_location=net.DEVICE))
         batch_id = 0
         ans = []
         for inputs in test_loader:
@@ -48,12 +49,13 @@ if __name__ == "__main__":
             cur_result = run_decoder(model=M,inputs=inputs)
             print("{}:{}".format(batch_id, cur_result))
             ans.append(cur_result)
-        print(ans)
-        print(len(ans))
-        with open("hw3p2_submission.csv", 'w+') as f:
+        # print(ans)
+        # print(len(ans))
+        with open("hw3p2_submission-37.csv", 'w+') as f:
             f.write('id,predicted\n')
             for i, j in enumerate(ans):
                 f.write(str(i) + ',' + str(j) + '\n')
+        print("finished.")
     else:
         valxpath = "dataset.nosync/HW3P2_Data/wsj0_dev.npy"
         valypath = "dataset.nosync/HW3P2_Data/wsj0_dev_merged_labels.npy"
@@ -63,7 +65,7 @@ if __name__ == "__main__":
         valX = net.LinesDataset(valX)
         val_loader = DataLoader(valX, shuffle=False, batch_size=1,collate_fn=collate_lines)
         M = net.Model(in_vocab=40, out_vocab=47, hidden_size=net.HIDDEN_SIZE)
-        M.load_state_dict(state_dict=torch.load('saved_models/2034-23.pt', map_location=net.DEVICE))
+        M.load_state_dict(state_dict=torch.load('saved_models/2034-31.pt', map_location=net.DEVICE))
         # M.load_state_dict(state_dict=torch.load('saved_models/cnn_layers/1525_5.pt', map_location=net.DEVICE))
         batch_id = 0
         ans = []

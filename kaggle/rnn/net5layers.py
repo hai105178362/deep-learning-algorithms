@@ -23,9 +23,9 @@ class Model(torch.nn.Module):
     def __init__(self, in_vocab, out_vocab, hidden_size):
         super(Model, self).__init__()
         self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=5,dropout=0.5).to(DEVICE)
-        self.lf = torch.nn.Linear(out_vocab,out_vocab).to(DEVICE)
+        self.lf = torch.nn.Linear(128,out_vocab).to(DEVICE)
         ###
-        self.output = torch.nn.Linear(hidden_size * 2, out_vocab).to(DEVICE)
+        self.output = torch.nn.Linear(hidden_size * 2, 128).to(DEVICE)
 
     def forward(self, X, lengths):
         X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
@@ -33,7 +33,7 @@ class Model(torch.nn.Module):
         packed_out = self.lstm(packed_X)[0]
         out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
         # out = self.output(out).log_softmax(2).to(DEVICE)
-        out = self.lf(self.lf(self.output(out)).log_softmax(2).to(DEVICE))
+        out = (self.lf(self.output(out)).log_softmax(2).to(DEVICE))
         # print(out)
         return out, out_lens
 
