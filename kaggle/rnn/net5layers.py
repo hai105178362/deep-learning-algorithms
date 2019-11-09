@@ -22,10 +22,10 @@ batch_print = 200
 class Model(torch.nn.Module):
     def __init__(self, in_vocab, out_vocab, hidden_size):
         super(Model, self).__init__()
-        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=5,dropout=0.5).to(DEVICE)
-        self.lf = torch.nn.Linear(128,out_vocab).to(DEVICE)
+        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=5,dropout=0.1).to(DEVICE)
+        self.lf = torch.nn.Linear(256,out_vocab).to(DEVICE)
         ###
-        self.output = torch.nn.Linear(hidden_size * 2, 128).to(DEVICE)
+        self.output = torch.nn.Linear(hidden_size * 2, 256).to(DEVICE)
 
     def forward(self, X, lengths):
         X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
