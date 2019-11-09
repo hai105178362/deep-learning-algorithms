@@ -12,28 +12,46 @@ from torch.autograd import Variable
 
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-BATCH_SIZE = 16
-HIDDEN_SIZE = 512
+# BATCH_SIZE = 64
+BATCH_SIZE = 32
+# HIDDEN_SIZE = 256
 # HIDDEN_SIZE = 16
-# HIDDEN_SIZE = 128
-batch_print = 200
+HIDDEN_SIZE = 256
 
 
 class Model(torch.nn.Module):
     def __init__(self, in_vocab, out_vocab, hidden_size):
         super(Model, self).__init__()
-        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=5,dropout=0.1).to(DEVICE)
-        self.lf = torch.nn.Linear(256,out_vocab).to(DEVICE)
-        ###
-        self.output = torch.nn.Linear(hidden_size * 2, 256).to(DEVICE)
+        self.lstm = torch.nn.LSTM(in_vocab, hidden_size, bidirectional=True, num_layers=5,dropout=0.3)
+        self.output = torch.nn.Linear(hidden_size * 2, out_vocab)
+
+        ####################
+        # self.c1 = nn.Conv1d(in_vocab, hidden_size, 2)
+        self.lf = torch.nn.Linear(out_vocab,out_vocab)
+        # self.lf.to(DEVICE)
+        # self.c1.to(DEVICE)
+        ########
+
 
     def forward(self, X, lengths):
+        self.lstm.to(DEVICE)
+        self.output.to(DEVICE)
+        self.lf.to(DEVICE)
         X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
         packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, lengths, enforce_sorted=False).to(DEVICE)
         packed_out = self.lstm(packed_X)[0]
         out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
         # out = self.output(out).log_softmax(2).to(DEVICE)
-        out = (self.lf(self.output(out)).log_softmax(2).to(DEVICE))
+        out = self.lf(self.output(out)).log_softmax(2).to(DEVICE)
+        # print(out)
+        return out, out_lens
+        # X = torch.nn.utils.rnn.pad_sequence(X).to(DEVICE)
+        # X = self.c1(X)
+        # packed_X = torch.nn.utils.rnn.pack_padded_sequence(X, lengths, enforce_sorted=False).to(DEVICE)
+        # packed_out = self.lstm(packed_X)[0]
+        # out, out_lens = torch.nn.utils.rnn.pad_packed_sequence(packed_out)
+        # # out = self.output(out).log_softmax(2).to(DEVICE)
+        # out = self.lf(self.output(out)).log_softmax(2).to(DEVICE)
         # print(out)
         return out, out_lens
 
@@ -55,7 +73,7 @@ def train_epoch_packed(model, optimizer, train_loader, n_epoch):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        if batch_id % batch_print == 0:
+        if batch_id % 100 == 0:
         # if batch_id % 1 == 0:
             after = time.time()
             nwords = np.sum(np.array([len(l) for l in inputs]))
@@ -82,7 +100,7 @@ def train_epoch_packed(model, optimizer, train_loader, n_epoch):
     # val_lpw = val_loss / nwords
     # print("\nValidation loss per word:", val_lpw)
     # print("Validation perplexity :", np.exp(val_lpw), "\n")
-    if n_epoch > 0 and (n_epoch + 1) % 2 == 0:
+    if n_epoch > 0 and (n_epoch + 1) % 5 == 0:
         modelpath = "saved_models/{}.pt".format(str(jobtime) + "-" + str(n_epoch))
         torch.save(model.state_dict(), modelpath)
         print("Model saved at: {}".format(jobtime + modelpath))
@@ -123,7 +141,7 @@ def collate_lines(seq_list):
 if __name__ == "__main__":
     print("Net is running...")
     now = datetime.datetime.now()
-    jobtime = str(now.hour) + ":" + str(now.minute)
+    jobtime = str(now.hour) + str(now.minute)
     valxpath = "dataset.nosync/HW3P2_Data/wsj0_dev.npy"
     valypath = "dataset.nosync/HW3P2_Data/wsj0_dev_merged_labels.npy"
     trainxpath = "dataset.nosync/HW3P2_Data/wsj0_train.npy"
@@ -151,7 +169,7 @@ if __name__ == "__main__":
     # val_loader = DataLoader(valdata, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     model = Model(in_vocab=40, out_vocab=47, hidden_size=HIDDEN_SIZE)
     # optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=0)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=5e-7)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-7)
     for i in range(1000):
         print("==========Epoch {}==========".format(i + 1))
         train_epoch_packed(model, optimizer, train_loader, n_epoch=i)
