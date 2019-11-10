@@ -32,9 +32,10 @@ def collate_lines(seq_list):
 if __name__ == "__main__":
     # mode = "v"
     mode = "test"
-    # model_name = '2034-55'
-    model_name = 't4_models/196-19'
-    writename = 't4-196-19'
+    # model_name = '2034-57'
+    # writename = model_name
+    model_name = 't4_models/196-24'
+    writename = model_name.split('/')[1]
     if mode == "test":
         testpath = "dataset.nosync/HW3P2_Data/wsj0_test.npy"
         testX = net.load_data(xpath=testpath, ypath=None)
