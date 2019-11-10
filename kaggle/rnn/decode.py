@@ -4,8 +4,8 @@ from torch.utils.data import Dataset, DataLoader
 import helper.phoneme_list as PL
 import stringdist
 # import net
-import netdev as net
-# import net5layers as net
+# import netdev as net
+import net5layers as net
 
 
 def run_decoder(model, inputs):
@@ -31,8 +31,10 @@ def collate_lines(seq_list):
 
 if __name__ == "__main__":
     # mode = "v"
-    model_name = '2034-47'
     mode = "test"
+    # model_name = '2034-55'
+    model_name = 't4_models/196-19'
+    writename = 't4-196-19'
     if mode == "test":
         testpath = "dataset.nosync/HW3P2_Data/wsj0_test.npy"
         testX = net.load_data(xpath=testpath, ypath=None)
@@ -45,14 +47,14 @@ if __name__ == "__main__":
         batch_id = 0
         ans = []
         for inputs in test_loader:
-            batch_id += 1
             # new_inputlen = testX_lens[(batch_id - 1) * net.BATCH_SIZE:batch_id * net.BATCH_SIZE]
             cur_result = run_decoder(model=M,inputs=inputs)
-            print("{}:{}".format(batch_id, cur_result))
+            print("{},{}".format(batch_id, cur_result))
+            batch_id += 1
             ans.append(cur_result)
         # print(ans)
         # print(len(ans))
-        with open("hw3p2_submission-{}.csv".format(model_name), 'w+') as f:
+        with open("hw3p2_submission-{}.csv".format(writename), 'w+') as f:
             f.write('id,predicted\n')
             for i, j in enumerate(ans):
                 f.write(str(i) + ',' + str(j) + '\n')
@@ -66,7 +68,7 @@ if __name__ == "__main__":
         valX = net.LinesDataset(valX)
         val_loader = DataLoader(valX, shuffle=False, batch_size=1,collate_fn=collate_lines)
         M = net.Model(in_vocab=40, out_vocab=47, hidden_size=net.HIDDEN_SIZE)
-        M.load_state_dict(state_dict=torch.load('saved_models/2034-47.pt', map_location=net.DEVICE))
+        M.load_state_dict(state_dict=torch.load('saved_models/{}.pt'.format(model_name), map_location=net.DEVICE))
         # M.load_state_dict(state_dict=torch.load('saved_models/cnn_layers/1525_5.pt', map_location=net.DEVICE))
         batch_id = 0
         ans = []
@@ -84,3 +86,5 @@ if __name__ == "__main__":
             tot_levd += lev_distance
             print(lev_distance)
         print("Average Lev_distance:{}".format(tot_levd / len(valX)))
+
+
