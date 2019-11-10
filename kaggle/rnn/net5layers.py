@@ -168,7 +168,7 @@ if __name__ == "__main__":
     train_loader = DataLoader(traindata, shuffle=True, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     # val_loader = DataLoader(valdata, shuffle=False, batch_size=BATCH_SIZE, collate_fn=collate_lines)
     model = Model(in_vocab=40, out_vocab=47, hidden_size=HIDDEN_SIZE)
-    model.load_state_dict(state_dict=torch.load('saved_models/196-24.pt', map_location=DEVICE))
+    # model.load_state_dict(state_dict=torch.load('saved_models/196-24.pt', map_location=DEVICE))
     # optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=0)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-7)
     for i in range(1000):
