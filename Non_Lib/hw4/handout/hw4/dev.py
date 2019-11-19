@@ -10,13 +10,22 @@ from tests import test_prediction, test_generation
 from helper import loader
 import csv
 
-dataset = np.load('../dataset/wiki.train.npy', allow_pickle=True)
+train_data = np.load('../dataset/wiki.train.npy', allow_pickle=True)
 fixtures_pred = np.load('../fixtures/prediction.npz', allow_pickle=True)  # dev
 fixtures_gen = np.load('../fixtures/generation.npy', allow_pickle=True)  # dev
 fixtures_pred_test = np.load('../fixtures/prediction_test.npz', allow_pickle=True)  # test
 fixtures_gen_test = np.load('../fixtures/generation_test.npy', allow_pickle=True)  # test
 vocab = np.load('../dataset/vocab.npy', allow_pickle=True)
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+dataset = train_data
+
+
+# for i in train_data:
+#     dataset = np.concatenate((dataset,i),axis=None)
+#     # exit()
+# print((dataset).shape)
+# print(np.random.normal(100, 0.1))
+# exit()
 
 class LanguageModelDataLoader(DataLoader):
     """
@@ -24,28 +33,41 @@ class LanguageModelDataLoader(DataLoader):
     """
 
     def __init__(self, dataset, batch_size, shuffle=True):
-        super().__init__(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
+        data = np.array(dataset)
+        if shuffle == True:
+            np.random.shuffle(data)
+        self.largetext = []
+        for i in data:
+            self.largetext = np.concatenate((self.largetext, i), axis=None)
+        super().__init__(dataset=self.largetext, batch_size=batch_size, shuffle=shuffle)
+        self.seqlen = 20
+        self.sigma = 0.3
         # raise NotImplemented
 
     def __iter__(self):
-        num_iters = self.dataset.__len__() // self.batch_size
+        num_iters = self.largetext.__len__() // self.batch_size
+        print("num_iters: {}".format(num_iters))
+        idx = 0
+        randnum = int(np.random.normal(self.seqlen, self.sigma))
         for i in range(num_iters + 1):
-            sentence = []
+            sentences = np.empty(shape=(1, randnum))
+            labels = np.empty(shape=(1, randnum))
             for j in range(self.batch_size):
-                if i * self.batch_size + j < len(self.dataset):
-                    cur_sentence = self.dataset[i * self.batch_size + j]
-                    s = np.random.normal(len(cur_sentence), 0.1, 1000)
-                    sentence = np.concatenate((sentence, cur_sentence), axis=None)
-            yield (sentence[:-1],sentence[1:])
-    #     # concatenate your articles and build into batches
-    #
-    #     raise NotImplemented
+                if i * self.batch_size + j + randnum + 1 < len(self.largetext):
+                    idx = i * self.batch_size + j
+                    cur_sentence = self.largetext[idx: idx + randnum]
+                    cur_label = self.largetext[idx + 1:idx + randnum + 1]
+                    sentences = np.append(sentences, np.array([cur_sentence]), axis=0)
+                    labels = np.append(labels, np.array([cur_label]), axis=0)
+                # print(sentences)
+            yield (sentences[1:], labels[1:])
 
 
 vocab_human = []
 with open('../dataset/vocab.csv') as f:
     fo = csv.reader(f, delimiter=',')
     vocab_human = np.array([i[1] for i in fo][1:])
+
 
 class LanguageModel(nn.Module):
     """
@@ -113,8 +135,8 @@ class LanguageModelTrainer:
         loss = 0
         # for i,j in zip(inputs,targets):
         cur_result = self.model(inputs)
-        loss = self.criterion(cur_result,j)
-        print("batch loss:",loss)
+        loss = self.criterion(cur_result, j)
+        print("batch loss:", loss)
         loss.backward()
         self.optimizer.step()
         return loss
@@ -168,7 +190,7 @@ class TestLanguageModel:
             :param inp:
             :return: a np.ndarray of logits
         """
-        out = model(inp,len(vocab))
+        out = model(inp, len(vocab))
         return out
         raise NotImplemented
 
@@ -182,20 +204,24 @@ class TestLanguageModel:
             :return: generated words (batch size, forward)
         """
         raise NotImplemented
+
+
 # TODO: define other hyperparameters here
 
 NUM_EPOCHS = 2
-BATCH_SIZE = 10
+BATCH_SIZE = 1028
 run_id = str(int(time.time()))
-if not os.path.exists('./experiments'):
-    os.mkdir('./experiments')
-os.mkdir('./experiments/%s' % run_id)
-print("Saving models, predictions, and generated words to ./experiments/%s" % run_id)
-print("Loader Init...")
+# if not os.path.exists('./experiments'):
+#     os.mkdir('./experiments')
+# os.mkdir('./experiments/%s' % run_id)
+# print("Saving models, predictions, and generated words to ./experiments/%s" % run_id)
+# print("Loader Init...")
 loader = LanguageModelDataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True)
-# for batch_num, (inputs, targets) in enumerate(loader):
-#     print(inputs,targets)
-#     exit(1)
+for batch_num, (inputs, targets) in enumerate(loader):
+    print(inputs)
+    print("============")
+    print(targets)
+    exit(1)
 
 print("Model Init..")
 model = LanguageModel(len(vocab))
@@ -203,10 +229,10 @@ print("Trainer Init...")
 trainer = LanguageModelTrainer(model=model, loader=loader, max_epochs=NUM_EPOCHS, run_id=run_id)
 best_nll = 1e30
 for epoch in range(NUM_EPOCHS):
-    print("Epoch: ",epoch+1)
+    print("Epoch: ", epoch + 1)
     trainer.train()
     nll = trainer.test()
-    print("nll: ",nll)
+    print("nll: ", nll)
     if nll < best_nll:
         best_nll = nll
         print("Saving model, predictions and generated output for epoch " + str(epoch) + " with NLL: " + str(best_nll))
@@ -224,4 +250,4 @@ plt.legend()
 plt.show()
 
 # see generated output
-print (trainer.generated[-1]) # get last generated output
+print(trainer.generated[-1])  # get last generated output
