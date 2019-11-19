@@ -18,17 +18,6 @@ fixtures_gen_test = np.load('../fixtures/generation_test.npy', allow_pickle=True
 vocab = np.load('../dataset/vocab.npy', allow_pickle=True)
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-
-class argument_parser():
-    def __init__(self):
-        self.shuffle = True
-        self.nepoch = 10
-        self.batch_size = 10
-
-
-args = argument_parser()
-
-
 class LanguageModelDataLoader(DataLoader):
     """
         TODO: Define data loader logic here
@@ -36,7 +25,6 @@ class LanguageModelDataLoader(DataLoader):
 
     def __init__(self, dataset, batch_size, shuffle=True):
         super().__init__(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
-        print("get it")
         # raise NotImplemented
 
     def __iter__(self):
@@ -45,8 +33,10 @@ class LanguageModelDataLoader(DataLoader):
             sentence = []
             for j in range(self.batch_size):
                 if i * self.batch_size + j < len(self.dataset):
-                    sentence = np.concatenate((sentence, self.dataset[i * self.batch_size + j]), axis=None)
-            yield sentence
+                    cur_sentence = self.dataset[i * self.batch_size + j]
+                    s = np.random.normal(len(cur_sentence), 0.1, 1000)
+                    sentence = np.concatenate((sentence, cur_sentence), axis=None)
+            yield (sentence[:-1],sentence[1:])
     #     # concatenate your articles and build into batches
     #
     #     raise NotImplemented
@@ -56,12 +46,182 @@ vocab_human = []
 with open('../dataset/vocab.csv') as f:
     fo = csv.reader(f, delimiter=',')
     vocab_human = np.array([i[1] for i in fo][1:])
-# print(vocab_human)
-# train_dataloader = DataLoader(dataset=dataset,batch_size=10,shuffle=False,num_workers=5)
-print(len(dataset))
-print(dataset[0])
-# exit()
-train_newloader = LanguageModelDataLoader(dataset=dataset, batch_size=args.batch_size, shuffle=False)
-print(train_newloader.__len__())
-for i, j in enumerate(train_newloader):
-    print(i, len(j))
+
+class LanguageModel(nn.Module):
+    """
+        TODO: Define your model here
+    """
+
+    def __init__(self, vocab_size):
+        super(LanguageModel, self).__init__()
+        self.lstm = torch.nn.LSTM(vocab_size, vocab_size, bidirectional=False, num_layers=1)
+        # self.lstm = torch.nn.LSTM(vocab_size, vocab_size, bidirectional=False, num_layers=1)
+
+        # raise NotImplemented
+
+    def forward(self, x):
+        self.lstm.to(DEVICE)
+        result = self.lstm(x)
+        return result
+        # Feel free to add extra arguments to forward (like an argument to pass in the hiddens)
+        raise NotImplemented
+
+
+# model trainer
+
+class LanguageModelTrainer:
+    def __init__(self, model, loader, max_epochs=1, run_id='exp'):
+        """
+            Use this class to train your model
+        """
+        # feel free to add any other parameters here
+        self.model = model
+        self.loader = loader
+        self.train_losses = []
+        self.val_losses = []
+        self.predictions = []
+        self.predictions_test = []
+        self.generated_logits = []
+        self.generated = []
+        self.generated_logits_test = []
+        self.generated_test = []
+        self.epochs = 0
+        self.max_epochs = max_epochs
+        self.run_id = run_id
+
+        # TODO: Define your optimizer and criterion here
+        self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=5e-7)
+        self.criterion = nn.CrossEntropyLoss()
+
+    def train(self):
+        self.model.train()  # set to training mode
+        epoch_loss = 0
+        num_batches = 0
+        for batch_num, (inputs, targets) in enumerate(self.loader):
+            epoch_loss += self.train_batch(inputs, targets)
+        epoch_loss = epoch_loss / (batch_num + 1)
+        self.epochs += 1
+        print('[TRAIN]  Epoch [%d/%d]   Loss: %.4f'
+              % (self.epochs + 1, self.max_epochs, epoch_loss))
+        self.train_losses.append(epoch_loss)
+
+    def train_batch(self, inputs, targets):
+        """
+            TODO: Define code for training a single batch of inputs
+
+        """
+        loss = 0
+        # for i,j in zip(inputs,targets):
+        cur_result = self.model(inputs)
+        loss = self.criterion(cur_result,j)
+        print("batch loss:",loss)
+        loss.backward()
+        self.optimizer.step()
+        return loss
+        raise NotImplemented
+
+    def test(self):
+        # don't change these
+        self.model.eval()  # set to eval mode
+        predictions = TestLanguageModel.prediction(fixtures_pred['inp'], self.model)  # get predictions
+        self.predictions.append(predictions)
+        generated_logits = TestLanguageModel.generation(fixtures_gen, 10, self.model)  # generated predictions for 10 words
+        generated_logits_test = TestLanguageModel.generation(fixtures_gen_test, 10, self.model)
+        nll = test_prediction(predictions, fixtures_pred['out'])
+        generated = test_generation(fixtures_gen, generated_logits, vocab)
+        generated_test = test_generation(fixtures_gen_test, generated_logits_test, vocab)
+        self.val_losses.append(nll)
+
+        self.generated.append(generated)
+        self.generated_test.append(generated_test)
+        self.generated_logits.append(generated_logits)
+        self.generated_logits_test.append(generated_logits_test)
+
+        # generate predictions for test data
+        predictions_test = TestLanguageModel.prediction(fixtures_pred_test['inp'], self.model)  # get predictions
+        self.predictions_test.append(predictions_test)
+
+        print('[VAL]  Epoch [%d/%d]   Loss: %.4f'
+              % (self.epochs + 1, self.max_epochs, nll))
+        return nll
+
+    def save(self):
+        # don't change these
+        model_path = os.path.join('experiments', self.run_id, 'model-{}.pkl'.format(self.epochs))
+        torch.save({'state_dict': self.model.state_dict()},
+                   model_path)
+        np.save(os.path.join('experiments', self.run_id, 'predictions-{}.npy'.format(self.epochs)), self.predictions[-1])
+        np.save(os.path.join('experiments', self.run_id, 'predictions-test-{}.npy'.format(self.epochs)), self.predictions_test[-1])
+        np.save(os.path.join('experiments', self.run_id, 'generated_logits-{}.npy'.format(self.epochs)), self.generated_logits[-1])
+        np.save(os.path.join('experiments', self.run_id, 'generated_logits-test-{}.npy'.format(self.epochs)), self.generated_logits_test[-1])
+        with open(os.path.join('experiments', self.run_id, 'generated-{}.txt'.format(self.epochs)), 'w') as fw:
+            fw.write(self.generated[-1])
+        with open(os.path.join('experiments', self.run_id, 'generated-{}-test.txt'.format(self.epochs)), 'w') as fw:
+            fw.write(self.generated_test[-1])
+
+
+class TestLanguageModel:
+    def prediction(inp, model):
+        """
+            TODO: write prediction code here
+
+            :param inp:
+            :return: a np.ndarray of logits
+        """
+        out = model(inp,len(vocab))
+        return out
+        raise NotImplemented
+
+    def generation(inp, forward, model):
+        """
+            TODO: write generation code here
+
+            Generate a sequence of words given a starting sequence.
+            :param inp: Initial sequence of words (batch size, length)
+            :param forward: number of additional words to generate
+            :return: generated words (batch size, forward)
+        """
+        raise NotImplemented
+# TODO: define other hyperparameters here
+
+NUM_EPOCHS = 2
+BATCH_SIZE = 10
+run_id = str(int(time.time()))
+if not os.path.exists('./experiments'):
+    os.mkdir('./experiments')
+os.mkdir('./experiments/%s' % run_id)
+print("Saving models, predictions, and generated words to ./experiments/%s" % run_id)
+print("Loader Init...")
+loader = LanguageModelDataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True)
+# for batch_num, (inputs, targets) in enumerate(loader):
+#     print(inputs,targets)
+#     exit(1)
+
+print("Model Init..")
+model = LanguageModel(len(vocab))
+print("Trainer Init...")
+trainer = LanguageModelTrainer(model=model, loader=loader, max_epochs=NUM_EPOCHS, run_id=run_id)
+best_nll = 1e30
+for epoch in range(NUM_EPOCHS):
+    print("Epoch: ",epoch+1)
+    trainer.train()
+    nll = trainer.test()
+    print("nll: ",nll)
+    if nll < best_nll:
+        best_nll = nll
+        print("Saving model, predictions and generated output for epoch " + str(epoch) + " with NLL: " + str(best_nll))
+        trainer.save()
+        print("saved")
+
+# Don't change these
+# plot training curves
+plt.figure()
+plt.plot(range(1, trainer.epochs + 1), trainer.train_losses, label='Training losses')
+plt.plot(range(1, trainer.epochs + 1), trainer.val_losses, label='Validation losses')
+plt.xlabel('Epochs')
+plt.ylabel('NLL')
+plt.legend()
+plt.show()
+
+# see generated output
+print (trainer.generated[-1]) # get last generated output
