@@ -93,10 +93,10 @@ class LanguageModel(nn.Module):
         result = result.reshape(cur_shape[1], cur_shape[0], cur_shape[2])
         # print(result.shape)
         # print("Running LSTM...")
-        result = self.lstm(result)[0]
+        result = self.linear(self.lstm(result)[0])
         # print("LSTM result: {}".format(result))
         # print("Linear Layer...")
-        result = self.linear(result)
+        # result = self.linear(result)
         # print("Reult is: {}".format(result.shape))
         return result
         # Feel free to add extra arguments to forward (like an argument to pass in the hiddens)
