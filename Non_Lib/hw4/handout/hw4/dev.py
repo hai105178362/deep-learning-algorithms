@@ -21,14 +21,6 @@ vocab = np.load('../dataset/vocab.npy', allow_pickle=True)
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 dataset = train_data
 
-
-# for i in train_data:
-#     dataset = np.concatenate((dataset,i),axis=None)
-#     # exit()
-# print((dataset).shape)
-# print(np.random.normal(100, 0.1))
-# exit()
-
 class LanguageModelDataLoader(DataLoader):
     """
         TODO: Define data loader logic here
@@ -58,36 +50,7 @@ class LanguageModelDataLoader(DataLoader):
             sentences = torch.LongTensor(self.largetext[start_idx:start_idx + seqlen * self.batch_size]).reshape(shape=(self.batch_size, seqlen))
             labels = torch.LongTensor(self.largetext[start_idx + 1:start_idx + seqlen * self.batch_size + 1]).reshape(shape=(self.batch_size, seqlen))
             start_idx += seqlen * self.batch_size
-            # print(start_idx)
             yield (sentences, labels)
-        # while start_idx + randnum + 1 < tot_len:
-        #     sentences = np.empty(shape=(1, randnum))
-        #     labels = np.empty(shape=(1, randnum))
-        #     for i in range(self.batch_size):
-        #         if(start_idx + randnum + 1) < tot_len:
-        #             cur_sentence = self.largetext[start_idx: start_idx + randnum]
-        #             cur_label = self.largetext[start_idx + 1: start_idx + randnum + 1]
-        #             sentences = np.append(sentences, np.array([cur_sentence]), axis=0)
-        #             labels = np.append(labels, np.array([cur_label]), axis=0)
-        #             start_idx += randnum
-        #     randnum = int(np.random.normal(self.seqlen, self.sigma))
-        #     yield (torch.LongTensor(sentences[1:]), torch.LongTensor(labels[1:]))
-
-        # if (self.largetext.__len__() % self.batch_size) != 0: num_iters += 1
-        # print("num_iters: {}".format(num_iters))
-        # for i in range(num_iters):
-        #     sentences = np.empty(shape=(1, randnum))
-        #     labels = np.empty(shape=(1, randnum))
-        #     for j in range(self.batch_size):
-        #         if i * self.batch_size + j + randnum + 1 < len(self.largetext):
-        #             idx = i * self.batch_size + j
-        #             cur_sentence = self.largetext[idx: idx + randnum]
-        #             cur_label = self.largetext[idx + 1:idx + randnum + 1]
-        #             sentences = np.append(sentences, np.array([cur_sentence]), axis=0)
-        #             labels = np.append(labels, np.array([cur_label]), axis=0)
-        #         # print(sentences)
-        #     yield (torch.LongTensor(sentences[1:]), torch.LongTensor(labels[1:]))
-
 
 vocab_human = []
 with open('../dataset/vocab.csv') as f:
@@ -104,8 +67,8 @@ class LanguageModel(nn.Module):
         super(LanguageModel, self).__init__()
         # self.embed = torch.nn.Embedding(vocab_size, 1028, 400).to(DEVICE)
         self.embed = torch.nn.Embedding(vocab_size, 1150, 400).to(DEVICE)
-        self.lstm = torch.nn.LSTM(1150, 1150, bidirectional=False, num_layers=1).to(DEVICE)
-        self.linear = torch.nn.Linear(in_features=1150, out_features=vocab_size).to(DEVICE)
+        self.lstm = torch.nn.LSTM(1150, 128, bidirectional=False, num_layers=1).to(DEVICE)
+        self.linear = torch.nn.Linear(in_features=128, out_features=vocab_size).to(DEVICE)
 
         # raise NotImplemented
 
@@ -154,6 +117,8 @@ class LanguageModelTrainer:
         num_batches = 0
         for batch_num, (inputs, targets) in enumerate(self.loader):
             epoch_loss += self.train_batch(inputs, targets)
+            print("loss is:",epoch_loss)
+        print("Batch Done.")
         epoch_loss = epoch_loss / (batch_num + 1)
         epoch_loss.backward()
         self.optimizer.step()
@@ -171,12 +136,9 @@ class LanguageModelTrainer:
         # mask = np.zeros(shape=(input_shape[0],len(vocab)))
         inputs = inputs.to(DEVICE)
         targets = targets.to(DEVICE)
-
         loss = 0
         result = self.model(inputs)
-        # print(result)
         rs = result.shape
-        # print("input shape: ", result.shape, "target shape:", targets.shape)
         result = result.reshape(rs[1], rs[0], rs[2])
         for i in range(len(result)):
             curr_loss = self.criterion(result[i], targets[i])
@@ -192,7 +154,7 @@ class LanguageModelTrainer:
         # self.optimizer.step()
         # print("step finished...")
         return loss
-        raise NotImplemented
+        # raise NotImplemented
 
     def test(self):
         # don't change these
