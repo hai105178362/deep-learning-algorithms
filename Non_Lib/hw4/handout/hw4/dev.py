@@ -64,7 +64,7 @@ class LanguageModelDataLoader(DataLoader):
                     sentences = np.append(sentences, np.array([cur_sentence]), axis=0)
                     labels = np.append(labels, np.array([cur_label]), axis=0)
                 # print(sentences)
-            yield (torch.LongTensor(sentences[1:]).to(DEVICE), torch.LongTensor(labels[1:]).to(DEVICE))
+            yield (torch.LongTensor(sentences[1:]), torch.LongTensor(labels[1:]))
 
 
 vocab_human = []
@@ -151,6 +151,8 @@ class LanguageModelTrainer:
         """
         # input_shape = inputs.shape
         # mask = np.zeros(shape=(input_shape[0],len(vocab)))
+        inputs = inputs.to(DEVICE)
+        targets = targets.to(DEVICE)
 
         loss = 0
         result = self.model(inputs)
