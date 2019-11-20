@@ -48,23 +48,45 @@ class LanguageModelDataLoader(DataLoader):
         # raise NotImplemented
 
     def __iter__(self):
-        num_iters = self.largetext.__len__() // self.batch_size
-        if (self.largetext.__len__() % self.batch_size) != 0: num_iters += 1
-        print("num_iters: {}".format(num_iters))
-        idx = 0
-        randnum = int(np.random.normal(self.seqlen, self.sigma))
-        for i in range(num_iters + 1):
-            sentences = np.empty(shape=(1, randnum))
-            labels = np.empty(shape=(1, randnum))
-            for j in range(self.batch_size):
-                if i * self.batch_size + j + randnum + 1 < len(self.largetext):
-                    idx = i * self.batch_size + j
-                    cur_sentence = self.largetext[idx: idx + randnum]
-                    cur_label = self.largetext[idx + 1:idx + randnum + 1]
-                    sentences = np.append(sentences, np.array([cur_sentence]), axis=0)
-                    labels = np.append(labels, np.array([cur_label]), axis=0)
-                # print(sentences)
-            yield (torch.LongTensor(sentences[1:]), torch.LongTensor(labels[1:]))
+        start_idx = 0
+        tot_len = self.largetext.__len__()
+        print("totlen:{}".format(tot_len))
+        while True:
+            seqlen = int(np.random.normal(self.seqlen, self.sigma))
+            if start_idx + seqlen * self.batch_size + 1 >= tot_len:
+                break
+            sentences = torch.LongTensor(self.largetext[start_idx:start_idx + seqlen * self.batch_size]).reshape(shape=(self.batch_size, seqlen))
+            labels = torch.LongTensor(self.largetext[start_idx + 1:start_idx + seqlen * self.batch_size + 1]).reshape(shape=(self.batch_size, seqlen))
+            start_idx += seqlen * self.batch_size
+            # print(start_idx)
+            yield (sentences, labels)
+        # while start_idx + randnum + 1 < tot_len:
+        #     sentences = np.empty(shape=(1, randnum))
+        #     labels = np.empty(shape=(1, randnum))
+        #     for i in range(self.batch_size):
+        #         if(start_idx + randnum + 1) < tot_len:
+        #             cur_sentence = self.largetext[start_idx: start_idx + randnum]
+        #             cur_label = self.largetext[start_idx + 1: start_idx + randnum + 1]
+        #             sentences = np.append(sentences, np.array([cur_sentence]), axis=0)
+        #             labels = np.append(labels, np.array([cur_label]), axis=0)
+        #             start_idx += randnum
+        #     randnum = int(np.random.normal(self.seqlen, self.sigma))
+        #     yield (torch.LongTensor(sentences[1:]), torch.LongTensor(labels[1:]))
+
+        # if (self.largetext.__len__() % self.batch_size) != 0: num_iters += 1
+        # print("num_iters: {}".format(num_iters))
+        # for i in range(num_iters):
+        #     sentences = np.empty(shape=(1, randnum))
+        #     labels = np.empty(shape=(1, randnum))
+        #     for j in range(self.batch_size):
+        #         if i * self.batch_size + j + randnum + 1 < len(self.largetext):
+        #             idx = i * self.batch_size + j
+        #             cur_sentence = self.largetext[idx: idx + randnum]
+        #             cur_label = self.largetext[idx + 1:idx + randnum + 1]
+        #             sentences = np.append(sentences, np.array([cur_sentence]), axis=0)
+        #             labels = np.append(labels, np.array([cur_label]), axis=0)
+        #         # print(sentences)
+        #     yield (torch.LongTensor(sentences[1:]), torch.LongTensor(labels[1:]))
 
 
 vocab_human = []
@@ -80,9 +102,10 @@ class LanguageModel(nn.Module):
 
     def __init__(self, vocab_size):
         super(LanguageModel, self).__init__()
-        self.embed = torch.nn.Embedding(vocab_size, 1028, 400).to(DEVICE)
-        self.lstm = torch.nn.LSTM(1028, 128, bidirectional=False, num_layers=1).to(DEVICE)
-        self.linear = torch.nn.Linear(in_features=128, out_features=vocab_size).to(DEVICE)
+        # self.embed = torch.nn.Embedding(vocab_size, 1028, 400).to(DEVICE)
+        self.embed = torch.nn.Embedding(vocab_size, 1150, 400).to(DEVICE)
+        self.lstm = torch.nn.LSTM(1150, 1150, bidirectional=False, num_layers=1).to(DEVICE)
+        self.linear = torch.nn.Linear(in_features=1150, out_features=vocab_size).to(DEVICE)
 
         # raise NotImplemented
 
@@ -90,14 +113,9 @@ class LanguageModel(nn.Module):
         # print("Embedding...")
         result = self.embed(x)
         cur_shape = result.shape
+        print(cur_shape)
         result = result.reshape(cur_shape[1], cur_shape[0], cur_shape[2])
-        # print(result.shape)
-        # print("Running LSTM...")
         result = self.linear(self.lstm(result)[0])
-        # print("LSTM result: {}".format(result))
-        # print("Linear Layer...")
-        # result = self.linear(result)
-        # print("Reult is: {}".format(result.shape))
         return result
         # Feel free to add extra arguments to forward (like an argument to pass in the hiddens)
         raise NotImplemented
@@ -251,14 +269,15 @@ run_id = str(int(time.time()))
 # print("Saving models, predictions, and generated words to ./experiments/%s" % run_id)
 # print("Loader Init...")
 loader = LanguageModelDataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True)
+
+# start = time.time()
 # for batch_num, (inputs, targets) in enumerate(loader):
 #     print(inputs.shape)
-#     # tmp = inputs .unsqueeze(dim=0)
-#     # print(tmp.shape)
-#     print("============")
-#     print(targets.shape)
-#     exit(1)
-
+#     # exit()
+# #
+# end = time.time()
+# print(end - start)
+# exit()
 print("Model Init..")
 model = LanguageModel(len(vocab))
 print("Trainer Init...")
