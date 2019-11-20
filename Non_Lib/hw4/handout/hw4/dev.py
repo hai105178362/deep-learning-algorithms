@@ -140,19 +140,7 @@ class LanguageModelTrainer:
         result = self.model(inputs)
         rs = result.shape
         result = result.reshape(rs[1], rs[0], rs[2])
-        for i in range(len(result)):
-            curr_loss = self.criterion(result[i], targets[i])
-            # curr_loss.backward(retain_graph=True)
-            # self.optimizer.step()
-            loss += curr_loss
-            # print(curr_loss)
-
-        # loss /= len(result)
-        # print("batch loss:", loss)
-        # loss.backward()
-        # print("backward finished...")
-        # self.optimizer.step()
-        # print("step finished...")
+        loss = self.criterion(result,targets)
         return loss
         # raise NotImplemented
 
