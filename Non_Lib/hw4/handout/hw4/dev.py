@@ -64,7 +64,7 @@ class LanguageModelDataLoader(DataLoader):
                     sentences = np.append(sentences, np.array([cur_sentence]), axis=0)
                     labels = np.append(labels, np.array([cur_label]), axis=0)
                 # print(sentences)
-            yield (torch.LongTensor(sentences[1:]), torch.LongTensor(labels[1:]))
+            yield (torch.LongTensor(sentences[1:]).to(DEVICE), torch.LongTensor(labels[1:])).to(DEVICE)
 
 
 vocab_human = []
@@ -87,17 +87,17 @@ class LanguageModel(nn.Module):
         # raise NotImplemented
 
     def forward(self, x):
-        print("Embedding...")
+        # print("Embedding...")
         result = self.embed(x)
         cur_shape = result.shape
         result = result.reshape(cur_shape[1], cur_shape[0], cur_shape[2])
-        print(result.shape)
-        print("Running LSTM...")
+        # print(result.shape)
+        # print("Running LSTM...")
         result = self.lstm(result)[0]
         # print("LSTM result: {}".format(result))
-        print("Linear Layer...")
+        # print("Linear Layer...")
         result = self.linear(result)
-        print("Reult is: {}".format(result.shape))
+        # print("Reult is: {}".format(result.shape))
         return result
         # Feel free to add extra arguments to forward (like an argument to pass in the hiddens)
         raise NotImplemented
@@ -127,8 +127,8 @@ class LanguageModelTrainer:
 
         # TODO: Define your optimizer and criterion here
         self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=5e-7)
-        # self.criterion = nn.CrossEntropyLoss()
-        self.criterion = nn.NLLLoss()
+        self.criterion = nn.CrossEntropyLoss()
+        # self.criterion = nn.NLLLoss()
 
     def train(self):
         self.model.train()  # set to training mode
@@ -137,6 +137,8 @@ class LanguageModelTrainer:
         for batch_num, (inputs, targets) in enumerate(self.loader):
             epoch_loss += self.train_batch(inputs, targets)
         epoch_loss = epoch_loss / (batch_num + 1)
+        epoch_loss.backward()
+        self.optimizer.step()
         self.epochs += 1
         print('[TRAIN]  Epoch [%d/%d]   Loss: %.4f'
               % (self.epochs + 1, self.max_epochs, epoch_loss))
@@ -151,17 +153,24 @@ class LanguageModelTrainer:
         # mask = np.zeros(shape=(input_shape[0],len(vocab)))
 
         loss = 0
-        cur_result = self.model(inputs)
-        cur_shape = cur_result.shape
-        # print(cur_result)
-        print("input shape: ", cur_result.shape, "target shape:", targets.shape)
-        new_result = torch.argmax(cur_result,dim=2).T
-        print(new_result.shape)
-        curr_loss = self.criterion(new_result, targets)
-        print("batch loss:", loss)
-        loss += curr_loss
-        curr_loss.backward()
-        self.optimizer.step()
+        result = self.model(inputs)
+        # print(result)
+        rs = result.shape
+        # print("input shape: ", result.shape, "target shape:", targets.shape)
+        result = result.reshape(rs[1], rs[0], rs[2])
+        for i in range(len(result)):
+            curr_loss = self.criterion(result[i], targets[i])
+            # curr_loss.backward(retain_graph=True)
+            # self.optimizer.step()
+            loss += curr_loss
+            # print(curr_loss)
+
+        # loss /= len(result)
+        # print("batch loss:", loss)
+        # loss.backward()
+        # print("backward finished...")
+        # self.optimizer.step()
+        # print("step finished...")
         return loss
         raise NotImplemented
 
