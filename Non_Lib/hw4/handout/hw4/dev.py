@@ -10,6 +10,8 @@ from tests import test_prediction, test_generation
 from helper import loader
 import csv
 
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+
 train_data = np.load('../dataset/wiki.train.npy', allow_pickle=True)
 fixtures_pred = np.load('../fixtures/prediction.npz', allow_pickle=True)  # dev
 fixtures_gen = np.load('../fixtures/generation.npy', allow_pickle=True)  # dev
@@ -40,12 +42,14 @@ class LanguageModelDataLoader(DataLoader):
         for i in data:
             self.largetext = np.concatenate((self.largetext, i), axis=None)
         super().__init__(dataset=self.largetext, batch_size=batch_size, shuffle=shuffle)
-        self.seqlen = 20
-        self.sigma = 0.3
+        self.lenarr = [35, 70]
+        self.seqlen = np.random.choice(self.lenarr, 1, p=[0.05, 0.95])
+        self.sigma = 5
         # raise NotImplemented
 
     def __iter__(self):
         num_iters = self.largetext.__len__() // self.batch_size
+        if (self.largetext.__len__() % self.batch_size) != 0: num_iters += 1
         print("num_iters: {}".format(num_iters))
         idx = 0
         randnum = int(np.random.normal(self.seqlen, self.sigma))
@@ -60,7 +64,7 @@ class LanguageModelDataLoader(DataLoader):
                     sentences = np.append(sentences, np.array([cur_sentence]), axis=0)
                     labels = np.append(labels, np.array([cur_label]), axis=0)
                 # print(sentences)
-            yield (sentences[1:], labels[1:])
+            yield (torch.LongTensor(sentences[1:]), torch.LongTensor(labels[1:]))
 
 
 vocab_human = []
@@ -76,14 +80,24 @@ class LanguageModel(nn.Module):
 
     def __init__(self, vocab_size):
         super(LanguageModel, self).__init__()
-        self.lstm = torch.nn.LSTM(vocab_size, vocab_size, bidirectional=False, num_layers=1)
-        # self.lstm = torch.nn.LSTM(vocab_size, vocab_size, bidirectional=False, num_layers=1)
+        self.embed = torch.nn.Embedding(vocab_size, 1150, 400).to(DEVICE)
+        self.lstm = torch.nn.LSTM(1150, 1150, bidirectional=False, num_layers=1).to(DEVICE)
+        self.linear = torch.nn.Linear(in_features=1150, out_features=vocab_size).to(DEVICE)
 
         # raise NotImplemented
 
     def forward(self, x):
-        self.lstm.to(DEVICE)
-        result = self.lstm(x)
+        print("Embedding...")
+        result = self.embed(x)
+        cur_shape = result.shape
+        result = result.reshape(cur_shape[1], cur_shape[0], cur_shape[2])
+        print(result.shape)
+        print("Running LSTM...")
+        result = self.lstm(result)[0]
+        # print("LSTM result: {}".format(result))
+        print("Linear Layer...")
+        result = self.linear(result)
+        print("Reult is: {}".format(result.shape))
         return result
         # Feel free to add extra arguments to forward (like an argument to pass in the hiddens)
         raise NotImplemented
@@ -113,7 +127,8 @@ class LanguageModelTrainer:
 
         # TODO: Define your optimizer and criterion here
         self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=5e-7)
-        self.criterion = nn.CrossEntropyLoss()
+        # self.criterion = nn.CrossEntropyLoss()
+        self.criterion = nn.NLLLoss()
 
     def train(self):
         self.model.train()  # set to training mode
@@ -132,12 +147,20 @@ class LanguageModelTrainer:
             TODO: Define code for training a single batch of inputs
 
         """
+        # input_shape = inputs.shape
+        # mask = np.zeros(shape=(input_shape[0],len(vocab)))
+
         loss = 0
-        # for i,j in zip(inputs,targets):
         cur_result = self.model(inputs)
-        loss = self.criterion(cur_result, j)
+        cur_shape = cur_result.shape
+        # print(cur_result)
+        print("input shape: ", cur_result.shape, "target shape:", targets.shape)
+        new_result = torch.argmax(cur_result,dim=2).T
+        print(new_result.shape)
+        curr_loss = self.criterion(new_result, targets)
         print("batch loss:", loss)
-        loss.backward()
+        loss += curr_loss
+        curr_loss.backward()
         self.optimizer.step()
         return loss
         raise NotImplemented
@@ -209,7 +232,7 @@ class TestLanguageModel:
 # TODO: define other hyperparameters here
 
 NUM_EPOCHS = 2
-BATCH_SIZE = 1028
+BATCH_SIZE = 80
 run_id = str(int(time.time()))
 # if not os.path.exists('./experiments'):
 #     os.mkdir('./experiments')
@@ -217,11 +240,13 @@ run_id = str(int(time.time()))
 # print("Saving models, predictions, and generated words to ./experiments/%s" % run_id)
 # print("Loader Init...")
 loader = LanguageModelDataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True)
-for batch_num, (inputs, targets) in enumerate(loader):
-    print(inputs)
-    print("============")
-    print(targets)
-    exit(1)
+# for batch_num, (inputs, targets) in enumerate(loader):
+#     print(inputs.shape)
+#     # tmp = inputs .unsqueeze(dim=0)
+#     # print(tmp.shape)
+#     print("============")
+#     print(targets.shape)
+#     exit(1)
 
 print("Model Init..")
 model = LanguageModel(len(vocab))
