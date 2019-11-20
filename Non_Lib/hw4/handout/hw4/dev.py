@@ -80,8 +80,8 @@ class LanguageModel(nn.Module):
 
     def __init__(self, vocab_size):
         super(LanguageModel, self).__init__()
-        self.embed = torch.nn.Embedding(vocab_size, 1150, 400).to(DEVICE)
-        self.lstm = torch.nn.LSTM(1150, 128, bidirectional=False, num_layers=3).to(DEVICE)
+        self.embed = torch.nn.Embedding(vocab_size, 1028, 400).to(DEVICE)
+        self.lstm = torch.nn.LSTM(1028, 128, bidirectional=False, num_layers=3).to(DEVICE)
         self.linear = torch.nn.Linear(in_features=128, out_features=vocab_size).to(DEVICE)
 
         # raise NotImplemented
