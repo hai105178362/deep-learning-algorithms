@@ -216,6 +216,8 @@ class TestLanguageModel:
             out = (torch.argmax(flat, axis=1))
             ans.append(out[-1])
             # print("Prediction:{}".format(vocab_human[out[-1]]))
+        print("========PREDICTION=======")
+        print(ans)
         return ans
         raise NotImplemented
 
@@ -250,6 +252,8 @@ class TestLanguageModel:
                     scores = linear(output)  # V
                     _, current_word = torch.max(scores, dim=1)  # 1
                     generated_words.append(current_word)
+            print("========GENERATION=======")
+            print(torch.cat(generated_words, dim=0))
             return torch.cat(generated_words, dim=0)
             raise NotImplemented
 
