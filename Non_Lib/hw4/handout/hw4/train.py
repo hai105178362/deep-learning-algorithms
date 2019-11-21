@@ -89,37 +89,29 @@ class LanguageModel(nn.Module):
         result = self.embedding(x)
         # result = self.embed_dropout(result)
         output, hidden = self.rnn(result)
-        output = self.dropout(output)
-        # output, hidden = self.rnn(result)
-        # output = self.dropout(output)
-        # output, hidden = self.rnn(result)
         # output = self.dropout(output)
         output_lstm_flatten = output.view(-1, self.hidden_size)
         output_flatten = self.scoring(output_lstm_flatten)
         return output_flatten.view(-1, self.batch_size, self.vocab_size)
         raise NotImplemented
 
-    def predict(self, seq, n_words):  # L x V
-        # performs greedy search to extract and return words (one sequence).
-        generated_words = []
+    def predict(self, seq):  # L x V
         embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
-        hidden = None
+        hidden = hidden_size
         output_lstm, hidden = self.rnn(embed, hidden)  # L x 1 x H
         output = output_lstm[-1]  # 1 x H
         scores = self.scoring(output)  # 1 x V
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
-        generated_words.append(scores)
-        return torch.cat(generated_words, dim=0)
+        # generated_words.append(scores)
+        # return torch.cat(generated_words, dim=0)
+        return scores
 
     def generate(self, seq, n_words):  # L x V
-        # performs greedy search to extract and return words (one sequence).
-        # generated_words = []
         embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
-        hidden = None
+        hidden = hidden_size
         output_lstm, hidden = self.rnn(embed, hidden)  # L x 1 x H
         output = output_lstm[-1]  # 1 x H
         scores = self.scoring(output)  # 1 x V
-        # _, current_word = torch.max(scores, dim=1)  # 1 x 1
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
         # generated_words.append(current_word)
         generated_words = current_word
