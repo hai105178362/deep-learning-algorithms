@@ -24,7 +24,7 @@ vocab_size = len(vocab)
 batch_size = 80
 embed_size = 400
 embed_hidden = 1150
-hidden_size = 1150
+hidden_size = 256
 drop_out = 0.3
 
 
@@ -85,15 +85,14 @@ class LanguageModel(nn.Module):
         self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
         self.dropout = torch.nn.Dropout(p=drop_out)
 
-
     def forward(self, x):
         result = self.embedding(x)
         # result = self.embed_dropout(result)
         output, hidden = self.rnn(result)
         output = self.dropout(output)
-        output, hidden = self.rnn(result)
-        output = self.dropout(output)
-        output, hidden = self.rnn(result)
+        # output, hidden = self.rnn(result)
+        # output = self.dropout(output)
+        # output, hidden = self.rnn(result)
         # output = self.dropout(output)
         output_lstm_flatten = output.view(-1, self.hidden_size)
         output_flatten = self.scoring(output_lstm_flatten)
@@ -134,7 +133,7 @@ class LanguageModel(nn.Module):
                 scores = self.scoring(output)  # V
                 _, current_word = torch.max(scores, dim=1)  # 1
                 # generated_words.append(current_word)
-                generated_words.append(current_word)
+                generated_words = torch.cat(generated_words, current_word, dim=1)
         return torch.cat(generated_words, dim=0)
 
 
