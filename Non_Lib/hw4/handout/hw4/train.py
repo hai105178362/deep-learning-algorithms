@@ -26,6 +26,8 @@ embed_size = 400
 embed_hidden = 1150
 hidden_size = 512
 drop_out = 0.3
+
+
 #
 # embed_size = 10
 # embed_hidden = 10
@@ -122,12 +124,13 @@ class LanguageModel(nn.Module):
         scores = self.scoring(output)  # 1 x V
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
         generated_words.append(current_word)
-        cur_seq = torch.cat((cur_seq[1:],current_word),dim=0)
+        cur_seq = torch.cat((cur_seq[1:], current_word), dim=0)
         # print(cur_seq)
         # exit()
         # generated_words = current_word
         if n_words > 1:
             for i in range(n_words - 1):
+                print(cur_seq)
                 # print(generated_words)
                 # print(cur_seq)
                 # print("current_word:",current_word)
@@ -194,17 +197,15 @@ class LanguageModelTrainer:
             TODO: Define code for training a single batch of inputs
 
         """
-        # print(targets.view(-1))
-        # with torch.no_grad():
-        #     result = self.model(inputs)
-        #     flat = result.view(-1, result.size(2))
-        #     print(flat)
-        #     out = np.argmax(flat,axis=1)
-        #     print(vocab_human[out[-1]])
-        # exit()
-        # print(inputs.shape)
         result = self.model(inputs)
         loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
+
+        # Adding L2 Norm
+        par = torch.tensor(1.)
+        l2_reg = torch.tensor(0.)
+        for param in model.parameters():
+            l2_reg += torch.norm(param)
+        loss += par * l2_reg
         loss.backward()
         self.optimizer.step()
         return loss
