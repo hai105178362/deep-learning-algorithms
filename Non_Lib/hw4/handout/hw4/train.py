@@ -119,8 +119,8 @@ class LanguageModel(nn.Module):
             for i in range(n_words - 1):
                 # print("current_word:",current_word)
                 # embed = self.embedding(current_word).unsqueeze(0)  # 1 x 1 x E
-                embed = self.embedding(generated_words).unsqueeze(0)  # 1 x 1 x E
-                output_lstm, hidden = self.rnn(current_word, hidden)  # 1 x 1 x H
+                embed = self.embedding(current_word).unsqueeze(0)  # 1 x 1 x E
+                output_lstm, hidden = self.rnn(embed, hidden)  # 1 x 1 x H
                 output = output_lstm[0]  # 1 x H
                 scores = self.scoring(output)  # V
                 _, current_word = torch.max(scores, dim=1)  # 1
