@@ -213,6 +213,7 @@ class TestLanguageModel:
         with torch.no_grad():
             print("generating input...")
             input = torch.LongTensor(inp).to(DEVICE)
+            print("input size:{}".format(input.shape))
             print("getting result...")
             result = model(input)
             print("flattening...")
@@ -257,13 +258,18 @@ class TestLanguageModel:
                 nwords = forward
                 if nwords > 1:
                     for j in range(nwords - 1):
-                        embed = embedding(i).unsqueeze(0)  # 1 x 1 x E
-                        # embed = embedding(current_word)  # 1 x 1 x E
-                        output_lstm, hidden = rnn(embed, hidden)  # 1 x 1 x H
-                        output = output_lstm[0]  # 1 x H
-                        scores = linear(output)  # V
-                        _, current_word = torch.max(scores, dim=1)  # 1
-                        generated_words.append(current_word)
+                        print("generating input...")
+                        input = torch.LongTensor(inp).to(DEVICE)
+                        print("input size:{}".format(input.shape))
+                        print("getting result...")
+                        result = model(input)
+                        print("flattening...")
+                        flat = result.view(-1, result.size(2))
+                        print("flat:", flat.shape)
+                        out = (torch.argmax(flat, axis=1))
+                        print("out", out.shape)
+                        print(out)
+                        generated_words.append(out  )
                 generated_words = torch.cat(generated_words, dim=0)
                 ans.append(generated_words.cpu().clone().numpy())
             print("========GENERATION=======")
