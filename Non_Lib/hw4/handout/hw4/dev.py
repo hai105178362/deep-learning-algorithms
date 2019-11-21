@@ -211,17 +211,18 @@ class TestLanguageModel:
         ans = []
         with torch.no_grad():
             input = torch.LongTensor(inp).to(DEVICE)
-            for i in input:
-                result = model(torch.LongTensor(i).unsqueeze(0))
-                flat = result.view(-1, result.size(2))
-                # print(flat)
-                out = (torch.argmax(flat, axis=1))
-                print(out)
-                ans.append(out[-1])
+            # for i in input:
+            result = model(torch.LongTensor(input).unsqueeze(0))
+            flat = result.view(-1, result.size(2))
+            # print(flat)
+            out = (torch.argmax(flat, axis=1))
+            print(out)
+                # ans.append(out[-1])
                 # print("Prediction:{}".format(vocab_human[out[-1]]))
         print("========PREDICTION=======")
-        print(ans)
-        return ans
+        # print(ans)
+        return out
+        # return ans
         raise NotImplemented
 
     def generation(inp, forward, model):
