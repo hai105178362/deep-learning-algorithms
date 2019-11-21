@@ -162,7 +162,6 @@ class LanguageModelTrainer:
         print('[TRAIN]  Epoch [%d/%d]   Loss: %.4f'
               % (self.epochs + 1, self.max_epochs, epoch_loss))
         self.train_losses.append(epoch_loss)
-        self.epochs += 1
 
     def train_batch(self, inputs, targets):
         """
@@ -207,6 +206,7 @@ class LanguageModelTrainer:
 
         print('[VAL]  Epoch [%d/%d]   Loss: %.4f'
               % (self.epochs + 1, self.max_epochs, nll))
+        self.epochs += 1
         return nll
 
     def save(self):
@@ -259,7 +259,7 @@ class TestLanguageModel:
             ans = np.zeros(shape=(1, forward))
             for i in input:
                 cur_word = model.generate(i, forward)
-                cur_word = torch.argmax(cur_word,dim=1).cpu().numpy()
+                cur_word = torch.argmax(cur_word, dim=1).cpu().numpy()
                 print(cur_word)
                 ans = np.append(ans, np.array([cur_word]), axis=0)
                 # exit()
@@ -272,14 +272,14 @@ class TestLanguageModel:
 
 # TODO: define other hyperparameters here
 
-NUM_EPOCHS = 2
+NUM_EPOCHS = 10
 BATCH_SIZE = 80
 run_id = str(int(time.time()))
-# if not os.path.exists('./experiments'):
-#     os.mkdir('./experiments')
-# os.mkdir('./experiments/%s' % run_id)
-# print("Saving models, predictions, and generated words to ./experiments/%s" % run_id)
-# print("Loader Init...")
+if not os.path.exists('./experiments'):
+    os.mkdir('./experiments')
+os.mkdir('./experiments/%s' % run_id)
+print("Saving models, predictions, and generated words to ./experiments/%s" % run_id)
+print("Loader Init...")
 loader = LanguageModelDataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True)
 
 print("Model Init..")
