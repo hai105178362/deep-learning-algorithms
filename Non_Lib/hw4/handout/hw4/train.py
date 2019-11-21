@@ -97,7 +97,7 @@ class LanguageModel(nn.Module):
 
     def predict(self, seq):  # L x V
         embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
-        hidden = hidden_size
+        hidden = None
         output_lstm, hidden = self.rnn(embed, hidden)  # L x 1 x H
         output = output_lstm[-1]  # 1 x H
         scores = self.scoring(output)  # 1 x V
@@ -108,7 +108,7 @@ class LanguageModel(nn.Module):
 
     def generate(self, seq, n_words):  # L x V
         embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
-        hidden = hidden_size
+        hidden = None
         output_lstm, hidden = self.rnn(embed, hidden)  # L x 1 x H
         output = output_lstm[-1]  # 1 x H
         scores = self.scoring(output)  # 1 x V
