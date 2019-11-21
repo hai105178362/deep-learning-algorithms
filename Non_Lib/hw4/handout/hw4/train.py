@@ -113,7 +113,7 @@ class LanguageModel(nn.Module):
 
     def generate(self, seq, n_words):  # L x V
         cur_seq = seq
-        print(cur_seq)
+        # print(cur_seq)
         generated_words = []
         embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
         hidden = None
@@ -123,11 +123,12 @@ class LanguageModel(nn.Module):
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
         generated_words.append(current_word)
         cur_seq = torch.cat((seq[1:],current_word),dim=0)
-        print(cur_seq)
-        exit()
+        # print(cur_seq)
+        # exit()
         # generated_words = current_word
         if n_words > 1:
             for i in range(n_words - 1):
+                print(cur_seq)
                 # print("current_word:",current_word)
                 # embed = self.embedding(current_word).unsqueeze(0)  # 1 x 1 x E
                 embed = self.embedding(cur_seq).unsqueeze(0)  # 1 x 1 x E
