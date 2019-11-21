@@ -229,7 +229,7 @@ class LanguageModelTrainer:
         loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
 
         # Adding L2 Norm
-        par = torch.tensor(0.0005).to(DEVICE)
+        par = torch.tensor(0.005).to(DEVICE)
         l2_reg = torch.tensor(0.).to(DEVICE)
         for param in model.parameters():
             l2_reg += torch.norm(param)
@@ -327,7 +327,7 @@ class TestLanguageModel:
 
 # TODO: define other hyperparameters here
 
-NUM_EPOCHS = 50
+NUM_EPOCHS = 150
 BATCH_SIZE = 80
 run_id = str(int(time.time()))
 if not os.path.exists('./experiments'):
