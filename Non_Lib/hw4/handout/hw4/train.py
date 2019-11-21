@@ -25,7 +25,7 @@ batch_size = 80
 embed_size = 400
 embed_hidden = 1150
 hidden_size = 512
-embed_dropout = 0.5
+embed_dropout = 0.3
 
 
 class LanguageModelDataLoader(DataLoader):
@@ -163,7 +163,7 @@ class LanguageModelTrainer:
         self.run_id = run_id
 
         # TODO: Define your optimizer and criterion here
-        self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=5e-5)
+        self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
         self.criterion = nn.CrossEntropyLoss().to(DEVICE)
         # self.criterion = nn.NLLLoss().to(DEVICE)
 
