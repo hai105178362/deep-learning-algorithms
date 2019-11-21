@@ -94,7 +94,7 @@ class LanguageModel(nn.Module):
 
     def forward(self, x):
         result = self.embedding(x)
-        result = self.embed_dropout(result)
+        result = self.dropout(result)
         output, hidden = self.rnn(result)
         # output = self.dropout(output)
         output_lstm_flatten = output.view(-1, self.hidden_size)
