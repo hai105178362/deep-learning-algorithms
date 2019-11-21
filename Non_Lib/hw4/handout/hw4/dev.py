@@ -210,13 +210,14 @@ class TestLanguageModel:
         ans = []
         with torch.no_grad():
             input = torch.LongTensor(inp).to(DEVICE)
-            result = model(input)
-            flat = result.view(-1, result.size(2))
-            # print(flat)
-            out = (torch.argmax(flat, axis=1))
-            print(out)
-            ans.append(out[-1])
-            # print("Prediction:{}".format(vocab_human[out[-1]]))
+            for i in input:
+                result = model(i)
+                flat = result.view(-1, result.size(2))
+                # print(flat)
+                out = (torch.argmax(flat, axis=1))
+                print(out)
+                ans.append(out[-1])
+                # print("Prediction:{}".format(vocab_human[out[-1]]))
         print("========PREDICTION=======")
         print(ans)
         return ans
