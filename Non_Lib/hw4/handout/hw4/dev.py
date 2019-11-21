@@ -277,10 +277,10 @@ class TestLanguageModel:
             ans = []
             for i in input:
                 cur_word = model.generate(i,forward)
-                print(cur_word)
-                print(cur_word.data)
-                print(cur_word.cpu().numpy())
-                exit()
+                # print(cur_word)
+                # print(cur_word.data)
+                cur_word = (cur_word.cpu().numpy())
+                # exit()
                 ans.append(cur_word)
             print(ans)
             print(len(ans))
