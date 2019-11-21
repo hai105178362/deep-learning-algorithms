@@ -103,16 +103,16 @@ class LanguageModel(nn.Module):
         output_lstm, hidden = self.rnn(embed, hidden)  # L x 1 x H
         output = output_lstm[-1]  # 1 x H
         scores = self.scoring(output)  # 1 x V
+        # _, current_word = torch.max(scores, dim=1)  # 1 x 1
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
-        generated_words.append(current_word)
+        # generated_words.append(current_word)
+        generated_words.append(scores)
         if n_words > 1:
             for i in range(n_words - 1):
                 embed = self.embedding(current_word).unsqueeze(0)  # 1 x 1 x E
                 output_lstm, hidden = self.rnn(embed, hidden)  # 1 x 1 x H
                 output = output_lstm[0]  # 1 x H
                 scores = self.scoring(output)  # V
-                print("score shape")
-                print(scores.shape)
                 # _, current_word = torch.max(scores, dim=1)  # 1
                 # generated_words.append(current_word)
                 generated_words.append(scores)
@@ -237,8 +237,8 @@ class TestLanguageModel:
         input = torch.LongTensor(inp).to(DEVICE)
         with torch.no_grad():
             for i in input:
-                cur_word = model.generate(i,1).item()
-                ans.append(cur_word)
+                cur_word = model.generate(i,1).cpu().numpy()
+                ans.append(cur_word.shape)
                 print("cur_word:",cur_word)
         print("ans: ",ans)
         print(len(ans))
