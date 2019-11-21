@@ -153,6 +153,7 @@ class LanguageModelTrainer:
         #     out = np.argmax(flat,axis=1)
         #     print(vocab_human[out[-1]])
         # exit()
+        # print(inputs.shape)
         result = self.model(inputs)
         loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
         loss.backward()
@@ -211,7 +212,7 @@ class TestLanguageModel:
         with torch.no_grad():
             input = torch.LongTensor(inp).to(DEVICE)
             for i in input:
-                result = model(i.unsqueeze(1))
+                result = model(torch.LongTensor(i).unsqueeze(0))
                 flat = result.view(-1, result.size(2))
                 # print(flat)
                 out = (torch.argmax(flat, axis=1))
