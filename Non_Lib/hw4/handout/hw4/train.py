@@ -9,6 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 from tests import test_prediction, test_generation
 from helper import loader
 import csv
+import torchnlp
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
@@ -24,7 +25,8 @@ vocab_size = len(vocab)
 batch_size = 80
 embed_size = 400
 embed_hidden = 1150
-hidden_size = 256
+hidden_size = 512
+embed_dropout = 0.5
 
 
 class LanguageModelDataLoader(DataLoader):
@@ -72,6 +74,8 @@ class LanguageModel(nn.Module):
         TODO: Define your model here
     """
 
+
+
     def __init__(self, vocab_size):
         super(LanguageModel, self).__init__()
         self.vocab_size = vocab_size
@@ -80,19 +84,25 @@ class LanguageModel(nn.Module):
         self.embed_hidden = embed_hidden
         self.hidden_size = hidden_size
         self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
-        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=1).to(DEVICE)
+        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=3).to(DEVICE)
         self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
+        self.embed_dropout = torch.nn.Dropout(p=embed_dropout)
+        self.locked_dropout = torchnlp.nn.LockedDropout(p=0.5)
+
+    def locked_dropout(x, dropout=0.5, training=True):
+        # same mask repeated across the sequence dimension
+        m = x.data.new(1, x.size(1), x.size(2)).bernoulli_(1 - dropout)
+        mask = Variable(m, requires_grad=False) / (1 - dropout)
+        mask = mask.expand_as(x)
+        return mask * x
 
     def forward(self, x):
-        # print("Embedding...")
         result = self.embedding(x)
         output, hidden = self.rnn(result)
-        # print("flattening..")
+        output = self.locked_dropout(output)
         output_lstm_flatten = output.view(-1, self.hidden_size)
         output_flatten = self.scoring(output_lstm_flatten)
-        # return output_flatten
         return output_flatten.view(-1, self.batch_size, self.vocab_size)
-        # Feel free to add extra arguments to forward (like an argument to pass in the hiddens)
         raise NotImplemented
 
     def predict(self, seq, n_words):  # L x V
