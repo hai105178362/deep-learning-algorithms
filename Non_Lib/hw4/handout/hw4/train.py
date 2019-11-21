@@ -247,7 +247,7 @@ class TestLanguageModel:
         input = torch.LongTensor(inp).to(DEVICE)
         with torch.no_grad():
             for i in input:
-                cur_word = model.predict(i, 1).cpu().numpy()
+                cur_word = model.predict(i).cpu().numpy()
                 ans = np.append(ans, cur_word, axis=0)
                 # print("cur_word:",cur_word.shape)
         # print("ans: ", ans[1:])
