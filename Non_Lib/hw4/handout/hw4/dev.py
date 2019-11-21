@@ -111,6 +111,8 @@ class LanguageModel(nn.Module):
                 output_lstm, hidden = self.rnn(embed, hidden)  # 1 x 1 x H
                 output = output_lstm[0]  # 1 x H
                 scores = self.scoring(output)  # V
+                print("score shape")
+                print(scores.shape)
                 # _, current_word = torch.max(scores, dim=1)  # 1
                 # generated_words.append(current_word)
                 generated_words.append(scores)
