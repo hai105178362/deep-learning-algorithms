@@ -25,7 +25,7 @@ batch_size = 80
 embed_size = 400
 embed_hidden = 1150
 hidden_size = 512
-drop_out = 0.3
+drop_out = 0.5
 
 
 #
@@ -88,13 +88,13 @@ class LanguageModel(nn.Module):
         self.embed_hidden = embed_hidden
         self.hidden_size = hidden_size
         self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
-        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=3, dropout=0.2).to(DEVICE)
+        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=3).to(DEVICE)
         self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
         self.dropout = torch.nn.Dropout(p=drop_out)
 
     def forward(self, x):
         result = self.embedding(x)
-        # result = self.embed_dropout(result)
+        result = self.embed_dropout(result)
         output, hidden = self.rnn(result)
         # output = self.dropout(output)
         output_lstm_flatten = output.view(-1, self.hidden_size)
@@ -109,13 +109,10 @@ class LanguageModel(nn.Module):
         output = output_lstm[-1]  # 1 x H
         scores = self.scoring(output)  # 1 x V
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
-        # generated_words.append(scores)
-        # return torch.cat(generated_words, dim=0)
         return scores
 
     def generate(self, seq, n_words):  # L x V
         cur_seq = seq
-        # print(cur_seq)
         generated_words = []
         embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
         hidden = None
@@ -125,16 +122,8 @@ class LanguageModel(nn.Module):
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
         generated_words.append(current_word)
         cur_seq = torch.cat((cur_seq[1:], current_word), dim=0)
-        # print(cur_seq)
-        # exit()
-        # generated_words = current_word
         if n_words > 1:
             for i in range(n_words - 1):
-                print(cur_seq)
-                # print(generated_words)
-                # print(cur_seq)
-                # print("current_word:",current_word)
-                # embed = self.embedding(current_word).unsqueeze(0)  # 1 x 1 x E
                 embed = self.embedding(cur_seq).unsqueeze(1)  # 1 x 1 x E
                 hidden = None
                 output_lstm, hidden = self.rnn(embed, hidden)  # 1 x 1 x H
@@ -266,9 +255,6 @@ class TestLanguageModel:
             for i in input:
                 cur_word = model.predict(i).cpu().numpy()
                 ans = np.append(ans, cur_word, axis=0)
-                # print("cur_word:",cur_word.shape)
-        # print("ans: ", ans[1:])
-        # print(len(ans[1:]))
         return ans[1:]
         raise NotImplemented
 
@@ -287,14 +273,8 @@ class TestLanguageModel:
             ans = np.zeros(shape=(1, forward))
             for i in input:
                 cur_word = model.generate(i, forward)
-                # cur_word = torch.argmax(cur_word, dim=1).cpu().numpy()
                 cur_word = cur_word.cpu().numpy()
-                # print(cur_word)
                 ans = np.append(ans, np.array([cur_word]), axis=0)
-                # exit()
-                # ans.append(cur_word)
-            # print(ans)
-            # print(len(ans[1:]))
             return ans[1:].astype(int)
             raise NotImplemented
 
