@@ -243,24 +243,6 @@ class TestLanguageModel:
         print("ans: ", ans[1:])
         print(len(ans[1:]))
         return ans[1:]
-        #     print("generating input...")
-        #     input = torch.LongTensor(inp).to(DEVICE)
-        #     print("input size:{}".format(input.shape))
-        #     print("getting result...")
-        #     result = model(input)
-        #     print("model result:", result.shape)
-        #     print("flattening...")
-        #     flat = result.view(-1, result.size(2))
-        #     print("flat:", flat.shape)
-        #     out = (torch.argmax(flat, axis=1))
-        #     print("out", out.shape)
-        #     print(out)
-        #     # ans.append(out[-1])
-        #     # print("Prediction:{}".format(vocab_human[out[-1]]))
-        # print("========PREDICTION=======")
-        # # print(ans)
-        # return out
-        # # return ans
         raise NotImplemented
 
     def generation(inp, forward, model):
@@ -272,18 +254,12 @@ class TestLanguageModel:
             :param forward: number of additional words to generate
             :return: generated words (batch size, forward)
         """
-        embedding = torch.nn.Embedding(vocab_size, embed_hidden, embed_size).to(DEVICE)
-        rnn = torch.nn.LSTM(input_size=embed_hidden, hidden_size=hidden_size, num_layers=1).to(DEVICE)
-        linear = torch.nn.Linear(in_features=hidden_size, out_features=vocab_size).to(DEVICE)
-
         with torch.no_grad():
             input = torch.LongTensor(inp).to(DEVICE)
             ans = []
             for i in input:
-                cur_word = model.generate(i, forward)
-                # print(cur_word)
-                # print(cur_word.data)
-                cur_word = (cur_word.cpu().numpy())[0]
+                cur_word = model.generate(i, 1).cpu().numpy()
+                ans = np.append(ans, cur_word, axis=0)
                 # exit()
                 ans.append(cur_word)
             print(ans)
