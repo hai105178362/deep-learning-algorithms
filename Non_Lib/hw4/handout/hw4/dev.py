@@ -233,16 +233,16 @@ class TestLanguageModel:
             :return: a np.ndarray of logits
         """
         print("starting prediction...")
-        ans = []
+        ans = np.zeros(shape=(1,vocab_size))
         input = torch.LongTensor(inp).to(DEVICE)
         with torch.no_grad():
             for i in input:
                 cur_word = model.generate(i, 1).cpu().numpy()
                 ans = np.append(ans, cur_word, axis=0)
                 # print("cur_word:",cur_word.shape)
-        print("ans: ", ans)
-        print(len(ans))
-        return ans
+        print("ans: ", ans[1:])
+        print(len(ans[1:]))
+        return ans[1:]
         #     print("generating input...")
         #     input = torch.LongTensor(inp).to(DEVICE)
         #     print("input size:{}".format(input.shape))
