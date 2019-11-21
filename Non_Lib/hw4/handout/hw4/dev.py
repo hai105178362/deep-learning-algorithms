@@ -127,9 +127,9 @@ class LanguageModelTrainer:
         epoch_loss = 0
         num_batches = 0
         for batch_num, (inputs, targets) in enumerate(self.loader):
-            cur_loss =self.train_batch(inputs, targets)
-            epoch_loss +=  cur_loss
-            if (batch_num + 1) % 10 == 0:
+            cur_loss = self.train_batch(inputs, targets)
+            epoch_loss += cur_loss
+            if (batch_num + 1) % 30 == 0:
                 print("batch:{}".format(batch_num + 1))
                 print("cur_loss is:", cur_loss)
         epoch_loss = epoch_loss / (batch_num + 1)
@@ -229,11 +229,10 @@ class TestLanguageModel:
         embed = torch.nn.Embedding(vocab_size, embed_hidden, embed_size).to(DEVICE)
         rnn = torch.nn.LSTM(input_size=embed_hidden, hidden_size=hidden_size, num_layers=1).to(DEVICE)
         linear = torch.nn.Linear(in_features=hidden_size, out_features=vocab_size).to(DEVICE)
-        embedding = nn.Embedding(vocab_size, embed_size)
         generated_words = []
         with torch.no_grad():
             input = torch.LongTensor(inp).to(DEVICE)
-            embed = embedding(input).unsqueeze(1)  # L x 1 x E
+            embed = embed(input).unsqueeze(1)  # L x 1 x E
             hidden = None
             output_lstm, hidden = rnn(embed, hidden)  # L x 1 x H
             output = output_lstm[-1]  # 1 x H
