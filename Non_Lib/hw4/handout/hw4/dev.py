@@ -240,8 +240,8 @@ class TestLanguageModel:
                 cur_word = model.generate(i, 1).cpu().numpy()
                 ans = np.append(ans, cur_word, axis=0)
                 # print("cur_word:",cur_word.shape)
-        print("ans: ", ans[1:])
-        print(len(ans[1:]))
+        # print("ans: ", ans[1:])
+        # print(len(ans[1:]))
         return ans[1:]
         raise NotImplemented
 
@@ -264,8 +264,8 @@ class TestLanguageModel:
                 ans = np.append(ans, np.array([cur_word]), axis=0)
                 # exit()
                 # ans.append(cur_word)
-            print(ans)
-            print(len(ans[1:]))
+            # print(ans)
+            # print(len(ans[1:]))
             return ans[1:].astype(int)
             raise NotImplemented
 
