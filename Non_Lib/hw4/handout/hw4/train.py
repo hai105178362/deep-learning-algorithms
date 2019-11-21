@@ -106,7 +106,7 @@ class LanguageModel(nn.Module):
         self.dropout4 = torch.nn.Dropout(p=drop_out[3]).to(DEVICE)
         # torch.nn.init.normal(self.embedding.weight, mean=0, std=1)
         self.embedding.weight.data.normal_(-1.0, 1.0)
-        self.rnn.weight.data.normal_(-1.0 / np.sqrt(hidden_size), 1.0 / np.sqrt(hidden_size))
+        # self.rnn.weight.data.normal_(-1.0 / np.sqrt(hidden_size), 1.0 / np.sqrt(hidden_size))
         # torch.nn.init.xavier_uniform(self.embedding.weight)
         # torch.nn.init.
 
