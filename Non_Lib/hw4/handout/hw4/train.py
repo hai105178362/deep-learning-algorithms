@@ -24,8 +24,9 @@ vocab_size = len(vocab)
 batch_size = 80
 embed_size = 400
 embed_hidden = 1150
-hidden_size = 1024
-drop_out = [0.4, 0.3, 0.4, 0.1]
+hidden_size = 512
+# drop_out = [0.4, 0.3, 0.4, 0.1]
+drop_out = [0.2, 0.2, 0.2, 0.1]
 
 
 #
@@ -134,7 +135,6 @@ class LanguageModel(nn.Module):
 
         # x = self.dropout1(seq)
         embed = self.embedding(seq).unsqueeze(1)
-        embed = self.dropout1(embed)
         output = self.runall(embed)
         output = output[-1]
         # embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
