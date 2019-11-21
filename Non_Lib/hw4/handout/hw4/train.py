@@ -91,7 +91,7 @@ class LanguageModel(nn.Module):
         self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=1).to(DEVICE)
         self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
         self.dropout1 = torch.nn.Dropout(p=drop_out[0])
-        self.dropout2 = torch.nn.Dropout2(p=drop_out[-1])
+        self.dropout2 = torch.nn.Dropout(p=drop_out[-1])
         self.dropout3 = torch.nn.Dropout(p=drop_out[1])
         self.dropout4 = self.dropout1
 
