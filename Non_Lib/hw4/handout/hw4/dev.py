@@ -20,6 +20,11 @@ fixtures_gen_test = np.load('../fixtures/generation_test.npy', allow_pickle=True
 vocab = np.load('../dataset/vocab.npy', allow_pickle=True)
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 dataset = train_data
+vocab_size = len(vocab)
+batch_size = 80
+embed_size = 400
+embed_hidden = 1150
+hidden_size = 256
 
 
 class LanguageModelDataLoader(DataLoader):
@@ -70,10 +75,10 @@ class LanguageModel(nn.Module):
     def __init__(self, vocab_size):
         super(LanguageModel, self).__init__()
         self.vocab_size = vocab_size
-        self.batch_size = 80
-        self.embed_size = 400
-        self.embed_hidden = 1150
-        self.hidden_size = 256
+        self.batch_size = batch_size
+        self.embed_size = embed_size
+        self.embed_hidden = embed_hidden
+        self.hidden_size = hidden_size
         self.embed = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
         self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=1).to(DEVICE)
         self.linear = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
@@ -123,8 +128,8 @@ class LanguageModelTrainer:
         num_batches = 0
         for batch_num, (inputs, targets) in enumerate(self.loader):
             epoch_loss += self.train_batch(inputs, targets)
-            if (batch_num+1)%10 == 0:
-                print("batch:{}".format(batch_num))
+            if (batch_num + 1) % 10 == 0:
+                print("batch:{}".format(batch_num + 1))
                 print("loss is:", epoch_loss)
         epoch_loss = epoch_loss / (batch_num + 1)
         # epoch_loss.backward()
@@ -206,7 +211,7 @@ class TestLanguageModel:
             result = model(input)
             flat = result.view(-1, result.size(2))
             # print(flat)
-            out = (torch.argmax(flat,axis=1))
+            out = (torch.argmax(flat, axis=1))
             return vocab_human[out[-1]]
         raise NotImplemented
 
@@ -219,6 +224,27 @@ class TestLanguageModel:
             :param forward: number of additional words to generate
             :return: generated words (batch size, forward)
         """
+        embed = torch.nn.Embedding(vocab_size, embed_hidden, embed_size).to(DEVICE)
+        rnn = torch.nn.LSTM(input_size=embed_hidden, hidden_size=hidden_size, num_layers=1).to(DEVICE)
+        linear = torch.nn.Linear(in_features=hidden_size, out_features=vocab_size).to(DEVICE)
+        embedding = nn.Embedding(vocab_size, embed_size)
+        generated_words = []
+        embed = embedding(inp).unsqueeze(1)  # L x 1 x E
+        hidden = None
+        output_lstm, hidden = rnn(embed, hidden)  # L x 1 x H
+        output = output_lstm[-1]  # 1 x H
+        scores = linear(output)  # 1 x V
+        _, current_word = torch.max(scores, dim=1)  # 1 x 1
+        generated_words.append(current_word)
+        if forward > 1:
+            for i in range(forward - 1):
+                embed = embedding(current_word).unsqueeze(0)  # 1 x 1 x E
+                output_lstm, hidden = rnn(embed, hidden)  # 1 x 1 x H
+                output = output_lstm[0]  # 1 x H
+                scores = linear(output)  # V
+                _, current_word = torch.max(scores, dim=1)  # 1
+                generated_words.append(current_word)
+        return torch.cat(generated_words, dim=0)
         raise NotImplemented
 
 
