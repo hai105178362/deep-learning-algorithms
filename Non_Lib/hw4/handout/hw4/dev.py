@@ -127,10 +127,11 @@ class LanguageModelTrainer:
         epoch_loss = 0
         num_batches = 0
         for batch_num, (inputs, targets) in enumerate(self.loader):
-            epoch_loss += self.train_batch(inputs, targets)
+            cur_loss =self.train_batch(inputs, targets)
+            epoch_loss +=  cur_loss
             if (batch_num + 1) % 10 == 0:
                 print("batch:{}".format(batch_num + 1))
-                print("loss is:", epoch_loss)
+                print("cur_loss is:", cur_loss)
         epoch_loss = epoch_loss / (batch_num + 1)
         # epoch_loss.backward()
         # self.optimizer.step()
@@ -212,6 +213,7 @@ class TestLanguageModel:
             flat = result.view(-1, result.size(2))
             # print(flat)
             out = (torch.argmax(flat, axis=1))
+            print("Prediction:{}".format(vocab_human[out[-1]]))
             return vocab_human[out[-1]]
         raise NotImplemented
 
@@ -229,23 +231,25 @@ class TestLanguageModel:
         linear = torch.nn.Linear(in_features=hidden_size, out_features=vocab_size).to(DEVICE)
         embedding = nn.Embedding(vocab_size, embed_size)
         generated_words = []
-        embed = embedding(inp).unsqueeze(1)  # L x 1 x E
-        hidden = None
-        output_lstm, hidden = rnn(embed, hidden)  # L x 1 x H
-        output = output_lstm[-1]  # 1 x H
-        scores = linear(output)  # 1 x V
-        _, current_word = torch.max(scores, dim=1)  # 1 x 1
-        generated_words.append(current_word)
-        if forward > 1:
-            for i in range(forward - 1):
-                embed = embedding(current_word).unsqueeze(0)  # 1 x 1 x E
-                output_lstm, hidden = rnn(embed, hidden)  # 1 x 1 x H
-                output = output_lstm[0]  # 1 x H
-                scores = linear(output)  # V
-                _, current_word = torch.max(scores, dim=1)  # 1
-                generated_words.append(current_word)
-        return torch.cat(generated_words, dim=0)
-        raise NotImplemented
+        with torch.no_grad():
+            input = torch.LongTensor(inp).to(DEVICE)
+            embed = embedding(input).unsqueeze(1)  # L x 1 x E
+            hidden = None
+            output_lstm, hidden = rnn(embed, hidden)  # L x 1 x H
+            output = output_lstm[-1]  # 1 x H
+            scores = linear(output)  # 1 x V
+            _, current_word = torch.max(scores, dim=1)  # 1 x 1
+            generated_words.append(current_word)
+            if forward > 1:
+                for i in range(forward - 1):
+                    embed = embedding(current_word).unsqueeze(0)  # 1 x 1 x E
+                    output_lstm, hidden = rnn(embed, hidden)  # 1 x 1 x H
+                    output = output_lstm[0]  # 1 x H
+                    scores = linear(output)  # V
+                    _, current_word = torch.max(scores, dim=1)  # 1
+                    generated_words.append(current_word)
+            return torch.cat(generated_words, dim=0)
+            raise NotImplemented
 
 
 # TODO: define other hyperparameters here
