@@ -75,6 +75,16 @@ with open('../dataset/vocab.csv') as f:
     vocab_human = np.array([i[1] for i in fo][1:])
 
 
+def weights_init(m):
+    classname = m.__class__.__name__
+
+    if classname.find('Embedding') != -1:
+        m.weight.data.normal_(-1.0, 1.0)
+    else:
+        m.weight.data.normal_(-1.0 / np.sqrt(hidden_size), 1.0 / np.sqrt(hidden_size))
+        m.bias.data.fill_(0)
+
+
 class LanguageModel(nn.Module):
     """
         TODO: Define your model here
@@ -88,16 +98,19 @@ class LanguageModel(nn.Module):
         self.embed_hidden = embed_hidden
         self.hidden_size = hidden_size
         self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
-        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=1,dropout=0.65).to(DEVICE)
+        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=3, dropout=0.65).to(DEVICE)
         self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
         self.dropout1 = torch.nn.Dropout(p=drop_out[0]).to(DEVICE)
         self.dropout2 = torch.nn.Dropout(p=drop_out[1]).to(DEVICE)
         self.dropout3 = torch.nn.Dropout(p=drop_out[2]).to(DEVICE)
         self.dropout4 = torch.nn.Dropout(p=drop_out[3]).to(DEVICE)
+        # torch.nn.init.normal(self.embedding.weight, mean=0, std=1)
+        self.embedding.weight.data.normal_(-1.0, 1.0)
+        self.rnn.weight.data.normal_(-1.0 / np.sqrt(hidden_size), 1.0 / np.sqrt(hidden_size))
+        # torch.nn.init.xavier_uniform(self.embedding.weight)
+        # torch.nn.init.
 
-    def forward(self, x):
-        # x = self.dropout1(x)
-        embed = self.embedding(x)
+    def runall(self, embed):
         embed = self.dropout1(embed)
         output, hidden = self.rnn(embed)
         output = self.dropout2(output)
@@ -105,6 +118,12 @@ class LanguageModel(nn.Module):
         output = self.dropout3(output)
         output, hidden = self.rnn(embed)
         output = self.dropout4(output)
+        return output
+
+    def forward(self, x):
+        # x = self.dropout1(x)
+        embed = self.embedding(x)
+        output = self.runall(embed)
         output_lstm_flatten = output.view(-1, self.hidden_size)
         output_flatten = self.scoring(output_lstm_flatten)
         return output_flatten.view(-1, self.batch_size, self.vocab_size)
@@ -115,12 +134,7 @@ class LanguageModel(nn.Module):
         # x = self.dropout1(seq)
         embed = self.embedding(seq).unsqueeze(1)
         embed = self.dropout1(embed)
-        output, hidden = self.rnn(embed)
-        output = self.dropout2(output)
-        output, hidden = self.rnn(embed)
-        output = self.dropout3(output)
-        output, hidden = self.rnn(embed)
-        output = self.dropout4(output)
+        output = self.runall(embed)
         output = output[-1]
         # embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
         # embed = self.dropout(embed)
@@ -134,13 +148,7 @@ class LanguageModel(nn.Module):
         cur_seq = seq
         generated_words = []
         embed = self.embedding(cur_seq).unsqueeze(1)
-        embed = self.dropout1(embed)
-        output, hidden = self.rnn(embed)
-        output = self.dropout2(output)
-        output, hidden = self.rnn(embed)
-        output = self.dropout3(output)
-        output, hidden = self.rnn(embed)
-        output = self.dropout4(output)
+        output = self.runall(embed)
         output = output[-1]
         # embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
         # embed = self.dropout(embed)
@@ -153,13 +161,7 @@ class LanguageModel(nn.Module):
         if n_words > 1:
             for i in range(n_words - 1):
                 embed = self.embedding(cur_seq).unsqueeze(1)
-                embed = self.dropout1(embed)
-                output, hidden = self.rnn(embed)
-                output = self.dropout2(output)
-                output, hidden = self.rnn(embed)
-                output = self.dropout3(output)
-                output, hidden = self.rnn(embed)
-                output = self.dropout4(output)
+                output = self.runall(embed)
                 output = output[-1]
                 _, current_word = torch.max(scores, dim=1)  # 1
                 cur_seq = torch.cat((cur_seq[1:], current_word), dim=0)
@@ -332,6 +334,7 @@ loader = LanguageModelDataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle
 
 print("Model Init..")
 model = LanguageModel(len(vocab))
+# model.apply(weights_init)
 print("Trainer Init...")
 trainer = LanguageModelTrainer(model=model, loader=loader, max_epochs=NUM_EPOCHS, run_id=run_id)
 best_nll = 1e30
