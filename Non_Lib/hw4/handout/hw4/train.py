@@ -24,7 +24,7 @@ vocab_size = len(vocab)
 batch_size = 80
 embed_size = 400
 embed_hidden = 1150
-hidden_size = 256
+hidden_size = 512
 drop_out = [0.4, 0.3, 0.4, 0.1]
 
 
@@ -105,7 +105,7 @@ class LanguageModel(nn.Module):
         self.dropout3 = torch.nn.Dropout(p=drop_out[2]).to(DEVICE)
         self.dropout4 = torch.nn.Dropout(p=drop_out[3]).to(DEVICE)
         # torch.nn.init.normal(self.embedding.weight, mean=0, std=1)
-        self.embedding.weight.data.normal_(-1.0, 1.0)
+        self.embedding.weight.data.normal_(-.1, 0.1)
         # self.rnn.weight.data.normal_(-1.0 / np.sqrt(hidden_size), 1.0 / np.sqrt(hidden_size))
         # torch.nn.init.xavier_uniform(self.embedding.weight)
         # torch.nn.init.
@@ -198,8 +198,8 @@ class LanguageModelTrainer:
         self.run_id = run_id
 
         # TODO: Define your optimizer and criterion here
-        # self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-6)
-        self.optimizer = torch.optim.ASGD(model.parameters(), lr=1e-2, weight_decay=1e-5)
+        self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-6)
+        # self.optimizer = torch.optim.ASGD(model.parameters(), lr=0.8e-1, weight_decay=1e-6)
         self.criterion = nn.CrossEntropyLoss().to(DEVICE)
         # self.criterion = nn.NLLLoss().to(DEVICE)
 
