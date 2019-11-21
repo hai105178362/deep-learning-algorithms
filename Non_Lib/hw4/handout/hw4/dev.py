@@ -214,11 +214,12 @@ class TestLanguageModel:
             # for i in input:
             result = model(torch.LongTensor(input).unsqueeze(0))
             flat = result.view(-1, result.size(2))
-            # print(flat)
+            print("flat:", flat.shape)
             out = (torch.argmax(flat, axis=1))
+            print("out", out.shape)
             print(out)
-                # ans.append(out[-1])
-                # print("Prediction:{}".format(vocab_human[out[-1]]))
+            # ans.append(out[-1])
+            # print("Prediction:{}".format(vocab_human[out[-1]]))
         print("========PREDICTION=======")
         # print(ans)
         return out
