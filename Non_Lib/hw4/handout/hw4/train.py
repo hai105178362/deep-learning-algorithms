@@ -281,7 +281,7 @@ class TestLanguageModel:
 
 # TODO: define other hyperparameters here
 
-NUM_EPOCHS = 10
+NUM_EPOCHS = 50
 BATCH_SIZE = 80
 run_id = str(int(time.time()))
 if not os.path.exists('./experiments'):
