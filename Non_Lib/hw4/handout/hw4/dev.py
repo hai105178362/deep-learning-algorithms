@@ -241,8 +241,8 @@ class TestLanguageModel:
             generated_words.append(current_word)
             if forward > 1:
                 for i in range(forward - 1):
-                    # embed = embedding(current_word).unsqueeze(0)  # 1 x 1 x E
-                    embed = embedding(current_word)  # 1 x 1 x E
+                    embed = embedding(current_word).unsqueeze(0)  # 1 x 1 x E
+                    # embed = embedding(current_word)  # 1 x 1 x E
                     output_lstm, hidden = rnn(embed, hidden)  # 1 x 1 x H
                     output = output_lstm[0]  # 1 x H
                     scores = linear(output)  # V
