@@ -226,13 +226,13 @@ class TestLanguageModel:
             :param forward: number of additional words to generate
             :return: generated words (batch size, forward)
         """
-        embed = torch.nn.Embedding(vocab_size, embed_hidden, embed_size).to(DEVICE)
+        embedding = torch.nn.Embedding(vocab_size, embed_hidden, embed_size).to(DEVICE)
         rnn = torch.nn.LSTM(input_size=embed_hidden, hidden_size=hidden_size, num_layers=1).to(DEVICE)
         linear = torch.nn.Linear(in_features=hidden_size, out_features=vocab_size).to(DEVICE)
         generated_words = []
         with torch.no_grad():
             input = torch.LongTensor(inp).to(DEVICE)
-            embed = embed(input)  # L x 1 x E
+            embed = embedding(input)  # L x 1 x E
             hidden = None
             output_lstm, hidden = rnn(embed, hidden)  # L x 1 x H
             output = output_lstm[-1]  # 1 x H
@@ -241,7 +241,8 @@ class TestLanguageModel:
             generated_words.append(current_word)
             if forward > 1:
                 for i in range(forward - 1):
-                    embed = embedding(current_word).unsqueeze(0)  # 1 x 1 x E
+                    # embed = embedding(current_word).unsqueeze(0)  # 1 x 1 x E
+                    embed = embedding(current_word)  # 1 x 1 x E
                     output_lstm, hidden = rnn(embed, hidden)  # 1 x 1 x H
                     output = output_lstm[0]  # 1 x H
                     scores = linear(output)  # V
