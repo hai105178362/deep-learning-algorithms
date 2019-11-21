@@ -107,14 +107,15 @@ class LanguageModel(nn.Module):
         return scores
 
     def generate(self, seq, n_words):  # L x V
+        generated_words = []
         embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
         hidden = None
         output_lstm, hidden = self.rnn(embed, hidden)  # L x 1 x H
         output = output_lstm[-1]  # 1 x H
         scores = self.scoring(output)  # 1 x V
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
-        # generated_words.append(current_word)
-        generated_words = current_word
+        generated_words.append(current_word)
+        # generated_words = current_word
         if n_words > 1:
             for i in range(n_words - 1):
                 # print("current_word:",current_word)
@@ -152,7 +153,8 @@ class LanguageModelTrainer:
         self.run_id = run_id
 
         # TODO: Define your optimizer and criterion here
-        self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-6)
+        # self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-6)
+        self.optimizer = torch.optim.ASGD(model.parameters(), lr=1e-3, weight_decay=1e-5)
         self.criterion = nn.CrossEntropyLoss().to(DEVICE)
         # self.criterion = nn.NLLLoss().to(DEVICE)
 
