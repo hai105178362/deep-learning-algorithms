@@ -79,20 +79,40 @@ class LanguageModel(nn.Module):
         self.embed_size = embed_size
         self.embed_hidden = embed_hidden
         self.hidden_size = hidden_size
-        self.embed = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
+        self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
         self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=1).to(DEVICE)
-        self.linear = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
+        self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
 
     def forward(self, x):
         # print("Embedding...")
-        result = self.embed(x)
+        result = self.embedding(x)
         output, hidden = self.rnn(result)
         # print("flattening..")
         output_lstm_flatten = output.view(-1, self.hidden_size)
-        output_flatten = self.linear(output_lstm_flatten)
+        output_flatten = self.scoring(output_lstm_flatten)
         return output_flatten.view(-1, self.batch_size, self.vocab_size)
         # Feel free to add extra arguments to forward (like an argument to pass in the hiddens)
         raise NotImplemented
+
+    def generate(self, seq, n_words):  # L x V
+        # performs greedy search to extract and return words (one sequence).
+        generated_words = []
+        embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
+        hidden = None
+        output_lstm, hidden = self.rnn(embed, hidden)  # L x 1 x H
+        output = output_lstm[-1]  # 1 x H
+        scores = self.scoring(output)  # 1 x V
+        _, current_word = torch.max(scores, dim=1)  # 1 x 1
+        generated_words.append(current_word)
+        if n_words > 1:
+            for i in range(n_words - 1):
+                embed = self.embedding(current_word).unsqueeze(0)  # 1 x 1 x E
+                output_lstm, hidden = self.rnn(embed, hidden)  # 1 x 1 x H
+                output = output_lstm[0]  # 1 x H
+                scores = self.scoring(output)  # V
+                _, current_word = torch.max(scores, dim=1)  # 1
+                generated_words.append(current_word)
+        return torch.cat(generated_words, dim=0)
 
 
 # model trainer
@@ -210,25 +230,31 @@ class TestLanguageModel:
         """
         print("starting prediction...")
         ans = []
+        input = torch.LongTensor(inp).to(DEVICE)
         with torch.no_grad():
-            print("generating input...")
-            input = torch.LongTensor(inp).to(DEVICE)
-            print("input size:{}".format(input.shape))
-            print("getting result...")
-            result = model(input)
-            print("model result:", result.shape)
-            print("flattening...")
-            flat = result.view(-1, result.size(2))
-            print("flat:", flat.shape)
-            out = (torch.argmax(flat, axis=1))
-            print("out", out.shape)
-            print(out)
-            # ans.append(out[-1])
-            # print("Prediction:{}".format(vocab_human[out[-1]]))
-        print("========PREDICTION=======")
-        # print(ans)
-        return out
-        # return ans
+            for i in input:
+                cur_word = model.generate(i,1)
+                ans.append(cur_word)
+                print("cur_word:",cur_word)
+        return  ans
+        #     print("generating input...")
+        #     input = torch.LongTensor(inp).to(DEVICE)
+        #     print("input size:{}".format(input.shape))
+        #     print("getting result...")
+        #     result = model(input)
+        #     print("model result:", result.shape)
+        #     print("flattening...")
+        #     flat = result.view(-1, result.size(2))
+        #     print("flat:", flat.shape)
+        #     out = (torch.argmax(flat, axis=1))
+        #     print("out", out.shape)
+        #     print(out)
+        #     # ans.append(out[-1])
+        #     # print("Prediction:{}".format(vocab_human[out[-1]]))
+        # print("========PREDICTION=======")
+        # # print(ans)
+        # return out
+        # # return ans
         raise NotImplemented
 
     def generation(inp, forward, model):
