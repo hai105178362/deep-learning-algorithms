@@ -122,7 +122,7 @@ class LanguageModel(nn.Module):
         scores = self.scoring(output)  # 1 x V
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
         generated_words.append(current_word)
-        cur_seq = torch.cat((seq[1:],current_word),dim=0)
+        cur_seq = torch.cat((cur_seq[1:],current_word),dim=0)
         # print(cur_seq)
         # exit()
         # generated_words = current_word
@@ -138,7 +138,7 @@ class LanguageModel(nn.Module):
                 output = output_lstm[0]  # 1 x H
                 scores = self.scoring(output)  # V
                 _, current_word = torch.max(scores, dim=1)  # 1
-                cur_seq = torch.cat((seq[1:], current_word), dim=0)
+                cur_seq = torch.cat((cur_seq[1:], current_word), dim=0)
                 generated_words.append(current_word)
                 # generated_words = torch.cat((generated_words, current_word),0)
         return torch.cat(generated_words, dim=0)
