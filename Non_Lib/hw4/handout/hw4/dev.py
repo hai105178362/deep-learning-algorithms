@@ -214,6 +214,7 @@ class TestLanguageModel:
             flat = result.view(-1, result.size(2))
             # print(flat)
             out = (torch.argmax(flat, axis=1))
+            print(out)
             ans.append(out[-1])
             # print("Prediction:{}".format(vocab_human[out[-1]]))
         print("========PREDICTION=======")
@@ -248,8 +249,8 @@ class TestLanguageModel:
                 # generated_words.append(current_word)
                 nwords = forward
                 if nwords > 1:
-                    for i in range(nwords - 1):
-                        embed = embedding(current_word).unsqueeze(0)  # 1 x 1 x E
+                    for j in range(nwords - 1):
+                        embed = embedding(i).unsqueeze(0)  # 1 x 1 x E
                         # embed = embedding(current_word)  # 1 x 1 x E
                         output_lstm, hidden = rnn(embed, hidden)  # 1 x 1 x H
                         output = output_lstm[0]  # 1 x H
