@@ -214,7 +214,7 @@ class TestLanguageModel:
             flat = result.view(-1, result.size(2))
             # print(flat)
             out = (torch.argmax(flat, axis=1))
-            ans.append(out[-1])
+            ans.append(out[-1].numpy())
             # print("Prediction:{}".format(vocab_human[out[-1]]))
         print("========PREDICTION=======")
         print(ans)
@@ -233,28 +233,33 @@ class TestLanguageModel:
         embedding = torch.nn.Embedding(vocab_size, embed_hidden, embed_size).to(DEVICE)
         rnn = torch.nn.LSTM(input_size=embed_hidden, hidden_size=hidden_size, num_layers=1).to(DEVICE)
         linear = torch.nn.Linear(in_features=hidden_size, out_features=vocab_size).to(DEVICE)
-        generated_words = []
+
         with torch.no_grad():
             input = torch.LongTensor(inp).to(DEVICE)
-            embed = embedding(input)  # L x 1 x E
-            hidden = None
-            output_lstm, hidden = rnn(embed, hidden)  # L x 1 x H
-            output = output_lstm[-1]  # 1 x H
-            scores = linear(output)  # 1 x V
-            _, current_word = torch.max(scores, dim=1)  # 1 x 1
-            generated_words.append(current_word)
-            if forward > 1:
-                for i in range(forward - 1):
-                    embed = embedding(current_word).unsqueeze(0)  # 1 x 1 x E
-                    # embed = embedding(current_word)  # 1 x 1 x E
-                    output_lstm, hidden = rnn(embed, hidden)  # 1 x 1 x H
-                    output = output_lstm[0]  # 1 x H
-                    scores = linear(output)  # V
-                    _, current_word = torch.max(scores, dim=1)  # 1
-                    generated_words.append(current_word)
+            ans = []
+            for i in input:
+                generated_words = []
+                embed = embedding(i)  # L x 1 x E
+                hidden = None
+                output_lstm, hidden = rnn(embed, hidden)  # L x 1 x H
+                output = output_lstm[-1]  # 1 x H
+                scores = linear(output)  # 1 x V
+                _, current_word = torch.max(scores, dim=1)  # 1 x 1
+                generated_words.append(current_word)
+                if forward > 1:
+                    for i in range(forward - 1):
+                        embed = embedding(current_word).unsqueeze(0)  # 1 x 1 x E
+                        # embed = embedding(current_word)  # 1 x 1 x E
+                        output_lstm, hidden = rnn(embed, hidden)  # 1 x 1 x H
+                        output = output_lstm[0]  # 1 x H
+                        scores = linear(output)  # V
+                        _, current_word = torch.max(scores, dim=1)  # 1
+                        generated_words.append(current_word)
+                generated_words = torch.cat(generated_words, dim=0)
+                ans.append(generated_words.numpy())
             print("========GENERATION=======")
             print(torch.cat(generated_words, dim=0))
-            return torch.cat(generated_words, dim=0)
+            return ans
             raise NotImplemented
 
 
