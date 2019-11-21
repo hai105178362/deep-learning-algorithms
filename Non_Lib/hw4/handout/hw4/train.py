@@ -128,10 +128,11 @@ class LanguageModel(nn.Module):
         # generated_words = current_word
         if n_words > 1:
             for i in range(n_words - 1):
-                print(cur_seq)
+                # print(cur_seq)
                 # print("current_word:",current_word)
                 # embed = self.embedding(current_word).unsqueeze(0)  # 1 x 1 x E
                 embed = self.embedding(cur_seq).unsqueeze(0)  # 1 x 1 x E
+                hidden = None
                 output_lstm, hidden = self.rnn(embed, hidden)  # 1 x 1 x H
                 output = output_lstm[0]  # 1 x H
                 scores = self.scoring(output)  # V
