@@ -214,7 +214,7 @@ class TestLanguageModel:
             flat = result.view(-1, result.size(2))
             # print(flat)
             out = (torch.argmax(flat, axis=1))
-            ans.append(out[-1].numpy())
+            ans.append(out[-1].deatch().cpu().clone().numpy())
             # print("Prediction:{}".format(vocab_human[out[-1]]))
         print("========PREDICTION=======")
         print(ans)
@@ -256,7 +256,7 @@ class TestLanguageModel:
                         _, current_word = torch.max(scores, dim=1)  # 1
                         generated_words.append(current_word)
                 generated_words = torch.cat(generated_words, dim=0)
-                ans.append(generated_words.numpy())
+                ans.append(generated_words.deatch().cpu().clone().numpy())
             print("========GENERATION=======")
             print(torch.cat(generated_words, dim=0))
             return ans
