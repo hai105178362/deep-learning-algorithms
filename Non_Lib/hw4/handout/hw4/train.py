@@ -91,14 +91,16 @@ class LanguageModel(nn.Module):
         self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=1,dropout=0.65).to(DEVICE)
         self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
         self.dropout1 = torch.nn.Dropout(p=drop_out[0]).to(DEVICE)
-        self.dropout2 = torch.nn.Dropout(p=drop_out[-1]).to(DEVICE)
-        self.dropout3 = torch.nn.Dropout(p=drop_out[1]).to(DEVICE)
-        self.dropout4 = self.dropout1
+        self.dropout2 = torch.nn.Dropout(p=drop_out[1]).to(DEVICE)
+        self.dropout3 = torch.nn.Dropout(p=drop_out[2]).to(DEVICE)
+        self.dropout4 = torch.nn.Dropout(p=drop_out[3]).to(DEVICE)
 
     def forward(self, x):
         # x = self.dropout1(x)
         embed = self.embedding(x)
-        embed = self.dropout2(embed)
+        embed = self.dropout1(embed)
+        output, hidden = self.rnn(embed)
+        output = self.dropout2(output)
         output, hidden = self.rnn(embed)
         output = self.dropout3(output)
         output, hidden = self.rnn(embed)
@@ -112,7 +114,9 @@ class LanguageModel(nn.Module):
 
         # x = self.dropout1(seq)
         embed = self.embedding(seq).unsqueeze(1)
-        embed = self.dropout2(embed)
+        embed = self.dropout1(embed)
+        output, hidden = self.rnn(embed)
+        output = self.dropout2(output)
         output, hidden = self.rnn(embed)
         output = self.dropout3(output)
         output, hidden = self.rnn(embed)
@@ -130,7 +134,9 @@ class LanguageModel(nn.Module):
         cur_seq = seq
         generated_words = []
         embed = self.embedding(cur_seq).unsqueeze(1)
-        embed = self.dropout2(embed)
+        embed = self.dropout1(embed)
+        output, hidden = self.rnn(embed)
+        output = self.dropout2(output)
         output, hidden = self.rnn(embed)
         output = self.dropout3(output)
         output, hidden = self.rnn(embed)
@@ -143,16 +149,20 @@ class LanguageModel(nn.Module):
         scores = self.scoring(output)  # 1 x V
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
         generated_words.append(current_word)
-        cur_seq = torch.cat((cur_seq, current_word), dim=0)
+        cur_seq = torch.cat((cur_seq[1:], current_word), dim=0)
         if n_words > 1:
             for i in range(n_words - 1):
-                embed = self.embedding(cur_seq).unsqueeze(1)  # 1 x 1 x E
-                hidden = None
-                output_lstm, hidden = self.rnn(embed, hidden)  # 1 x 1 x H
-                output = output_lstm[0]  # 1 x H
-                scores = self.scoring(output)  # V
+                embed = self.embedding(cur_seq).unsqueeze(1)
+                embed = self.dropout1(embed)
+                output, hidden = self.rnn(embed)
+                output = self.dropout2(output)
+                output, hidden = self.rnn(embed)
+                output = self.dropout3(output)
+                output, hidden = self.rnn(embed)
+                output = self.dropout4(output)
+                output = output[-1]
                 _, current_word = torch.max(scores, dim=1)  # 1
-                cur_seq = torch.cat((cur_seq, current_word), dim=0)
+                cur_seq = torch.cat((cur_seq[1:], current_word), dim=0)
                 generated_words.append(current_word)
                 # generated_words = torch.cat((generated_words, current_word),0)
         return torch.cat(generated_words, dim=0)
