@@ -24,7 +24,7 @@ vocab_size = len(vocab)
 batch_size = 80
 embed_size = 400
 embed_hidden = 1150
-hidden_size = 256
+hidden_size = 1024
 drop_out = [0.4, 0.3, 0.4, 0.1]
 
 
