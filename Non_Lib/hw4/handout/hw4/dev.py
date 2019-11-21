@@ -278,6 +278,8 @@ class TestLanguageModel:
             for i in input:
                 cur_word = model.generate(i,forward)
                 print(cur_word)
+                print(cur_word.data)
+                print(cur_word.cpu().numpy())
                 exit()
                 ans.append(cur_word)
             print(ans)
