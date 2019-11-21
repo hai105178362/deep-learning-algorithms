@@ -155,7 +155,7 @@ class LanguageModelTrainer:
             epoch_loss += cur_loss
             if (batch_num + 1) % 30 == 0:
                 print("batch:{}".format(batch_num + 1))
-                print("cur_loss is:", cur_loss)
+                print("cur_loss is:", cur_loss.item())
         epoch_loss = epoch_loss / (batch_num + 1)
         # epoch_loss.backward()
         # self.optimizer.step()
@@ -238,7 +238,7 @@ class TestLanguageModel:
         with torch.no_grad():
             for i in input:
                 cur_word = model.generate(i,1).cpu().numpy()
-                ans.append(cur_word[0].values())
+                ans.append(cur_word.ravel())
                 # print("cur_word:",cur_word.shape)
         print("ans: ",ans)
         print(len(ans))
