@@ -276,7 +276,9 @@ class TestLanguageModel:
             input = torch.LongTensor(inp).to(DEVICE)
             ans = []
             for i in input:
-                cur_word = model.generate(i,forward).item()
+                cur_word = model.generate(i,forward)
+                print(cur_word)
+                exit()
                 ans.append(cur_word)
             print(ans)
             print(len(ans))
