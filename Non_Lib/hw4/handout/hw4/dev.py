@@ -127,8 +127,8 @@ class LanguageModelTrainer:
             print("loss is:", epoch_loss)
         # print("Batch Done.")
         epoch_loss = epoch_loss / (batch_num + 1)
-        epoch_loss.backward()
-        self.optimizer.step()
+        # epoch_loss.backward()
+        # self.optimizer.step()
         self.epochs += 1
         print('[TRAIN]  Epoch [%d/%d]   Loss: %.4f'
               % (self.epochs + 1, self.max_epochs, epoch_loss))
@@ -148,8 +148,6 @@ class LanguageModelTrainer:
         #     print(vocab_human[out[-1]])
         # exit()
         result = self.model(inputs)
-
-        # print(torch.argmax(out,dim=1))
         loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
         loss.backward()
         self.optimizer.step()
