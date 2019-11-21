@@ -9,7 +9,6 @@ from torch.utils.data import Dataset, DataLoader
 from tests import test_prediction, test_generation
 from helper import loader
 import csv
-import torchnlp
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
@@ -87,7 +86,6 @@ class LanguageModel(nn.Module):
         self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=3).to(DEVICE)
         self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
         self.embed_dropout = torch.nn.Dropout(p=embed_dropout)
-        self.locked_dropout = torchnlp.nn.LockedDropout(p=0.5)
 
     def locked_dropout(x, dropout=0.5, training=True):
         # same mask repeated across the sequence dimension
