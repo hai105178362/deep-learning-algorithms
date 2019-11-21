@@ -95,6 +95,18 @@ class LanguageModel(nn.Module):
         # Feel free to add extra arguments to forward (like an argument to pass in the hiddens)
         raise NotImplemented
 
+    def predict(self, seq, n_words):  # L x V
+        # performs greedy search to extract and return words (one sequence).
+        generated_words = []
+        embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
+        hidden = None
+        output_lstm, hidden = self.rnn(embed, hidden)  # L x 1 x H
+        output = output_lstm[-1]  # 1 x H
+        scores = self.scoring(output)  # 1 x V
+        _, current_word = torch.max(scores, dim=1)  # 1 x 1
+        generated_words.append(scores)
+        return torch.cat(generated_words, dim=0)
+
     def generate(self, seq, n_words):  # L x V
         # performs greedy search to extract and return words (one sequence).
         generated_words = []
@@ -106,16 +118,16 @@ class LanguageModel(nn.Module):
         # _, current_word = torch.max(scores, dim=1)  # 1 x 1
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
         # generated_words.append(current_word)
-        generated_words.append(scores)
+        generated_words.append(current_word)
         if n_words > 1:
             for i in range(n_words - 1):
                 embed = self.embedding(current_word).unsqueeze(0)  # 1 x 1 x E
                 output_lstm, hidden = self.rnn(embed, hidden)  # 1 x 1 x H
                 output = output_lstm[0]  # 1 x H
                 scores = self.scoring(output)  # V
-                # _, current_word = torch.max(scores, dim=1)  # 1
+                _, current_word = torch.max(scores, dim=1)  # 1
                 # generated_words.append(current_word)
-                generated_words.append(scores)
+                generated_words.append(current_word)
         return torch.cat(generated_words, dim=0)
 
 
@@ -237,7 +249,7 @@ class TestLanguageModel:
         input = torch.LongTensor(inp).to(DEVICE)
         with torch.no_grad():
             for i in input:
-                cur_word = model.generate(i, 1).cpu().numpy()
+                cur_word = model.predict(i, 1).cpu().numpy()
                 ans = np.append(ans, cur_word, axis=0)
                 # print("cur_word:",cur_word.shape)
         # print("ans: ", ans[1:])
@@ -260,7 +272,8 @@ class TestLanguageModel:
             ans = np.zeros(shape=(1, forward))
             for i in input:
                 cur_word = model.generate(i, forward)
-                cur_word = torch.argmax(cur_word, dim=1).cpu().numpy()
+                # cur_word = torch.argmax(cur_word, dim=1).cpu().numpy()
+                cur_word = cur_word.cpu().numpy()
                 # print(cur_word)
                 ans = np.append(ans, np.array([cur_word]), axis=0)
                 # exit()
