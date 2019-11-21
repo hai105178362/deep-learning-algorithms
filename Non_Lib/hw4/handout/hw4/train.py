@@ -107,6 +107,7 @@ class LanguageModel(nn.Module):
         return scores
 
     def generate(self, seq, n_words):  # L x V
+        cur_seq = seq
         generated_words = []
         embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
         hidden = None
@@ -115,16 +116,18 @@ class LanguageModel(nn.Module):
         scores = self.scoring(output)  # 1 x V
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
         generated_words.append(current_word)
+        cur_seq = torch.cat((seq[1:],current_word),dim=0)
         # generated_words = current_word
         if n_words > 1:
             for i in range(n_words - 1):
                 # print("current_word:",current_word)
                 # embed = self.embedding(current_word).unsqueeze(0)  # 1 x 1 x E
-                embed = self.embedding(current_word).unsqueeze(0)  # 1 x 1 x E
+                embed = self.embedding(cur_seq).unsqueeze(0)  # 1 x 1 x E
                 output_lstm, hidden = self.rnn(embed, hidden)  # 1 x 1 x H
                 output = output_lstm[0]  # 1 x H
                 scores = self.scoring(output)  # V
                 _, current_word = torch.max(scores, dim=1)  # 1
+                cur_seq = torch.cat((seq[1:], current_word), dim=0)
                 generated_words.append(current_word)
                 # generated_words = torch.cat((generated_words, current_word),0)
         return torch.cat(generated_words, dim=0)
@@ -154,7 +157,7 @@ class LanguageModelTrainer:
 
         # TODO: Define your optimizer and criterion here
         # self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-6)
-        self.optimizer = torch.optim.ASGD(model.parameters(), lr=1e-3, weight_decay=1e-5)
+        self.optimizer = torch.optim.ASGD(model.parameters(), lr=1e-2, weight_decay=1e-5)
         self.criterion = nn.CrossEntropyLoss().to(DEVICE)
         # self.criterion = nn.NLLLoss().to(DEVICE)
 

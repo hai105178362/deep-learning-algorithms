@@ -20,9 +20,9 @@ vocab = np.load('../dataset/vocab.npy', allow_pickle=True)
 
 # print(fixtures_pred['inp'].shape)
 # print(fixtures_pred['out'])
-print(fixtures_gen.shape)
 # print(fixtures_gen.shape)
-# print(fixtures_ge)
+# print(fixtures_gen.shape)
+print(fixtures_gen_test)
 # inp = fixtures_pred_test['inp']
 # for i in inp:
 #     inputs = torch.LongTensor(i).unsqueeze(0)
