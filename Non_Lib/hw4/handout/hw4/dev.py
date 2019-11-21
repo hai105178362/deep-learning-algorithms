@@ -124,7 +124,7 @@ class LanguageModelTrainer:
         for batch_num, (inputs, targets) in enumerate(self.loader):
 
             epoch_loss += self.train_batch(inputs, targets)
-            if batch_num+1%50 == 0:
+            if (batch_num+1)%10 == 0:
                 print("batch:{}".format(batch_num))
                 print("loss is:", epoch_loss)
         epoch_loss = epoch_loss / (batch_num + 1)
@@ -203,7 +203,7 @@ class TestLanguageModel:
             :return: a np.ndarray of logits
         """
         with torch.no_grad():
-            input = torch.LongTensor(inp)
+            input = torch.LongTensor(inp).to(DEVICE)
             result = model(input)
             flat = result.view(-1, result.size(2))
             # print(flat)
