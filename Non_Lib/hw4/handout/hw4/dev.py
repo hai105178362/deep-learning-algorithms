@@ -47,8 +47,10 @@ class LanguageModelDataLoader(DataLoader):
             seqlen = int(np.random.normal(self.seqlen, self.sigma))
             if start_idx + seqlen * self.batch_size + 1 >= tot_len:
                 break
-            sentences = torch.LongTensor(self.largetext[start_idx:start_idx + seqlen * self.batch_size]).reshape(shape=(self.batch_size, seqlen))
-            labels = torch.LongTensor(self.largetext[start_idx + 1:start_idx + seqlen * self.batch_size + 1]).reshape(shape=(self.batch_size, seqlen))
+            sentences = torch.LongTensor(self.largetext[start_idx:start_idx + seqlen * self.batch_size])\
+                .reshape(shape=(self.batch_size, seqlen)).to(DEVICE)
+            labels = torch.LongTensor(self.largetext[start_idx + 1:start_idx + seqlen * self.batch_size + 1])\
+                .reshape(shape=(self.batch_size, seqlen)).to(DEVICE)
             start_idx += seqlen * self.batch_size
             yield (sentences, labels)
 
@@ -76,7 +78,7 @@ class LanguageModel(nn.Module):
         # print("Embedding...")
         result = self.embed(x)
         cur_shape = result.shape
-        print(cur_shape)
+        # print(cur_shape)
         result = result.reshape(cur_shape[1], cur_shape[0], cur_shape[2])
         result = self.linear(self.lstm(result)[0])
         return result
@@ -132,15 +134,11 @@ class LanguageModelTrainer:
             TODO: Define code for training a single batch of inputs
 
         """
-        # input_shape = inputs.shape
-        # mask = np.zeros(shape=(input_shape[0],len(vocab)))
-        inputs = inputs.to(DEVICE)
-        targets = targets.to(DEVICE)
-        loss = 0
         result = self.model(inputs)
         rs = result.shape
-        result = result.reshape(rs[1], rs[0], rs[2])
-        loss = self.criterion(result,targets)
+        # print(rs,targets.shape)
+        loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
+        # print("loss:{}".format(loss))
         return loss
         # raise NotImplemented
 
