@@ -93,9 +93,9 @@ class LanguageModel(nn.Module):
         self.dropout = torch.nn.Dropout(p=drop_out)
 
     def forward(self, x):
-        result = self.embedding(x)
-        result = self.dropout(result)
-        output, hidden = self.rnn(result)
+        embed = self.embedding(x)
+        embed = self.dropout(embed)
+        output, hidden = self.rnn(embed)
         # output = self.dropout(output)
         output_lstm_flatten = output.view(-1, self.hidden_size)
         output_flatten = self.scoring(output_lstm_flatten)
@@ -104,6 +104,7 @@ class LanguageModel(nn.Module):
 
     def predict(self, seq):  # L x V
         embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
+        embed = self.dropout(embed)
         hidden = None
         output_lstm, hidden = self.rnn(embed, hidden)  # L x 1 x H
         output = output_lstm[-1]  # 1 x H
@@ -115,6 +116,7 @@ class LanguageModel(nn.Module):
         cur_seq = seq
         generated_words = []
         embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
+        embed = self.dropout(embed)
         hidden = None
         output_lstm, hidden = self.rnn(embed, hidden)  # L x 1 x H
         output = output_lstm[-1]  # 1 x H
