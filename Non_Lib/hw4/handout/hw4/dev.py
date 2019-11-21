@@ -207,14 +207,16 @@ class TestLanguageModel:
             :param inp:
             :return: a np.ndarray of logits
         """
+        ans = []
         with torch.no_grad():
             input = torch.LongTensor(inp).to(DEVICE)
             result = model(input)
             flat = result.view(-1, result.size(2))
             # print(flat)
             out = (torch.argmax(flat, axis=1))
-            print("Prediction:{}".format(vocab_human[out[-1]]))
-            return vocab_human[out[-1]]
+            ans.append(out[-1])
+            # print("Prediction:{}".format(vocab_human[out[-1]]))
+        return ans
         raise NotImplemented
 
     def generation(inp, forward, model):
