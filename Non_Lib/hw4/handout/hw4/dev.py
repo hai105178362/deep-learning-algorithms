@@ -258,11 +258,11 @@ class TestLanguageModel:
             input = torch.LongTensor(inp).to(DEVICE)
             ans = np.zeros(shape=(1,vocab_size))
             for i in input:
-                cur_word = model.generate(i, 1).cpu().numpy()
+                cur_word = model.generate(i, forward).cpu().numpy()
                 print(cur_word.shape)
                 ans = np.append(ans, cur_word, axis=0)
                 # exit()
-                ans.append(cur_word)
+                # ans.append(cur_word)
             print(ans)
             print(len(ans[1:]))
             return ans[1:]
