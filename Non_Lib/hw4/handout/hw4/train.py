@@ -229,11 +229,11 @@ class LanguageModelTrainer:
         loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
 
         # Adding L2 Norm
-        par = torch.tensor(0.0005).to(DEVICE)
+        par = torch.tensor(0.0001).to(DEVICE)
         l2_reg = torch.tensor(0.).to(DEVICE)
         for param in model.parameters():
             l2_reg += torch.norm(param)
-        loss += par * l2_reg
+        # loss += par * l2_reg
         loss.backward()
         self.optimizer.step()
         # for w1, w2 in zip(model.embedding.parameters(), model.scoring.parameters()):
