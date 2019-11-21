@@ -232,7 +232,7 @@ class TestLanguageModel:
         generated_words = []
         with torch.no_grad():
             input = torch.LongTensor(inp).to(DEVICE)
-            embed = embed(input).unsqueeze(1)  # L x 1 x E
+            embed = embed(input)  # L x 1 x E
             hidden = None
             output_lstm, hidden = rnn(embed, hidden)  # L x 1 x H
             output = output_lstm[-1]  # 1 x H
