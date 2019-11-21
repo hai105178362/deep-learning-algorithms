@@ -24,8 +24,8 @@ vocab_size = len(vocab)
 batch_size = 80
 embed_size = 400
 embed_hidden = 1150
-hidden_size = 512
-drop_out = 0.5
+hidden_size = 256
+drop_out = 0.2
 
 
 #
@@ -123,7 +123,7 @@ class LanguageModel(nn.Module):
         scores = self.scoring(output)  # 1 x V
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
         generated_words.append(current_word)
-        cur_seq = torch.cat((cur_seq[1:], current_word), dim=0)
+        cur_seq = torch.cat((cur_seq, current_word), dim=0)
         if n_words > 1:
             for i in range(n_words - 1):
                 embed = self.embedding(cur_seq).unsqueeze(1)  # 1 x 1 x E
@@ -132,7 +132,7 @@ class LanguageModel(nn.Module):
                 output = output_lstm[0]  # 1 x H
                 scores = self.scoring(output)  # V
                 _, current_word = torch.max(scores, dim=1)  # 1
-                cur_seq = torch.cat((cur_seq[1:], current_word), dim=0)
+                cur_seq = torch.cat((cur_seq, current_word), dim=0)
                 generated_words.append(current_word)
                 # generated_words = torch.cat((generated_words, current_word),0)
         return torch.cat(generated_words, dim=0)
@@ -199,6 +199,13 @@ class LanguageModelTrainer:
         loss += par * l2_reg
         loss.backward()
         self.optimizer.step()
+        # for w1, w2 in zip(model.embedding.parameters(), model.scoring.parameters()):
+        #     w1.grad.data.add_(w2.grad.data)
+        #     w2.grad = None
+        # self.optimizer.step()
+        # for w1, w2 in zip(model.embedding.parameters(), model.scoring.parameters()):
+        #     w2.data.copy_(w1.data)
+
         return loss
 
     def test(self):
