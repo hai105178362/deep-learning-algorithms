@@ -214,7 +214,7 @@ class TestLanguageModel:
             print("generating input...")
             input = torch.LongTensor(inp).to(DEVICE)
             print("getting result...")
-            result = model(torch.LongTensor(input))
+            result = model(input)
             print("flattening...")
             flat = result.view(-1, result.size(2))
             print("flat:", flat.shape)
