@@ -256,15 +256,15 @@ class TestLanguageModel:
         """
         with torch.no_grad():
             input = torch.LongTensor(inp).to(DEVICE)
-            ans = []
+            ans = np.zeros(shape=(1,forward ,vocab_size))
             for i in input:
                 cur_word = model.generate(i, 1).cpu().numpy()
                 ans = np.append(ans, cur_word, axis=0)
                 # exit()
                 ans.append(cur_word)
             print(ans)
-            print(len(ans))
-            return ans
+            print(len(ans[1:]))
+            return ans[1:]
             raise NotImplemented
 
 
