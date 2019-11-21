@@ -238,8 +238,8 @@ class TestLanguageModel:
         with torch.no_grad():
             for i in input:
                 cur_word = model.generate(i,1).cpu().numpy()
-                ans.append(cur_word.shape)
-                print("cur_word:",cur_word)
+                ans.append(cur_word[0])
+                print("cur_word:",cur_word.shape)
         print("ans: ",ans)
         print(len(ans))
         return  ans
