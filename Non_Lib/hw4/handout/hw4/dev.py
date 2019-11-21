@@ -21,6 +21,7 @@ vocab = np.load('../dataset/vocab.npy', allow_pickle=True)
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 dataset = train_data
 
+
 class LanguageModelDataLoader(DataLoader):
     """
         TODO: Define data loader logic here
@@ -47,12 +48,13 @@ class LanguageModelDataLoader(DataLoader):
             seqlen = int(np.random.normal(self.seqlen, self.sigma))
             if start_idx + seqlen * self.batch_size + 1 >= tot_len:
                 break
-            sentences = torch.LongTensor(self.largetext[start_idx:start_idx + seqlen * self.batch_size])\
+            sentences = torch.LongTensor(self.largetext[start_idx:start_idx + seqlen * self.batch_size]) \
                 .reshape(shape=(self.batch_size, seqlen)).to(DEVICE)
-            labels = torch.LongTensor(self.largetext[start_idx + 1:start_idx + seqlen * self.batch_size + 1])\
+            labels = torch.LongTensor(self.largetext[start_idx + 1:start_idx + seqlen * self.batch_size + 1]) \
                 .reshape(shape=(self.batch_size, seqlen)).to(DEVICE)
             start_idx += seqlen * self.batch_size
             yield (sentences, labels)
+
 
 vocab_human = []
 with open('../dataset/vocab.csv') as f:
@@ -67,21 +69,23 @@ class LanguageModel(nn.Module):
 
     def __init__(self, vocab_size):
         super(LanguageModel, self).__init__()
-        # self.embed = torch.nn.Embedding(vocab_size, 1028, 400).to(DEVICE)
-        self.embed = torch.nn.Embedding(vocab_size, 1150, 400).to(DEVICE)
-        self.lstm = torch.nn.LSTM(1150, 128, bidirectional=False, num_layers=1).to(DEVICE)
-        self.linear = torch.nn.Linear(in_features=128, out_features=vocab_size).to(DEVICE)
-
-        # raise NotImplemented
+        self.vocab_size = vocab_size
+        self.batch_size = 80
+        self.embed_size = 400
+        self.embed_hidden = 1150
+        self.hidden_size = 256
+        self.embed = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
+        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=1)
+        self.linear = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
 
     def forward(self, x):
         # print("Embedding...")
         result = self.embed(x)
-        cur_shape = result.shape
-        # print(cur_shape)
-        result = result.reshape(cur_shape[1], cur_shape[0], cur_shape[2])
-        result = self.linear(self.lstm(result)[0])
-        return result
+        output, hidden = self.rnn(result)
+        # print("flattening..")
+        output_lstm_flatten = output.view(-1, self.hidden_size)
+        output_flatten = self.linear(output_lstm_flatten)
+        return output_flatten.view(-1, self.batch_size, self.vocab_size)
         # Feel free to add extra arguments to forward (like an argument to pass in the hiddens)
         raise NotImplemented
 
@@ -118,9 +122,10 @@ class LanguageModelTrainer:
         epoch_loss = 0
         num_batches = 0
         for batch_num, (inputs, targets) in enumerate(self.loader):
+            print("batch:{}".format(batch_num))
             epoch_loss += self.train_batch(inputs, targets)
-            print("loss is:",epoch_loss)
-        print("Batch Done.")
+            print("loss is:", epoch_loss)
+        # print("Batch Done.")
         epoch_loss = epoch_loss / (batch_num + 1)
         epoch_loss.backward()
         self.optimizer.step()
@@ -134,13 +139,21 @@ class LanguageModelTrainer:
             TODO: Define code for training a single batch of inputs
 
         """
+        # print(targets.view(-1))
+        # with torch.no_grad():
+        #     result = self.model(inputs)
+        #     flat = result.view(-1, result.size(2))
+        #     print(flat)
+        #     out = np.argmax(flat,axis=1)
+        #     print(vocab_human[out[-1]])
+        # exit()
         result = self.model(inputs)
-        rs = result.shape
-        # print(rs,targets.shape)
+
+        # print(torch.argmax(out,dim=1))
         loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
-        # print("loss:{}".format(loss))
+        loss.backward()
+        self.optimizer.step()
         return loss
-        # raise NotImplemented
 
     def test(self):
         # don't change these
@@ -190,8 +203,12 @@ class TestLanguageModel:
             :param inp:
             :return: a np.ndarray of logits
         """
-        out = model(inp, len(vocab))
-        return out
+        with torch.no_grad():
+            result = model(inp)
+            flat = result.view(-1, result.size(2))
+            # print(flat)
+            out = (np.argmax(flat,axis=1))
+            return vocab_human[out[-1]]
         raise NotImplemented
 
     def generation(inp, forward, model):
@@ -218,14 +235,6 @@ run_id = str(int(time.time()))
 # print("Loader Init...")
 loader = LanguageModelDataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True)
 
-# start = time.time()
-# for batch_num, (inputs, targets) in enumerate(loader):
-#     print(inputs.shape)
-#     # exit()
-# #
-# end = time.time()
-# print(end - start)
-# exit()
 print("Model Init..")
 model = LanguageModel(len(vocab))
 print("Trainer Init...")
