@@ -114,9 +114,9 @@ class LanguageModel(nn.Module):
         embed = self.dropout1(embed)
         output, hidden = self.rnn(embed)
         output = self.dropout2(output)
-        output, hidden = self.rnn(embed)
+        output, hidden = self.rnn(embed,hidden)
         output = self.dropout2(output)
-        output, hidden = self.rnn(embed)
+        output, hidden = self.rnn(embed,hidden)
         output = self.dropout3(output)
         return output
 
