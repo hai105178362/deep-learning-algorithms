@@ -90,13 +90,13 @@ class LanguageModel(nn.Module):
         self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
         self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=1).to(DEVICE)
         self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
-        self.dropout1 = torch.nn.Dropout(p=drop_out[0])
-        self.dropout2 = torch.nn.Dropout(p=drop_out[-1])
-        self.dropout3 = torch.nn.Dropout(p=drop_out[1])
+        self.dropout1 = torch.nn.Dropout(p=drop_out[0]).to(DEVICE)
+        self.dropout2 = torch.nn.Dropout(p=drop_out[-1]).to(DEVICE)
+        self.dropout3 = torch.nn.Dropout(p=drop_out[1]).to(DEVICE)
         self.dropout4 = self.dropout1
 
     def forward(self, x):
-        x = self.dropout1(x)
+        # x = self.dropout1(x)
         embed = self.embedding(x)
         embed = self.dropout2(embed)
         output, hidden = self.rnn(embed)
@@ -110,8 +110,8 @@ class LanguageModel(nn.Module):
 
     def predict(self, seq):  # L x V
 
-        x = self.dropout1(seq)
-        embed = self.embedding(x).unsqueeze(1)
+        # x = self.dropout1(seq)
+        embed = self.embedding(seq).unsqueeze(1)
         embed = self.dropout2(embed)
         output, hidden = self.rnn(embed)
         output = self.dropout3(output)
