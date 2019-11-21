@@ -233,11 +233,11 @@ class TestLanguageModel:
         input = torch.LongTensor(inp).to(DEVICE)
         with torch.no_grad():
             for i in input:
-                cur_word = model.generate(i,1)
+                cur_word = model.generate(i,1).item()
                 ans.append(cur_word)
                 # print("cur_word:",cur_word)
         print("ans: ",ans)
-        print(ans.shape)
+        print(len(ans))
         return  ans
         #     print("generating input...")
         #     input = torch.LongTensor(inp).to(DEVICE)
@@ -276,10 +276,10 @@ class TestLanguageModel:
             input = torch.LongTensor(inp).to(DEVICE)
             ans = []
             for i in input:
-                cur_word = model.generate(i,forward)
+                cur_word = model.generate(i,forward).item()
                 ans.append(cur_word)
             print(ans)
-            print(ans.shape)
+            print(len(ans))
             return ans
             raise NotImplemented
 
