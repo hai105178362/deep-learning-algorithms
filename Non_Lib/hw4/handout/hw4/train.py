@@ -25,8 +25,8 @@ batch_size = 80
 embed_size = 400
 embed_hidden = 1150
 hidden_size = 512
-drop_out = [0.4, 0.3, 0.4, 0.1]
 # drop_out = [0.4, 0.3, 0.4, 0.1]
+drop_out = [0.2, 0.1, 0.1, 0.1]
 
 
 #
@@ -199,7 +199,7 @@ class LanguageModelTrainer:
 
         # TODO: Define your optimizer and criterion here
         # self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-6)
-        self.optimizer = torch.optim.ASGD(model.parameters(), lr=1e-2, weight_decay=1e-5)
+        self.optimizer = torch.optim.ASGD(model.parameters(), lr=1e-3, weight_decay=1e-5)
         self.criterion = nn.CrossEntropyLoss().to(DEVICE)
         # self.criterion = nn.NLLLoss().to(DEVICE)
 
