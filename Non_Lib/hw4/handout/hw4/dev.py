@@ -122,7 +122,6 @@ class LanguageModelTrainer:
         epoch_loss = 0
         num_batches = 0
         for batch_num, (inputs, targets) in enumerate(self.loader):
-
             epoch_loss += self.train_batch(inputs, targets)
             if (batch_num+1)%10 == 0:
                 print("batch:{}".format(batch_num))
@@ -207,7 +206,7 @@ class TestLanguageModel:
             result = model(input)
             flat = result.view(-1, result.size(2))
             # print(flat)
-            out = (np.argmax(flat,axis=1))
+            out = (torch.argmax(flat,axis=1))
             return vocab_human[out[-1]]
         raise NotImplemented
 
