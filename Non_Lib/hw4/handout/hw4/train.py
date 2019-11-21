@@ -128,6 +128,7 @@ class LanguageModel(nn.Module):
         # generated_words = current_word
         if n_words > 1:
             for i in range(n_words - 1):
+                print(generated_words)
                 # print(cur_seq)
                 # print("current_word:",current_word)
                 # embed = self.embedding(current_word).unsqueeze(0)  # 1 x 1 x E
