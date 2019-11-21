@@ -90,7 +90,8 @@ class LanguageModel(nn.Module):
         # print("flattening..")
         output_lstm_flatten = output.view(-1, self.hidden_size)
         output_flatten = self.scoring(output_lstm_flatten)
-        return output_flatten.view(-1, self.batch_size, self.vocab_size)
+        return output_flatten
+        # return output_flatten.view(-1, self.batch_size, self.vocab_size)
         # Feel free to add extra arguments to forward (like an argument to pass in the hiddens)
         raise NotImplemented
 
@@ -235,7 +236,7 @@ class TestLanguageModel:
             for i in input:
                 cur_word = model.generate(i,1).item()
                 ans.append(cur_word)
-                # print("cur_word:",cur_word)
+                print("cur_word:",cur_word.shape)
         print("ans: ",ans)
         print(len(ans))
         return  ans
@@ -279,7 +280,7 @@ class TestLanguageModel:
                 cur_word = model.generate(i,forward)
                 # print(cur_word)
                 # print(cur_word.data)
-                cur_word = (cur_word.cpu().numpy())
+                cur_word = (cur_word.cpu().numpy())[0]
                 # exit()
                 ans.append(cur_word)
             print(ans)
