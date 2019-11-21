@@ -132,7 +132,7 @@ class LanguageModel(nn.Module):
                 # print(cur_seq)
                 # print("current_word:",current_word)
                 # embed = self.embedding(current_word).unsqueeze(0)  # 1 x 1 x E
-                embed = self.embedding(cur_seq).unsqueeze(0)  # 1 x 1 x E
+                embed = self.embedding(cur_seq).unsqueeze(1)  # 1 x 1 x E
                 hidden = None
                 output_lstm, hidden = self.rnn(embed, hidden)  # 1 x 1 x H
                 output = output_lstm[0]  # 1 x H
