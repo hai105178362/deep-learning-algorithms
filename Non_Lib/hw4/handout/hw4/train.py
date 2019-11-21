@@ -27,6 +27,11 @@ embed_hidden = 1150
 hidden_size = 512
 drop_out = 0.3
 
+embed_size = 10
+embed_hidden = 10
+hidden_size = 10
+drop_out = 0.3
+
 
 class LanguageModelDataLoader(DataLoader):
     """
@@ -108,6 +113,7 @@ class LanguageModel(nn.Module):
 
     def generate(self, seq, n_words):  # L x V
         cur_seq = seq
+        print(cur_seq)
         generated_words = []
         embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
         hidden = None
@@ -117,6 +123,8 @@ class LanguageModel(nn.Module):
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
         generated_words.append(current_word)
         cur_seq = torch.cat((seq[1:],current_word),dim=0)
+        print(cur_seq)
+        exit()
         # generated_words = current_word
         if n_words > 1:
             for i in range(n_words - 1):
