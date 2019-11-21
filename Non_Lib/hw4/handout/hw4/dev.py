@@ -235,7 +235,9 @@ class TestLanguageModel:
             for i in input:
                 cur_word = model.generate(i,1)
                 ans.append(cur_word)
-                print("cur_word:",cur_word)
+                # print("cur_word:",cur_word)
+        print("ans: ",ans)
+        print(ans.shape)
         return  ans
         #     print("generating input...")
         #     input = torch.LongTensor(inp).to(DEVICE)
@@ -274,33 +276,10 @@ class TestLanguageModel:
             input = torch.LongTensor(inp).to(DEVICE)
             ans = []
             for i in input:
-                generated_words = []
-                # embed = embedding(i)  # L x 1 x E
-                # hidden = None
-                # output_lstm, hidden = rnn(embed, hidden)  # L x 1 x H
-                # output = output_lstm[-1]  # 1 x H
-                # scores = linear(output)  # 1 x V
-                # _, current_word = torch.max(scores, dim=1)  # 1 x 1
-                # generated_words.append(current_word)
-                nwords = forward
-                if nwords > 1:
-                    for j in range(nwords - 1):
-                        # print("generating input...")
-                        input = torch.LongTensor(inp).to(DEVICE)
-                        # print("input size:{}".format(input.shape))
-                        # print("getting result...")
-                        result = model(input)
-                        # print("flattening...")
-                        flat = result.view(-1, result.size(2))
-                        # print("flat:", flat.shape)
-                        out = (torch.argmax(flat, axis=1))
-                        # print("out", out.shape)
-                        # print(out)
-                        generated_words.append(out)
-                generated_words = torch.cat(generated_words, dim=0)
-                ans.append(generated_words.cpu().clone().numpy())
-            print("========GENERATION=======")
-            print(torch.cat(generated_words, dim=0))
+                cur_word = model.generate(i,forward)
+                ans.append(cur_word)
+            print(ans)
+            print(ans.shape)
             return ans
             raise NotImplemented
 
