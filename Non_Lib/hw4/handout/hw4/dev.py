@@ -75,7 +75,7 @@ class LanguageModel(nn.Module):
         self.embed_hidden = 1150
         self.hidden_size = 256
         self.embed = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
-        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=1)
+        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=1).to(DEVICE)
         self.linear = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
 
     def forward(self, x):
@@ -114,7 +114,7 @@ class LanguageModelTrainer:
 
         # TODO: Define your optimizer and criterion here
         self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=5e-7)
-        self.criterion = nn.CrossEntropyLoss()
+        self.criterion = nn.CrossEntropyLoss().to(DEVICE)
         # self.criterion = nn.NLLLoss()
 
     def train(self):
