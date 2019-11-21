@@ -214,7 +214,7 @@ class TestLanguageModel:
             flat = result.view(-1, result.size(2))
             # print(flat)
             out = (torch.argmax(flat, axis=1))
-            ans.append(out[-1].cpu().clone().numpy())
+            ans.append(out[-1])
             # print("Prediction:{}".format(vocab_human[out[-1]]))
         print("========PREDICTION=======")
         print(ans)
@@ -239,15 +239,16 @@ class TestLanguageModel:
             ans = []
             for i in input:
                 generated_words = []
-                embed = embedding(i)  # L x 1 x E
-                hidden = None
-                output_lstm, hidden = rnn(embed, hidden)  # L x 1 x H
-                output = output_lstm[-1]  # 1 x H
-                scores = linear(output)  # 1 x V
-                _, current_word = torch.max(scores, dim=1)  # 1 x 1
-                generated_words.append(current_word)
-                if forward > 1:
-                    for i in range(forward - 1):
+                # embed = embedding(i)  # L x 1 x E
+                # hidden = None
+                # output_lstm, hidden = rnn(embed, hidden)  # L x 1 x H
+                # output = output_lstm[-1]  # 1 x H
+                # scores = linear(output)  # 1 x V
+                # _, current_word = torch.max(scores, dim=1)  # 1 x 1
+                # generated_words.append(current_word)
+                nwords = forward
+                if nwords > 1:
+                    for i in range(nwords - 1):
                         embed = embedding(current_word).unsqueeze(0)  # 1 x 1 x E
                         # embed = embedding(current_word)  # 1 x 1 x E
                         output_lstm, hidden = rnn(embed, hidden)  # 1 x 1 x H
