@@ -233,7 +233,7 @@ class LanguageModelTrainer:
         l2_reg = torch.tensor(0.).to(DEVICE)
         for param in model.parameters():
             l2_reg += torch.norm(param)
-        # loss += par * l2_reg
+        loss += par * l2_reg
         loss.backward()
         self.optimizer.step()
         # for w1, w2 in zip(model.embedding.parameters(), model.scoring.parameters()):
