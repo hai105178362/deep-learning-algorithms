@@ -90,8 +90,8 @@ class LanguageModel(nn.Module):
         # print("flattening..")
         output_lstm_flatten = output.view(-1, self.hidden_size)
         output_flatten = self.scoring(output_lstm_flatten)
-        return output_flatten
-        # return output_flatten.view(-1, self.batch_size, self.vocab_size)
+        # return output_flatten
+        return output_flatten.view(-1, self.batch_size, self.vocab_size)
         # Feel free to add extra arguments to forward (like an argument to pass in the hiddens)
         raise NotImplemented
 
@@ -111,8 +111,9 @@ class LanguageModel(nn.Module):
                 output_lstm, hidden = self.rnn(embed, hidden)  # 1 x 1 x H
                 output = output_lstm[0]  # 1 x H
                 scores = self.scoring(output)  # V
-                _, current_word = torch.max(scores, dim=1)  # 1
-                generated_words.append(current_word)
+                # _, current_word = torch.max(scores, dim=1)  # 1
+                # generated_words.append(current_word)
+                generated_words.append(scores)
         return torch.cat(generated_words, dim=0)
 
 
