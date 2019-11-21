@@ -115,9 +115,9 @@ class LanguageModel(nn.Module):
         output, hidden = self.rnn(embed)
         output = self.dropout2(output)
         output, hidden = self.rnn(embed)
-        output = self.dropout3(output)
+        output = self.dropout2(output)
         output, hidden = self.rnn(embed)
-        output = self.dropout4(output)
+        output = self.dropout3(output)
         return output
 
     def forward(self, x):
@@ -126,6 +126,7 @@ class LanguageModel(nn.Module):
         output = self.runall(embed)
         output_lstm_flatten = output.view(-1, self.hidden_size)
         output_flatten = self.scoring(output_lstm_flatten)
+        output_flatten = self.dropout4(output_flatten)
         return output_flatten.view(-1, self.batch_size, self.vocab_size)
         raise NotImplemented
 
@@ -141,6 +142,7 @@ class LanguageModel(nn.Module):
         # output_lstm, hidden = self.rnn(embed)  # L x 1 x H
         # output = output_lstm[-1]  # 1 x H
         scores = self.scoring(output)  # 1 x V
+        scores = self.dropout4(scores)
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
         return scores
 
@@ -155,6 +157,7 @@ class LanguageModel(nn.Module):
         # output_lstm, hidden = self.rnn(embed)  # L x 1 x H
         # output = output_lstm[-1]  # 1 x H
         scores = self.scoring(output)  # 1 x V
+        scores = self.dropout4(scores)
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
         generated_words.append(current_word)
         cur_seq = torch.cat((cur_seq[1:], current_word), dim=0)
@@ -163,6 +166,8 @@ class LanguageModel(nn.Module):
                 embed = self.embedding(cur_seq).unsqueeze(1)
                 output = self.runall(embed)
                 output = output[-1]
+                scores = self.scoring(output)  # 1 x V
+                scores = self.dropout4(scores)
                 _, current_word = torch.max(scores, dim=1)  # 1
                 cur_seq = torch.cat((cur_seq[1:], current_word), dim=0)
                 generated_words.append(current_word)
