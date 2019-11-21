@@ -212,7 +212,7 @@ class TestLanguageModel:
         with torch.no_grad():
             input = torch.LongTensor(inp).to(DEVICE)
             # for i in input:
-            result = model(torch.LongTensor(input).unsqueeze(0))
+            result = model(torch.LongTensor(input))
             flat = result.view(-1, result.size(2))
             print("flat:", flat.shape)
             out = (torch.argmax(flat, axis=1))
