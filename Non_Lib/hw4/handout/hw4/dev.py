@@ -266,7 +266,7 @@ class TestLanguageModel:
                 # ans.append(cur_word)
             print(ans)
             print(len(ans[1:]))
-            return ans[1:]
+            return ans[1:].astype(int)
             raise NotImplemented
 
 
