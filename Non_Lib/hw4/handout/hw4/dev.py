@@ -208,11 +208,14 @@ class TestLanguageModel:
             :param inp:
             :return: a np.ndarray of logits
         """
+        print("starting prediction...")
         ans = []
         with torch.no_grad():
+            print("generating input...")
             input = torch.LongTensor(inp).to(DEVICE)
-            # for i in input:
+            print("getting result...")
             result = model(torch.LongTensor(input))
+            print("flattening...")
             flat = result.view(-1, result.size(2))
             print("flat:", flat.shape)
             out = (torch.argmax(flat, axis=1))
