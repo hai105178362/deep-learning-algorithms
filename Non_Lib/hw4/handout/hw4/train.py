@@ -113,7 +113,7 @@ class LanguageModel(nn.Module):
 
     def generate(self, seq, n_words):  # L x V
         # performs greedy search to extract and return words (one sequence).
-        generated_words = []
+        # generated_words = []
         embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
         hidden = None
         output_lstm, hidden = self.rnn(embed, hidden)  # L x 1 x H
@@ -122,7 +122,7 @@ class LanguageModel(nn.Module):
         # _, current_word = torch.max(scores, dim=1)  # 1 x 1
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
         # generated_words.append(current_word)
-        generated_words.append(current_word)
+        generated_words = current_word
         if n_words > 1:
             for i in range(n_words - 1):
                 # print("current_word:",current_word)
