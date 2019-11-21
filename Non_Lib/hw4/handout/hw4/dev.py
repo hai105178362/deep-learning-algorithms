@@ -237,7 +237,7 @@ class TestLanguageModel:
             for i in input:
                 cur_word = model.generate(i,1).item()
                 ans.append(cur_word)
-                print("cur_word:",cur_word.shape)
+                print("cur_word:",cur_word)
         print("ans: ",ans)
         print(len(ans))
         return  ans
