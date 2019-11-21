@@ -133,7 +133,7 @@ class LanguageModel(nn.Module):
                 scores = self.scoring(output)  # V
                 _, current_word = torch.max(scores, dim=1)  # 1
                 # generated_words.append(current_word)
-                generated_words = torch.cat(generated_words, current_word, dim=1)
+                generated_words = torch.cat((generated_words, current_word),0)
         return torch.cat(generated_words, dim=0)
 
 
