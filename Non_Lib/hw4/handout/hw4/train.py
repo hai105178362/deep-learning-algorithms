@@ -102,7 +102,7 @@ class LanguageModel(nn.Module):
         self.hidden_size = hidden_size
         self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
         # self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=3, dropout=0.5).to(DEVICE)
-        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, bidirectional=False, hidden_size=self.hidden_size, num_layers=3,dropout=0.4).to(DEVICE)
+        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, bidirectional=False, hidden_size=self.hidden_size, num_layers=3).to(DEVICE)
         self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
         self.dropout1 = torch.nn.Dropout(p=drop_out[0]).to(DEVICE)
         self.dropout2 = torch.nn.Dropout(p=drop_out[1]).to(DEVICE)
@@ -231,11 +231,11 @@ class LanguageModelTrainer:
         result = self.model(inputs)
         loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
         # Adding L2 Norm
-        par = torch.tensor(10e-8).to(DEVICE)
-        l2_reg = torch.tensor(0.).to(DEVICE)
-        for param in model.parameters():
-            l2_reg += torch.norm(param)
-        loss += par * l2_reg
+        # par = torch.tensor(10e-8).to(DEVICE)
+        # l2_reg = torch.tensor(0.).to(DEVICE)
+        # for param in model.parameters():
+        #     l2_reg += torch.norm(param)
+        # loss += par * l2_reg
         loss.backward()
         self.optimizer.step()
 
