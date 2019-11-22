@@ -206,12 +206,12 @@ class LanguageModelTrainer:
               % (self.epochs + 1, self.max_epochs, epoch_loss))
         self.train_losses.append(epoch_loss)
 
-    def train_batch(self, inputs, targets, hidden=[None, None, None]):
+    def train_batch(self, inputs, targets):
         """
             TODO: Define code for training a single batch of inputs
 
         """
-        result, hidden = self.model(inputs, hidden)
+        result, hidden = self.model(inputs)
         loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
         # Adding L2 Norm
         par = torch.tensor(10e-5).to(DEVICE)
