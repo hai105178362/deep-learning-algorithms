@@ -142,11 +142,11 @@ class LanguageModel(nn.Module):
                 outputs.append(cur_output)
             current_input = cur_output
         hidden = new_hidden
+        output = self.scoring(cur_output)
         if validation == True:
-            print(cur_output.shape)
+            print(output.shape)
             exit()
             cur_output = cur_output[-1]
-        output = self.scoring(cur_output)
         output = self.drop(output)
         outputs.append(output)
         return output, hidden
@@ -299,6 +299,7 @@ class TestLanguageModel:
         # model.eval()
         for i in input:
             cur_word = model.predict(i).detach().cpu().numpy()
+            print(cur_word.shape)
             ans = np.append(ans, cur_word, axis=0)
         return ans[1:]
         raise NotImplemented
