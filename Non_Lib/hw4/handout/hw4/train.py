@@ -201,8 +201,8 @@ class LanguageModelTrainer:
         self.run_id = run_id
 
         # TODO: Define your optimizer and criterion here
-        # self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-6)
-        self.optimizer = torch.optim.ASGD(model.parameters(), lr=1e-2, weight_decay=1e-7)
+        self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
+        # self.optimizer = torch.optim.ASGD(model.parameters(), lr=1e-2, weight_decay=1e-7)
         self.criterion = nn.CrossEntropyLoss().to(DEVICE)
         # self.criterion = nn.NLLLoss().to(DEVICE)
 
@@ -231,7 +231,7 @@ class LanguageModelTrainer:
         result = self.model(inputs)
         loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
         # Adding L2 Norm
-        # par = torch.tensor(5e-7).to(DEVICE)
+        # par = torch.tensor(10e-5).to(DEVICE)
         # l2_reg = torch.tensor(0.).to(DEVICE)
         # for param in model.parameters():
         #     l2_reg += torch.norm(param)
