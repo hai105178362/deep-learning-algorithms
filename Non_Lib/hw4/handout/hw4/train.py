@@ -169,14 +169,14 @@ class LanguageModel(nn.Module):
         _, current_words = torch.max(output, dim=1)  # 1 x 1
         cur_word = current_words[-1]
         generated_words.append(cur_word)
-        cur_seq = torch.cat((cur_seq, cur_word), dim=0)
+        cur_seq = torch.cat((cur_seq, [cur_word]), dim=0)
         if n_words > 1:
             for i in range(n_words - 1):
                 embed = self.embedding(cur_seq).unsqueeze(1)
                 output, _ = self.net_run(embed, validation=True)
                 _, current_words = torch.max(output, dim=1)  # 1 x 1
                 cur_word = current_words[-1]
-                cur_seq = torch.cat((cur_seq, cur_word), dim=0)
+                cur_seq = torch.cat((cur_seq, [cur_word]), dim=0)
                 generated_words.append(cur_word)
                 # generated_words = torch.cat((generated_words, current_word),0)
         return torch.cat(generated_words, dim=0)
@@ -234,13 +234,16 @@ class LanguageModelTrainer:
 
         """
         result, hidden = self.model(inputs)
-        loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
+        s = result.shape
+        # _, cur = torch.max(result, dim=2)
+        cur = result.view(s[0] * s[1], s[2])
+        loss = self.criterion(cur, targets.view(-1))
         # Adding L2 Norm
-        # par = torch.tensor(10e-6).to(DEVICE)
-        # l2_reg = torch.tensor(0.).to(DEVICE)
-        # for param in model.parameters():
-        #     l2_reg += torch.norm(param)
-        # loss += par * l2_reg
+        par = torch.tensor(10e-6).to(DEVICE)
+        l2_reg = torch.tensor(0.).to(DEVICE)
+        for param in model.parameters():
+            l2_reg += torch.norm(param)
+        loss += par * l2_reg
         return loss
 
     def test(self):
