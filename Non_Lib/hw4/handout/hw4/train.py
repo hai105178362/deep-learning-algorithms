@@ -118,11 +118,11 @@ class LanguageModel(nn.Module):
         self.scoring.weight.data.uniform_(-0.1, 0.1)
 
     def init_hidden_weights(self, seqlen):
-        hidden = []
-
-        for i in range(self.lstmlayers):
-            hidden.append(torch.randn(self.num_directions, seqlen, self.hidden_size) / np.sqrt(self.hidden_size))
-        return hidden
+        # hidden = []
+        #
+        # for i in range(self.lstmlayers):
+        #     hidden.append(torch.randn(self.num_directions, seqlen, self.hidden_size) / np.sqrt(self.hidden_size))
+        return torch.randn(self.num_directions, seqlen, self.hidden_size, requires_grad=True) / np.sqrt(self.hidden_size)
 
     def net_run(self, embed, validation=False):
         new_hidden = []
@@ -131,9 +131,11 @@ class LanguageModel(nn.Module):
         outputs = []
         current_input = embed
         cur_output = None
+        hidden = self.init_hidden_weights(embed.shape[1])
+        # print(hidden.shape)
         for l, rnn in enumerate(self.rnns):
             # cur_output, cur_hidden = rnn(current_input, hidden[l])
-            cur_output, cur_hidden = rnn(current_input)
+            cur_output, cur_hidden = rnn(current_input, (hidden, hidden))
             new_hidden.append(cur_hidden)
             cur_outputs.append(cur_output)
             if l != self.lstmlayers - 1:
@@ -165,18 +167,18 @@ class LanguageModel(nn.Module):
         generated_words = []
         embed = self.embedding(cur_seq).unsqueeze(1)
         output, _ = self.net_run(embed, validation=True)
-        _, current_word = torch.max(output, dim=1)  # 1 x 1
-        generated_words.append(current_word)
-        cur_seq = torch.cat((cur_seq, current_word), dim=0)
+        _, current_words = torch.max(output, dim=1)  # 1 x 1
+        cur_word = current_words[-1]
+        generated_words.append(cur_word)
+        cur_seq = torch.cat((cur_seq, cur_word), dim=0)
         if n_words > 1:
             for i in range(n_words - 1):
                 embed = self.embedding(cur_seq).unsqueeze(1)
                 output, _ = self.net_run(embed, validation=True)
-                _, current_word = torch.max(output, dim=1)  # 1 x 1
-                print(current_word)
-                exit()
-                cur_seq = torch.cat((cur_seq, current_word), dim=0)
-                generated_words.append(current_word)
+                _, current_words = torch.max(output, dim=1)  # 1 x 1
+                cur_word = current_words[-1]
+                cur_seq = torch.cat((cur_seq, cur_word), dim=0)
+                generated_words.append(cur_word)
                 # generated_words = torch.cat((generated_words, current_word),0)
         return torch.cat(generated_words, dim=0)
 
