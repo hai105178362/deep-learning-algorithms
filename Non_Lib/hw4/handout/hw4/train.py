@@ -23,19 +23,19 @@ vocab = np.load('../dataset/vocab.npy', allow_pickle=True)
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 dataset = train_data
 vocab_size = len(vocab)
-# BATCH_SIZE = 80
-# EMBED_SIZE = 400
-# EMBED_HIDDEN = 1150
-# HIDDEN_SIZE = 1024
-# DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
-# LSTM_LAYERS = 3
-
-BATCH_SIZE = 10
-EMBED_SIZE = 10
-EMBED_HIDDEN = 10
-HIDDEN_SIZE = 10
+BATCH_SIZE = 80
+EMBED_SIZE = 400
+EMBED_HIDDEN = 1150
+HIDDEN_SIZE = 1024
 DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
-LSTM_LAYERS = 1
+LSTM_LAYERS = 3
+
+# BATCH_SIZE = 10
+# EMBED_SIZE = 10
+# EMBED_HIDDEN = 10
+# HIDDEN_SIZE = 10
+# DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
+# LSTM_LAYERS = 1
 
 vocab_human = []
 with open('../dataset/vocab.csv') as f:
@@ -142,13 +142,9 @@ class LanguageModel(nn.Module):
             current_input = cur_output
         hidden = new_hidden
         output = self.scoring(cur_output)
-        if validation == True:
-            print(output.shape)
-            output = output.view(output.shape[0], output.shape[2])
-            print(output.shape)
-            exit()
-
         output = self.drop(output)
+        if validation == True:
+            output = output.view(output.shape[0], output.shape[2])
         outputs.append(output)
         return output, hidden
 
