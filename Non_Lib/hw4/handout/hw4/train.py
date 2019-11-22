@@ -37,7 +37,6 @@ HIDDEN_SIZE = 10
 DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
 LSTM_LAYERS = 1
 
-
 vocab_human = []
 with open('../dataset/vocab.csv') as f:
     fo = csv.reader(f, delimiter=',')
@@ -145,8 +144,10 @@ class LanguageModel(nn.Module):
         output = self.scoring(cur_output)
         if validation == True:
             print(output.shape)
+            output = output.view(output.shape(0), output.shape(2))
+            print(cur_output.shape)
             exit()
-            cur_output = cur_output[-1]
+
         output = self.drop(output)
         outputs.append(output)
         return output, hidden
