@@ -77,15 +77,15 @@ class LanguageModel(nn.Module):
 
     def __init__(self, vocab_size, hidden=[None, None, None], weight_tie=False):
         super(LanguageModel, self).__init__()
-        self.init_hidden = hidden
         self.vocab_size = vocab_size
         self.batch_size = BATCH_SIZE
         self.embed_size = EMBED_SIZE
         self.embed_hidden = EMBED_HIDDEN
         self.hidden_size = HIDDEN_SIZE
         self.lstmlayers = LSTM_LAYERS
+        # self.init_hidden = hidden
 
-        # self.word_lstm_init_h = Variable(torch.randn(self.lstmlayers, self.batch_size, self.embed_hidden).type(torch.FloatTensor), requires_grad=True)
+        self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
         self.rnns = []
         for l in range(self.lstmlayers):
             if l == 0:
@@ -97,7 +97,6 @@ class LanguageModel(nn.Module):
                     self.rnns.append(torch.nn.LSTM(2 * self.hidden_size, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
             else:
                 self.rnns.append(torch.nn.LSTM(2 * self.hidden_size, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
-        self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
         self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, bidirectional=False, hidden_size=self.hidden_size, num_layers=3).to(DEVICE)
         self.scoring = torch.nn.Linear(in_features=self.hidden_size * 2, out_features=vocab_size).to(DEVICE)
         self.drop = torch.nn.Dropout(p=DROP_OUTS[-1])
@@ -111,8 +110,14 @@ class LanguageModel(nn.Module):
         self.scoring.bias.data.fill_(0)
         self.scoring.weight.data.uniform_(-0.1, 0.1)
 
-    def net_run(self, embed, hidden, validation=False):
-        # embed = self.locked_dropout1(embed)
+    def init_hidden_weights(self, seqlen):
+        hidden = []
+
+        for i in range(self.lstmlayers):
+            hidden.append(torch.randn(2, seqlen, self.hidden_size) / np.sqrt(self.hidden_size))
+        return hidden
+
+    def net_run(self, embed, validation=False):
         new_hidden = []
         # raw_output, hidden = self.rnn(emb, hidden)
         cur_outputs = []
@@ -120,8 +125,8 @@ class LanguageModel(nn.Module):
         current_input = embed
         cur_output = None
         for l, rnn in enumerate(self.rnns):
-            # print("l:", l)
-            cur_output, cur_hidden = rnn(current_input, hidden[l])
+            # cur_output, cur_hidden = rnn(current_input, hidden[l])
+            cur_output, cur_hidden = rnn(current_input)
             new_hidden.append(cur_hidden)
             cur_outputs.append(cur_output)
             if l != self.lstmlayers - 1:
@@ -138,13 +143,13 @@ class LanguageModel(nn.Module):
 
     def forward(self, x):
         embed = self.embedding(x)
-        output, hidden = self.net_run(embed, hidden=self.init_hidden)
+        output, hidden = self.net_run(embed)
         result = output.view(-1, self.batch_size, self.vocab_size)
         return result, hidden
 
     def predict(self, seq):  # L x V
         embed = self.embedding(seq).unsqueeze(1)
-        output, _ = self.net_run(embed, hidden=self.init_hidden, validation=True)
+        output, _ = self.net_run(embed, validation=True)
         # _, current_word = torch.max(output, dim=1)  # 1 x 1
         return output
 
@@ -152,14 +157,14 @@ class LanguageModel(nn.Module):
         cur_seq = seq
         generated_words = []
         embed = self.embedding(cur_seq).unsqueeze(1)
-        output, _ = self.net_run(embed, hidden=self.init_hidden, validation=True)
+        output, _ = self.net_run(embed, validation=True)
         _, current_word = torch.max(output, dim=1)  # 1 x 1
         generated_words.append(current_word)
         cur_seq = torch.cat((cur_seq, current_word), dim=0)
         if n_words > 1:
             for i in range(n_words - 1):
                 embed = self.embedding(cur_seq).unsqueeze(1)
-                output, _ = self.net_run(embed, validation=True, hidden=self.init_hidden)
+                output, _ = self.net_run(embed, validation=True)
                 _, current_word = torch.max(output, dim=1)  # 1 x 1
                 cur_seq = torch.cat((cur_seq, current_word), dim=0)
                 generated_words.append(current_word)
@@ -190,10 +195,10 @@ class LanguageModelTrainer:
         self.run_id = run_id
 
         # TODO: Define your optimizer and criterion here
-        self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
-        # self.optimizer = torch.optim.ASGD(model.parameters(), lr=1e-2, weight_decay=1e-7)
-        self.criterion = nn.CrossEntropyLoss().to(DEVICE)
-        # self.criterion = nn.NLLLoss().to(DEVICE)
+        # self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
+        self.optimizer = torch.optim.ASGD(model.parameters(), lr=1e-2, weight_decay=1e-7)
+        # self.criterion = nn.CrossEntropyLoss().to(DEVICE)
+        self.criterion = nn.NLLLoss().to(DEVICE)
 
     def train(self):
         self.model.train()  # set to training mode
@@ -201,6 +206,8 @@ class LanguageModelTrainer:
         num_batches = 0
         for batch_num, (inputs, targets) in enumerate(self.loader):
             cur_loss = self.train_batch(inputs, targets)
+            cur_loss.backward()
+            self.optimizer.step()
             epoch_loss += cur_loss
             if (batch_num + 1) % 30 == 0:
                 print("batch:{}".format(batch_num + 1))
@@ -220,14 +227,11 @@ class LanguageModelTrainer:
         result, hidden = self.model(inputs)
         loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
         # Adding L2 Norm
-        par = torch.tensor(10e-6).to(DEVICE)
-        l2_reg = torch.tensor(0.).to(DEVICE)
-        for param in model.parameters():
-            l2_reg += torch.norm(param)
-        loss += par * l2_reg
-        loss.backward()
-        self.optimizer.step()
-
+        # par = torch.tensor(10e-6).to(DEVICE)
+        # l2_reg = torch.tensor(0.).to(DEVICE)
+        # for param in model.parameters():
+        #     l2_reg += torch.norm(param)
+        # loss += par * l2_reg
         return loss
 
     def test(self):
