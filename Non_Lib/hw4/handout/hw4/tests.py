@@ -11,8 +11,6 @@ def array_to_str(arr, vocab):
 
 
 def test_prediction(out, targ):
-    print(out.shape)
-    print(targ.shape)
     out = log_softmax(out, 1)
     nlls = out[np.arange(out.shape[0]), targ]
     nll = -np.mean(nlls)

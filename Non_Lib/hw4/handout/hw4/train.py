@@ -303,7 +303,6 @@ class TestLanguageModel:
         # model.eval()
         for i in input:
             cur_word = model.predict(i).detach().cpu().numpy()
-            print(cur_word.shape)
             ans = np.append(ans, cur_word, axis=0)
         return ans[1:]
         raise NotImplemented
