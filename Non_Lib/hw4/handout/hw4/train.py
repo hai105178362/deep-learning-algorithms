@@ -102,8 +102,8 @@ class LanguageModel(nn.Module):
         self.hidden_size = hidden_size
         self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
         # self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=3, dropout=0.5).to(DEVICE)
-        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, bidirectional=True, hidden_size=self.hidden_size, num_layers=3,dropout=0.4).to(DEVICE)
-        self.scoring = torch.nn.Linear(in_features=self.hidden_size*2, out_features=vocab_size).to(DEVICE)
+        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, bidirectional=False, hidden_size=self.hidden_size, num_layers=3,dropout=0.4).to(DEVICE)
+        self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
         self.dropout1 = torch.nn.Dropout(p=drop_out[0]).to(DEVICE)
         self.dropout2 = torch.nn.Dropout(p=drop_out[1]).to(DEVICE)
         self.dropout3 = torch.nn.Dropout(p=drop_out[2]).to(DEVICE)
