@@ -26,7 +26,7 @@ vocab_size = len(vocab)
 BATCH_SIZE = 80
 EMBED_SIZE = 400
 EMBED_HIDDEN = 1150
-HIDDEN_SIZE = 512
+HIDDEN_SIZE = 1024
 DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
 LSTM_LAYERS = 3
 
@@ -95,8 +95,8 @@ class LanguageModel(nn.Module):
         self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
         self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, bidirectional=False, hidden_size=self.hidden_size, num_layers=3).to(DEVICE)
         self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
-        self.drop = torch.nn.Dropout(p=0.5)
-        # self.locked_dropout1 = lock_dropout(DROP_OUTS[0])
+        self.drop = torch.nn.Dropout(p=0.1)
+        self.locked_dropout1 = torchnlp.nn.LockedDropout(p=DROP_OUTS[0])
         # self.locked_dropout1 = torchnlp.nn.lock_dropout
         self.init_weights()
 
@@ -119,7 +119,7 @@ class LanguageModel(nn.Module):
             new_hidden.append(cur_hidden)
             cur_outputs.append(cur_output)
             if l != self.lstmlayers - 1:
-                # cur_output = self.locked_dropout1(cur_output)
+                cur_output = self.locked_dropout1(cur_output)
                 outputs.append(cur_output)
             current_input = cur_output
         hidden = new_hidden
