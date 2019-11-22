@@ -212,6 +212,7 @@ class LanguageModelTrainer:
         epoch_loss = 0
         num_batches = 0
         for batch_num, (inputs, targets) in enumerate(self.loader):
+            self.optimizer.zero_grad()
             cur_loss = self.train_batch(inputs, targets)
             cur_loss.backward()
             self.optimizer.step()
