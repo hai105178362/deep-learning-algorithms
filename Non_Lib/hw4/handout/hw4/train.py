@@ -115,8 +115,8 @@ class LanguageModel(nn.Module):
     def runall(self, embed):
         embed = self.dropout1(embed)
         output, hidden = self.rnn(embed)
-        # output = self.dropout2(output)
-        # output, hidden = self.rnn(embed,hidden)
+        output = self.dropout2(output)
+        output, hidden = self.rnn(embed,hidden)
         output = self.dropout2(output)
         output, hidden = self.rnn(embed,hidden)
         # output = self.dropout3(output)
@@ -230,7 +230,7 @@ class LanguageModelTrainer:
         loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
 
         # Adding L2 Norm
-        par = torch.tensor(0.005).to(DEVICE)
+        par = torch.tensor(5e-7).to(DEVICE)
         l2_reg = torch.tensor(0.).to(DEVICE)
         for param in model.parameters():
             l2_reg += torch.norm(param)
