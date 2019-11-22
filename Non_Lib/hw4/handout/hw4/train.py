@@ -77,6 +77,7 @@ class LanguageModel(nn.Module):
 
     def __init__(self, vocab_size, hidden=[None, None, None], weight_tie=False):
         super(LanguageModel, self).__init__()
+        self.init_hidden = hidden
         self.vocab_size = vocab_size
         self.batch_size = BATCH_SIZE
         self.embed_size = EMBED_SIZE
@@ -129,30 +130,30 @@ class LanguageModel(nn.Module):
         outputs.append(output)
         return output, hidden
 
-    def forward(self, x, hidden=[None, None, None]):
+    def forward(self, x):
         embed = self.embedding(x)
-        output, hidden = self.net_run(embed, hidden=hidden)
+        output, hidden = self.net_run(embed, hidden=self.init_hidden)
         result = output.view(-1, self.batch_size, self.vocab_size)
         return result, hidden
 
-    def predict(self, seq, hidden=[None, None, None]):  # L x V
+    def predict(self, seq):  # L x V
         embed = self.embedding(seq).unsqueeze(1)
-        output = self.net_run(embed, hidden=hidden, validation=True)
+        output, _ = self.net_run(embed, hidden=self.init_hidden, validation=True)
         # _, current_word = torch.max(output, dim=1)  # 1 x 1
         return output
 
-    def generate(self, seq, n_words, hidden=[None, None, None]):  # L x V
+    def generate(self, seq, n_words):  # L x V
         cur_seq = seq
         generated_words = []
         embed = self.embedding(cur_seq).unsqueeze(1)
-        output = self.net_run(embed, hidden=hidden, validation=True)
+        output, _ = self.net_run(embed, hidden=self.init_hidden, validation=True)
         _, current_word = torch.max(output, dim=1)  # 1 x 1
         generated_words.append(current_word)
         cur_seq = torch.cat((cur_seq, current_word), dim=0)
         if n_words > 1:
             for i in range(n_words - 1):
                 embed = self.embedding(cur_seq).unsqueeze(1)
-                output = self.net_run(embed, validation=True)
+                output, _ = self.net_run(embed, validation=True)
                 _, current_word = torch.max(output, dim=1)  # 1 x 1
                 cur_seq = torch.cat((cur_seq, current_word), dim=0)
                 generated_words.append(current_word)
