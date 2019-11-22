@@ -117,9 +117,9 @@ class LanguageModel(nn.Module):
         output, hidden = self.rnn(embed)
         output = self.dropout2(output)
         output, hidden = self.rnn(embed,hidden)
-        output = self.dropout2(output)
+        output = self.dropout3(output)
         output, hidden = self.rnn(embed,hidden)
-        # output = self.dropout3(output)
+        output = self.dropout3(output)
         return output
 
     def forward(self, x):
@@ -128,7 +128,7 @@ class LanguageModel(nn.Module):
         output = self.runall(embed)
         output_lstm_flatten = output.view(-1, self.hidden_size)
         output_flatten = self.scoring(output_lstm_flatten)
-        # output_flatten = self.dropout4(output_flatten)
+        output_flatten = self.dropout4(output_flatten)
         return output_flatten.view(-1, self.batch_size, self.vocab_size)
         raise NotImplemented
 
@@ -230,11 +230,11 @@ class LanguageModelTrainer:
         loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
 
         # Adding L2 Norm
-        par = torch.tensor(5e-7).to(DEVICE)
-        l2_reg = torch.tensor(0.).to(DEVICE)
-        for param in model.parameters():
-            l2_reg += torch.norm(param)
-        loss += par * l2_reg
+        # par = torch.tensor(5e-7).to(DEVICE)
+        # l2_reg = torch.tensor(0.).to(DEVICE)
+        # for param in model.parameters():
+        #     l2_reg += torch.norm(param)
+        # loss += par * l2_reg
         loss.backward()
         self.optimizer.step()
         # for w1, w2 in zip(model.embedding.parameters(), model.scoring.parameters()):
@@ -298,10 +298,10 @@ class TestLanguageModel:
         print("starting prediction...")
         ans = np.zeros(shape=(1, vocab_size))
         input = torch.LongTensor(inp).to(DEVICE)
-        with torch.no_grad():
-            for i in input:
-                cur_word = model.predict(i).cpu().numpy()
-                ans = np.append(ans, cur_word, axis=0)
+        # model.eval()
+        for i in input:
+            cur_word = model.predict(i).cpu().numpy()
+            ans = np.append(ans, cur_word, axis=0)
         return ans[1:]
         raise NotImplemented
 
@@ -315,15 +315,15 @@ class TestLanguageModel:
             :return: generated words (batch size, forward)
         """
         print("starting generation...")
-        with torch.no_grad():
-            input = torch.LongTensor(inp).to(DEVICE)
-            ans = np.zeros(shape=(1, forward))
-            for i in input:
-                cur_word = model.generate(i, forward)
-                cur_word = cur_word.cpu().numpy()
-                ans = np.append(ans, np.array([cur_word]), axis=0)
-            return ans[1:].astype(int)
-            raise NotImplemented
+        # model.eval()
+        input = torch.LongTensor(inp).to(DEVICE)
+        ans = np.zeros(shape=(1, forward))
+        for i in input:
+            cur_word = model.generate(i, forward)
+            cur_word = cur_word.cpu().numpy()
+            ans = np.append(ans, np.array([cur_word]), axis=0)
+        return ans[1:].astype(int)
+        raise NotImplemented
 
 
 # TODO: define other hyperparameters here
