@@ -92,7 +92,7 @@ class LanguageModel(nn.Module):
         self.hidden_size = hidden_size
         self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
         # self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=3, dropout=0.5).to(DEVICE)
-        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, bidirectional=False, hidden_size=self.hidden_size, num_layers=3,dropout=0.3).to(DEVICE)
+        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, bidirectional=False, hidden_size=self.hidden_size, num_layers=3).to(DEVICE)
         self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
         self.dropout1 = torch.nn.Dropout(p=drop_out[0]).to(DEVICE)
         self.dropout2 = torch.nn.Dropout(p=drop_out[1]).to(DEVICE)
@@ -107,11 +107,11 @@ class LanguageModel(nn.Module):
     def runall(self, embed):
         # embed = self.dropout1(embed)
         output, hidden = self.rnn(embed)
-        # output = self.dropout2(output)
-        # output, hidden = self.rnn(embed, hidden)
-        # output = self.dropout3(output)
-        # output, hidden = self.rnn(embed, hidden)
-        # output = self.dropout3(output)
+        output = self.dropout2(output)
+        output, hidden = self.rnn(embed, hidden)
+        output = self.dropout3(output)
+        output, hidden = self.rnn(embed, hidden)
+        output = self.dropout3(output)
         return output
 
     def forward(self, x):
@@ -193,8 +193,8 @@ class LanguageModelTrainer:
         # TODO: Define your optimizer and criterion here
         self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
         # self.optimizer = torch.optim.ASGD(model.parameters(), lr=1e-2, weight_decay=1e-7)
-        # self.criterion = nn.CrossEntropyLoss().to(DEVICE)
-        self.criterion = nn.NLLLoss().to(DEVICE)
+        self.criterion = nn.CrossEntropyLoss().to(DEVICE)
+        # self.criterion = nn.NLLLoss().to(DEVICE)
 
     def train(self):
         self.model.train()  # set to training mode
