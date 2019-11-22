@@ -92,14 +92,14 @@ class LanguageModel(nn.Module):
                 self.rnns.append(torch.nn.LSTM(self.embed_hidden, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
             elif l != self.lstmlayers - 1:
                 if weight_tie == True:
-                    self.rnns.append(torch.nn.LSTM(self.hidden_size, self.embed_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
+                    self.rnns.append(torch.nn.LSTM(2 * self.hidden_size, self.embed_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
                 else:
-                    self.rnns.append(torch.nn.LSTM(self.hidden_size, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
+                    self.rnns.append(torch.nn.LSTM(2 * self.hidden_size, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
             else:
-                self.rnns.append(torch.nn.LSTM(self.hidden_size, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
+                self.rnns.append(torch.nn.LSTM(2 * self.hidden_size, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
         self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
         self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, bidirectional=False, hidden_size=self.hidden_size, num_layers=3).to(DEVICE)
-        self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
+        self.scoring = torch.nn.Linear(in_features=self.hidden_size * 2, out_features=vocab_size).to(DEVICE)
         self.drop = torch.nn.Dropout(p=DROP_OUTS[-1])
         self.locked_dropout1 = torchnlp.nn.LockedDropout(p=DROP_OUTS[0])
         self.init_weights()
@@ -323,7 +323,7 @@ print("Loader Init...")
 loader = LanguageModelDataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True)
 
 print("Model Init..")
-model = LanguageModel(len(vocab),weight_tie=True)
+model = LanguageModel(len(vocab), weight_tie=False)
 # model.apply(weights_init)
 print("Trainer Init...")
 trainer = LanguageModelTrainer(model=model, loader=loader, max_epochs=NUM_EPOCHS, run_id=run_id)
