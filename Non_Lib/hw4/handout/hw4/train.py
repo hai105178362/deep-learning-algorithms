@@ -26,6 +26,8 @@ embed_size = 400
 embed_hidden = 1150
 hidden_size = 1150
 drop_out = [0.4, 0.3, 0.4, 0.1]
+
+
 # drop_out = [0.2, 0.1, 0.1, 0.1]
 
 
@@ -100,7 +102,7 @@ class LanguageModel(nn.Module):
         self.hidden_size = hidden_size
         self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
         # self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=3, dropout=0.5).to(DEVICE)
-        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=3).to(DEVICE)
+        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, bidirectional=True, hidden_size=self.hidden_size, num_layers=3,dropout=0.4).to(DEVICE)
         self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
         self.dropout1 = torch.nn.Dropout(p=drop_out[0]).to(DEVICE)
         self.dropout2 = torch.nn.Dropout(p=drop_out[1]).to(DEVICE)
@@ -115,11 +117,11 @@ class LanguageModel(nn.Module):
     def runall(self, embed):
         # embed = self.dropout1(embed)
         output, hidden = self.rnn(embed)
-        output = self.dropout2(output)
-        output, hidden = self.rnn(embed,hidden)
-        output = self.dropout3(output)
-        output, hidden = self.rnn(embed,hidden)
-        output = self.dropout3(output)
+        # output = self.dropout2(output)
+        # output, hidden = self.rnn(embed, hidden)
+        # output = self.dropout3(output)
+        # output, hidden = self.rnn(embed, hidden)
+        # output = self.dropout3(output)
         return output
 
     def forward(self, x):
@@ -228,7 +230,6 @@ class LanguageModelTrainer:
         """
         result = self.model(inputs)
         loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
-
         # Adding L2 Norm
         # par = torch.tensor(5e-7).to(DEVICE)
         # l2_reg = torch.tensor(0.).to(DEVICE)
@@ -237,12 +238,6 @@ class LanguageModelTrainer:
         # loss += par * l2_reg
         loss.backward()
         self.optimizer.step()
-        # for w1, w2 in zip(model.embedding.parameters(), model.scoring.parameters()):
-        #     w1.grad.data.add_(w2.grad.data)
-        #     w2.grad = None
-        # self.optimizer.step()
-        # for w1, w2 in zip(model.embedding.parameters(), model.scoring.parameters()):
-        #     w2.data.copy_(w1.data)
 
         return loss
 
@@ -300,7 +295,7 @@ class TestLanguageModel:
         input = torch.LongTensor(inp).to(DEVICE)
         # model.eval()
         for i in input:
-            cur_word = model.predict(i).cpu().numpy()
+            cur_word = model.predict(i).detach().cpu().numpy()
             ans = np.append(ans, cur_word, axis=0)
         return ans[1:]
         raise NotImplemented
@@ -320,7 +315,7 @@ class TestLanguageModel:
         ans = np.zeros(shape=(1, forward))
         for i in input:
             cur_word = model.generate(i, forward)
-            cur_word = cur_word.cpu().numpy()
+            cur_word = cur_word.cpu().detach().numpy()
             ans = np.append(ans, np.array([cur_word]), axis=0)
         return ans[1:].astype(int)
         raise NotImplemented
