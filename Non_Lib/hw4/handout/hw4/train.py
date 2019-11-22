@@ -219,7 +219,8 @@ class LanguageModelTrainer:
 
         """
         result = self.model(inputs)
-        loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
+        # loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
+        loss = -self.criterion(result.view(-1, result.size(2)), targets.view(-1))
         # Adding L2 Norm
         par = torch.tensor(10e-8).to(DEVICE)
         l2_reg = torch.tensor(0.).to(DEVICE)
