@@ -9,8 +9,6 @@ from torch.utils.data import Dataset, DataLoader
 from tests import test_prediction, test_generation
 from helper import loader
 import csv
-from torchnlp.nn import lock_dropout
-import torchnlp
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
@@ -23,17 +21,21 @@ vocab = np.load('../dataset/vocab.npy', allow_pickle=True)
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 dataset = train_data
 vocab_size = len(vocab)
-BATCH_SIZE = 80
-EMBED_SIZE = 400
-EMBED_HIDDEN = 1150
-HIDDEN_SIZE = 512
-DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
-LSTM_LAYERS = 3
+batch_size = 80
+embed_size = 400
+embed_hidden = 1150
+hidden_size = 512
+drop_out = [0.4, 0.3, 0.4, 0.1]
 
-vocab_human = []
-with open('../dataset/vocab.csv') as f:
-    fo = csv.reader(f, delimiter=',')
-    vocab_human = np.array([i[1] for i in fo][1:])
+
+# drop_out = [0.2, 0.1, 0.1, 0.1]
+
+
+#
+# embed_size = 10
+# embed_hidden = 10
+# hidden_size = 10
+# drop_out = 0.3
 
 
 class LanguageModelDataLoader(DataLoader):
@@ -70,93 +72,98 @@ class LanguageModelDataLoader(DataLoader):
             yield (sentences, labels)
 
 
+vocab_human = []
+with open('../dataset/vocab.csv') as f:
+    fo = csv.reader(f, delimiter=',')
+    vocab_human = np.array([i[1] for i in fo][1:])
+
+
 class LanguageModel(nn.Module):
     """
         TODO: Define your model here
     """
 
-    def __init__(self, vocab_size, hidden=[None, None, None], weight_tie=False):
+    def __init__(self, vocab_size):
         super(LanguageModel, self).__init__()
         self.vocab_size = vocab_size
-        self.batch_size = BATCH_SIZE
-        self.embed_size = EMBED_SIZE
-        self.embed_hidden = EMBED_HIDDEN
-        self.hidden_size = HIDDEN_SIZE
-        self.lstmlayers = LSTM_LAYERS
-
-        # self.word_lstm_init_h = Variable(torch.randn(self.lstmlayers, self.batch_size, self.embed_hidden).type(torch.FloatTensor), requires_grad=True)
-        self.rnns = []
-        for l in range(self.lstmlayers):
-            if l == 0:
-                self.rnns.append(torch.nn.LSTM(self.embed_hidden, self.hidden_size, num_layers=1, dropout=0))
-            # elif l != self.lstmlayers - 1:
-            #     self.rnns.append(torch.nn.LSTM(self.hidden_size, self.hidden_size, num_layers=1, dropout=0))
-            else:
-                self.rnns.append(torch.nn.LSTM(self.hidden_size, self.hidden_size, num_layers=1, dropout=0))
+        self.batch_size = batch_size
+        self.embed_size = embed_size
+        self.embed_hidden = embed_hidden
+        self.hidden_size = hidden_size
         self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
+        # self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, hidden_size=self.hidden_size, num_layers=3, dropout=0.5).to(DEVICE)
         self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, bidirectional=False, hidden_size=self.hidden_size, num_layers=3).to(DEVICE)
         self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
-        self.drop = torch.nn.Dropout(p=0.5)
-        # self.locked_dropout1 = lock_dropout(DROP_OUTS[0])
-        # self.locked_dropout1 = torchnlp.nn.lock_dropout
-        self.init_weights()
+        self.dropout1 = torch.nn.Dropout(p=drop_out[0]).to(DEVICE)
+        self.dropout2 = torch.nn.Dropout(p=drop_out[1]).to(DEVICE)
+        self.dropout3 = torch.nn.Dropout(p=drop_out[2]).to(DEVICE)
+        self.dropout4 = torch.nn.Dropout(p=drop_out[3]).to(DEVICE)
+        # torch.nn.init.normal(self.embedding.weight, mean=0, std=1)
+        self.embedding.weight.data.normal_(-.1, 0.1)
+        # self.rnn.weight.data.normal_(-1.0 / np.sqrt(hidden_size), 1.0 / np.sqrt(hidden_size))
+        # torch.nn.init.xavier_uniform(self.embedding.weight)
+        # torch.nn.init.
 
-    def init_weights(self):
-        self.embedding.weight.data.uniform_(-0.1, 0.1)
-        self.scoring.bias.data.fill_(0)
-        self.scoring.weight.data.uniform_(-0.1, 0.1)
-
-    def net_run(self, embed, hidden, validation=False):
-        # embed = self.locked_dropout1(embed)
-        new_hidden = []
-        # raw_output, hidden = self.rnn(emb, hidden)
-        cur_outputs = []
-        outputs = []
-        current_input = embed
-        cur_output = None
-        for l, rnn in enumerate(self.rnns):
-            # print("l:", l)
-            cur_output, cur_hidden = rnn(current_input, hidden[l])
-            new_hidden.append(cur_hidden)
-            cur_outputs.append(cur_output)
-            if l != self.lstmlayers - 1:
-                # cur_output = self.locked_dropout1(cur_output)
-                outputs.append(cur_output)
-            current_input = cur_output
-        hidden = new_hidden
-        if validation == True:
-            cur_output = cur_output[-1]
-        output = self.scoring(cur_output)
-        output = self.drop(output)
-        outputs.append(output)
-        return output, hidden
-
-    def forward(self, x, hidden=[None, None, None]):
-        embed = self.embedding(x)
-        output, hidden = self.net_run(embed, hidden=hidden)
-        result = output.view(-1, self.batch_size, self.vocab_size)
-        return result, hidden
-
-    def predict(self, seq, hidden=[None, None, None]):  # L x V
-        embed = self.embedding(seq).unsqueeze(1)
-        output = self.net_run(embed, hidden=hidden, validation=True)
-        # _, current_word = torch.max(output, dim=1)  # 1 x 1
+    def runall(self, embed):
+        # embed = self.dropout1(embed)
+        output, hidden = self.rnn(embed)
+        output = self.dropout2(output)
+        output, hidden = self.rnn(embed, hidden)
+        output = self.dropout3(output)
+        output, hidden = self.rnn(embed, hidden)
+        output = self.dropout3(output)
         return output
 
-    def generate(self, seq, n_words, hidden=[None, None, None]):  # L x V
+    def forward(self, x):
+        # x = self.dropout1(x)
+        embed = self.embedding(x)
+        output = self.runall(embed)
+        output_lstm_flatten = output.view(-1, self.hidden_size)
+        output_flatten = self.scoring(output_lstm_flatten)
+        output_flatten = self.dropout4(output_flatten)
+        print(output_flatten.view(-1, self.batch_size, self.vocab_size).shape)
+        return output_flatten.view(-1, self.batch_size, self.vocab_size)
+        raise NotImplemented
+
+    def predict(self, seq):  # L x V
+
+        # x = self.dropout1(seq)
+        embed = self.embedding(seq).unsqueeze(1)
+        output = self.runall(embed)
+        output = output[-1]
+        # embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
+        # embed = self.dropout(embed)
+        # output_lstm, hidden = self.rnn(embed)  # L x 1 x H
+        # output = output_lstm[-1]  # 1 x H
+        scores = self.scoring(output)  # 1 x V
+        # scores = self.dropout4(scores)
+        _, current_word = torch.max(scores, dim=1)  # 1 x 1
+        return scores
+
+    def generate(self, seq, n_words):  # L x V
         cur_seq = seq
         generated_words = []
         embed = self.embedding(cur_seq).unsqueeze(1)
-        output = self.net_run(embed, hidden=hidden, validation=True)
-        _, current_word = torch.max(output, dim=1)  # 1 x 1
+        output = self.runall(embed)
+        output = output[-1]
+        # embed = self.embedding(seq).unsqueeze(1)  # L x 1 x E
+        # embed = self.dropout(embed)
+        # output_lstm, hidden = self.rnn(embed)  # L x 1 x H
+        # output = output_lstm[-1]  # 1 x H
+        scores = self.scoring(output)  # 1 x V
+        # scores = self.dropout4(scores)
+        _, current_word = torch.max(scores, dim=1)  # 1 x 1
         generated_words.append(current_word)
-        cur_seq = torch.cat((cur_seq, current_word), dim=0)
+        cur_seq = torch.cat((cur_seq[1:], current_word), dim=0)
         if n_words > 1:
             for i in range(n_words - 1):
                 embed = self.embedding(cur_seq).unsqueeze(1)
-                output = self.net_run(embed, validation=True)
-                _, current_word = torch.max(output, dim=1)  # 1 x 1
-                cur_seq = torch.cat((cur_seq, current_word), dim=0)
+                output = self.runall(embed)
+                output = output[-1]
+                scores = self.scoring(output)  # 1 x V
+                scores = self.dropout4(scores)
+                _, current_word = torch.max(scores, dim=1)  # 1
+                cur_seq = torch.cat((cur_seq[1:], current_word), dim=0)
                 generated_words.append(current_word)
                 # generated_words = torch.cat((generated_words, current_word),0)
         return torch.cat(generated_words, dim=0)
@@ -207,15 +214,16 @@ class LanguageModelTrainer:
               % (self.epochs + 1, self.max_epochs, epoch_loss))
         self.train_losses.append(epoch_loss)
 
-    def train_batch(self, inputs, targets, hidden=[None, None, None]):
+    def train_batch(self, inputs, targets):
         """
             TODO: Define code for training a single batch of inputs
 
         """
-        result, hidden = self.model(inputs, hidden)
-        loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
+        result = self.model(inputs)
+        # loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
+        loss = -self.criterion(result.view(-1, result.size(2)), targets.view(-1))
         # Adding L2 Norm
-        par = torch.tensor(10e-5).to(DEVICE)
+        par = torch.tensor(10e-8).to(DEVICE)
         l2_reg = torch.tensor(0.).to(DEVICE)
         for param in model.parameters():
             l2_reg += torch.norm(param)
