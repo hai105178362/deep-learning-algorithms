@@ -23,19 +23,19 @@ vocab = np.load('../dataset/vocab.npy', allow_pickle=True)
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 dataset = train_data
 vocab_size = len(vocab)
-BATCH_SIZE = 80
-EMBED_SIZE = 400
-EMBED_HIDDEN = 1150
-HIDDEN_SIZE = 1024
-DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
-LSTM_LAYERS = 3
-
-# BATCH_SIZE = 10
-# EMBED_SIZE = 10
-# EMBED_HIDDEN = 10
-# HIDDEN_SIZE = 10
+# BATCH_SIZE = 80
+# EMBED_SIZE = 400
+# EMBED_HIDDEN = 1150
+# HIDDEN_SIZE = 1024
 # DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
-# LSTM_LAYERS = 1
+# LSTM_LAYERS = 3
+
+BATCH_SIZE = 10
+EMBED_SIZE = 10
+EMBED_HIDDEN = 10
+HIDDEN_SIZE = 10
+DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
+LSTM_LAYERS = 1
 
 vocab_human = []
 with open('../dataset/vocab.csv') as f:
@@ -173,6 +173,8 @@ class LanguageModel(nn.Module):
                 embed = self.embedding(cur_seq).unsqueeze(1)
                 output, _ = self.net_run(embed, validation=True)
                 _, current_word = torch.max(output, dim=1)  # 1 x 1
+                print(current_word)
+                exit()
                 cur_seq = torch.cat((cur_seq, current_word), dim=0)
                 generated_words.append(current_word)
                 # generated_words = torch.cat((generated_words, current_word),0)
@@ -221,8 +223,6 @@ class LanguageModelTrainer:
                 print("batch:{}".format(batch_num + 1))
                 print("cur_loss is:", cur_loss.item())
         epoch_loss = epoch_loss / (batch_num + 1)
-        # epoch_loss.backward()
-        # self.optimizer.step()
         print('[TRAIN]  Epoch [%d/%d]   Loss: %.4f'
               % (self.epochs + 1, self.max_epochs, epoch_loss))
         self.train_losses.append(epoch_loss)
@@ -297,7 +297,7 @@ class TestLanguageModel:
         # model.eval()
         for i in input:
             cur_word = model.predict(i).detach().cpu().numpy()
-            print(cur_word.shape)
+            # print(cur_word.shape)
             ans = np.append(ans, cur_word, axis=0)
         return ans[1:]
         raise NotImplemented
