@@ -145,10 +145,7 @@ class LanguageModel(nn.Module):
         output = self.scoring(cur_output)
         output = self.drop(output)
         if validation == True:
-            print(output.shape)
-            exit()
             output = output.view(output.shape[0], output.shape[2])
-            print(output.shape)
         outputs.append(output)
         return output, hidden
 
