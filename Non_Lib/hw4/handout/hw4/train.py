@@ -24,7 +24,7 @@ vocab_size = len(vocab)
 batch_size = 80
 embed_size = 400
 embed_hidden = 1150
-hidden_size = 256
+hidden_size = 512
 drop_out = [0.4, 0.3, 0.4, 0.1]
 
 
@@ -78,16 +78,6 @@ with open('../dataset/vocab.csv') as f:
     vocab_human = np.array([i[1] for i in fo][1:])
 
 
-def weights_init(m):
-    classname = m.__class__.__name__
-
-    if classname.find('Embedding') != -1:
-        m.weight.data.normal_(-1.0, 1.0)
-    else:
-        m.weight.data.normal_(-1.0 / np.sqrt(hidden_size), 1.0 / np.sqrt(hidden_size))
-        m.bias.data.fill_(0)
-
-
 class LanguageModel(nn.Module):
     """
         TODO: Define your model here
@@ -118,9 +108,9 @@ class LanguageModel(nn.Module):
         # embed = self.dropout1(embed)
         output, hidden = self.rnn(embed)
         # output = self.dropout2(output)
-        # output, hidden = self.rnn(embed, hidden)
+        output, hidden = self.rnn(embed, hidden)
         # output = self.dropout3(output)
-        # output, hidden = self.rnn(embed, hidden)
+        output, hidden = self.rnn(embed, hidden)
         # output = self.dropout3(output)
         return output
 
