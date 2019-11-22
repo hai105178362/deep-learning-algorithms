@@ -161,7 +161,7 @@ class LanguageModel(nn.Module):
 
         # print(output.shape)
         # _, current_word = torch.max(output, dim=1)  # 1 x 1
-        return output[-1]
+        return output[-1].unsqueeze(0)
 
     def generate(self, seq, n_words):  # L x V
         cur_seq = seq
@@ -303,7 +303,7 @@ class TestLanguageModel:
         # model.eval()
         for i in input:
             cur_word = model.predict(i).detach().cpu().numpy()
-            # print(cur_word.shape)
+            print(cur_word.shape)
             ans = np.append(ans, cur_word, axis=0)
         return ans[1:]
         raise NotImplemented
