@@ -23,12 +23,20 @@ vocab = np.load('../dataset/vocab.npy', allow_pickle=True)
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 dataset = train_data
 vocab_size = len(vocab)
-BATCH_SIZE = 80
-EMBED_SIZE = 400
-EMBED_HIDDEN = 1150
-HIDDEN_SIZE = 1024
+# BATCH_SIZE = 80
+# EMBED_SIZE = 400
+# EMBED_HIDDEN = 1150
+# HIDDEN_SIZE = 1024
+# DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
+# LSTM_LAYERS = 3
+
+BATCH_SIZE = 10
+EMBED_SIZE = 10
+EMBED_HIDDEN = 10
+HIDDEN_SIZE = 10
 DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
-LSTM_LAYERS = 3
+LSTM_LAYERS = 1
+
 
 vocab_human = []
 with open('../dataset/vocab.csv') as f:
