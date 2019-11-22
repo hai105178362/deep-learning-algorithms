@@ -145,7 +145,10 @@ class LanguageModel(nn.Module):
         output = self.scoring(cur_output)
         output = self.drop(output)
         if validation == True:
+            print(output.shape)
+            exit()
             output = output.view(output.shape[0], output.shape[2])
+            print(output.shape)
         outputs.append(output)
         return output, hidden
 
@@ -158,6 +161,7 @@ class LanguageModel(nn.Module):
     def predict(self, seq):  # L x V
         embed = self.embedding(seq).unsqueeze(1)
         output, _ = self.net_run(embed, validation=True)
+        print(output.shape)
         # _, current_word = torch.max(output, dim=1)  # 1 x 1
         return output
 
