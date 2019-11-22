@@ -83,7 +83,7 @@ class LanguageModel(nn.Module):
         self.embed_hidden = EMBED_HIDDEN
         self.hidden_size = HIDDEN_SIZE
         self.lstmlayers = LSTM_LAYERS
-        # self.init_hidden = hidden
+        self.num_directions = 2
 
         self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
         self.rnns = []
@@ -92,13 +92,13 @@ class LanguageModel(nn.Module):
                 self.rnns.append(torch.nn.LSTM(self.embed_hidden, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
             elif l != self.lstmlayers - 1:
                 if weight_tie == True:
-                    self.rnns.append(torch.nn.LSTM(2 * self.hidden_size, self.embed_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
+                    self.rnns.append(torch.nn.LSTM(self.num_directions * self.hidden_size, self.embed_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
                 else:
-                    self.rnns.append(torch.nn.LSTM(2 * self.hidden_size, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
+                    self.rnns.append(torch.nn.LSTM(self.num_directions * self.hidden_size, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
             else:
-                self.rnns.append(torch.nn.LSTM(2 * self.hidden_size, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
+                self.rnns.append(torch.nn.LSTM(self.num_directions * self.hidden_size, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
         self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, bidirectional=False, hidden_size=self.hidden_size, num_layers=3).to(DEVICE)
-        self.scoring = torch.nn.Linear(in_features=self.hidden_size * 2, out_features=vocab_size).to(DEVICE)
+        self.scoring = torch.nn.Linear(in_features=self.hidden_size * self.num_directions, out_features=vocab_size).to(DEVICE)
         self.drop = torch.nn.Dropout(p=DROP_OUTS[-1])
         self.locked_dropout1 = torchnlp.nn.LockedDropout(p=DROP_OUTS[0])
         self.init_weights()
@@ -114,7 +114,7 @@ class LanguageModel(nn.Module):
         hidden = []
 
         for i in range(self.lstmlayers):
-            hidden.append(torch.randn(2, seqlen, self.hidden_size) / np.sqrt(self.hidden_size))
+            hidden.append(torch.randn(self.num_directions, seqlen, self.hidden_size) / np.sqrt(self.hidden_size))
         return hidden
 
     def net_run(self, embed, validation=False):
@@ -135,6 +135,8 @@ class LanguageModel(nn.Module):
             current_input = cur_output
         hidden = new_hidden
         if validation == True:
+            print(cur_output.shape)
+            exit()
             cur_output = cur_output[-1]
         output = self.scoring(cur_output)
         output = self.drop(output)
