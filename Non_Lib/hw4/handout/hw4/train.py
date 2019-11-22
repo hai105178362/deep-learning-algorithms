@@ -120,7 +120,7 @@ class LanguageModel(nn.Module):
         output = self.runall(embed)
         output_lstm_flatten = output.view(-1, self.hidden_size)
         output_flatten = self.scoring(output_lstm_flatten)
-        # output_flatten = self.dropout4(output_flatten)
+        output_flatten = self.dropout4(output_flatten)
         return output_flatten.view(-1, self.batch_size, self.vocab_size)
         raise NotImplemented
 
@@ -150,7 +150,7 @@ class LanguageModel(nn.Module):
         # output_lstm, hidden = self.rnn(embed)  # L x 1 x H
         # output = output_lstm[-1]  # 1 x H
         scores = self.scoring(output)  # 1 x V
-        scores = self.dropout4(scores)
+        # scores = self.dropout4(scores)
         _, current_word = torch.max(scores, dim=1)  # 1 x 1
         generated_words.append(current_word)
         cur_seq = torch.cat((cur_seq[1:], current_word), dim=0)
@@ -193,8 +193,8 @@ class LanguageModelTrainer:
         # TODO: Define your optimizer and criterion here
         self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
         # self.optimizer = torch.optim.ASGD(model.parameters(), lr=1e-2, weight_decay=1e-7)
-        self.criterion = nn.CrossEntropyLoss().to(DEVICE)
-        # self.criterion = nn.NLLLoss().to(DEVICE)
+        # self.criterion = nn.CrossEntropyLoss().to(DEVICE)
+        self.criterion = nn.NLLLoss().to(DEVICE)
 
     def train(self):
         self.model.train()  # set to training mode
@@ -221,11 +221,11 @@ class LanguageModelTrainer:
         result = self.model(inputs)
         loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
         # Adding L2 Norm
-        # par = torch.tensor(10e-8).to(DEVICE)
-        # l2_reg = torch.tensor(0.).to(DEVICE)
-        # for param in model.parameters():
-        #     l2_reg += torch.norm(param)
-        # loss += par * l2_reg
+        par = torch.tensor(10e-8).to(DEVICE)
+        l2_reg = torch.tensor(0.).to(DEVICE)
+        for param in model.parameters():
+            l2_reg += torch.norm(param)
+        loss += par * l2_reg
         loss.backward()
         self.optimizer.step()
 
