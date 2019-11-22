@@ -231,11 +231,11 @@ class LanguageModelTrainer:
         result = self.model(inputs)
         loss = self.criterion(result.view(-1, result.size(2)), targets.view(-1))
         # Adding L2 Norm
-        # par = torch.tensor(10e-5).to(DEVICE)
-        # l2_reg = torch.tensor(0.).to(DEVICE)
-        # for param in model.parameters():
-        #     l2_reg += torch.norm(param)
-        # loss += par * l2_reg
+        par = torch.tensor(10e-5).to(DEVICE)
+        l2_reg = torch.tensor(0.).to(DEVICE)
+        for param in model.parameters():
+            l2_reg += torch.norm(param)
+        loss += par * l2_reg
         loss.backward()
         self.optimizer.step()
 
