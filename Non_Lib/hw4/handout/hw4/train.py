@@ -144,7 +144,7 @@ class LanguageModel(nn.Module):
         output = self.scoring(cur_output)
         if validation == True:
             print(output.shape)
-            output = output.view(output.shape(0), output.shape(2))
+            output = output.view(output.shape[0], output.shape[2])
             print(cur_output.shape)
             exit()
 
