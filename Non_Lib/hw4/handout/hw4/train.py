@@ -11,6 +11,7 @@ from helper import loader
 import csv
 from torchnlp.nn import lock_dropout
 from torchnlp.nn import WeightDrop
+from torchnlp.nn import WeightDropLSTM
 import torchnlp
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
@@ -27,11 +28,11 @@ vocab_size = len(vocab)
 BATCH_SIZE = 80
 EMBED_SIZE = 400
 EMBED_HIDDEN = 1150
-HIDDEN_SIZE = 1024
+HIDDEN_SIZE = 1150
 DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
 LSTM_LAYERS = 3
 WEIGHT_TIE = True
-WDROP = True
+WDROP = False
 NUM_DIRECTIONS = 2
 
 # BATCH_SIZE = 80
@@ -118,11 +119,7 @@ class LanguageModel(nn.Module):
         self.locked_dropouts = [torchnlp.nn.LockedDropout(p=i) for i in DROP_OUTS]
         self.init_weights()
         if self.wdrop == True:
-            # self.rnns = [WeightDrop(rnn, ['weight_hh_l0'], dropout=0.65) for rnn in self.rnns]
-            for l,rnn in enumerate (self.rnns):
-                rnn.flatten_parameters()
-                self.rnns[l] = WeightDrop(rnn, ['weight_hh_l0'], dropout=0.65)
-            # self.rnns = [WeightDrop(rnn, ['weight_hh_l0'], dropout=0.65) for rnn in self.rnns]
+            self.rnns = [WeightDrop(rnn, ['weight_hh_l0'], dropout=0.65) for rnn in self.rnns]
         self.rnns = torch.nn.ModuleList(self.rnns)
         if weight_tie == True:
             self.embedding.weight = self.scoring.weight
