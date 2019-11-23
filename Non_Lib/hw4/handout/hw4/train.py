@@ -10,6 +10,7 @@ from tests import test_prediction, test_generation
 from helper import loader
 import csv
 from torchnlp.nn import lock_dropout
+from torchnlp.nn import WeightDrop
 import torchnlp
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
@@ -104,7 +105,7 @@ class LanguageModel(nn.Module):
                     self.rnns.append(torch.nn.LSTM(self.num_directions * self.hidden_size, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
             else:
                 self.rnns.append(torch.nn.LSTM(self.num_directions * self.hidden_size, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
-        self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, bidirectional=False, hidden_size=self.hidden_size, num_layers=3).to(DEVICE)
+        self.rnns = [WeightDrop(rnn, ['weight_hh_l0'], dropout=0.65) for rnn in self.rnns]
         self.scoring = torch.nn.Linear(in_features=self.hidden_size * self.num_directions, out_features=vocab_size).to(DEVICE)
         self.drop = torch.nn.Dropout(p=DROP_OUTS[-1])
         self.locked_dropout1 = torchnlp.nn.LockedDropout(p=DROP_OUTS[1])
