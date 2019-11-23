@@ -32,6 +32,7 @@ DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
 LSTM_LAYERS = 3
 WEIGHT_TIE = True
 WDROP = False
+NUM_DIRECTIONS = 2
 
 # BATCH_SIZE = 80
 # EMBED_SIZE = 2
@@ -93,7 +94,7 @@ class LanguageModel(nn.Module):
         self.embed_hidden = EMBED_HIDDEN
         self.hidden_size = HIDDEN_SIZE
         self.lstmlayers = LSTM_LAYERS
-        self.num_directions = 2
+        self.num_directions = NUM_DIRECTIONS
         self.wdrop = WDROP
         if weight_tie == True:
             self.embed_hidden = self.hidden_size
@@ -230,7 +231,7 @@ class LanguageModelTrainer:
             cur_loss.backward()
             self.optimizer.step()
             epoch_loss += cur_loss
-            if (batch_num + 1) % 30 == 0:
+            if (batch_num + 1) % 100*NUM_DIRECTIONS == 0:
                 print("batch:{}".format(batch_num + 1))
                 print("cur_loss is:", cur_loss.item())
         epoch_loss = epoch_loss / (batch_num + 1)
