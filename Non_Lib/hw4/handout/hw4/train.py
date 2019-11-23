@@ -138,7 +138,8 @@ class LanguageModel(nn.Module):
             new_hidden.append(cur_hidden)
             cur_outputs.append(cur_output)
             if l != self.lstmlayers - 1:
-                cur_output = self.locked_dropouts[l]
+                # cur_output = self.locked_dropout1(cur_output)
+                cur_output = self.locked_dropouts[l](cur_output)
                 outputs.append(cur_output)
             current_input = cur_output
         hidden = new_hidden
