@@ -26,7 +26,7 @@ vocab_size = len(vocab)
 BATCH_SIZE = 80
 EMBED_SIZE = 400
 EMBED_HIDDEN = 1150
-HIDDEN_SIZE = 1024
+HIDDEN_SIZE = 256
 DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
 LSTM_LAYERS = 3
 
@@ -107,7 +107,7 @@ class LanguageModel(nn.Module):
         self.rnn = torch.nn.LSTM(input_size=self.embed_hidden, bidirectional=False, hidden_size=self.hidden_size, num_layers=3).to(DEVICE)
         self.scoring = torch.nn.Linear(in_features=self.hidden_size * self.num_directions, out_features=vocab_size).to(DEVICE)
         self.drop = torch.nn.Dropout(p=DROP_OUTS[-1])
-        self.locked_dropout1 = torchnlp.nn.LockedDropout(p=DROP_OUTS[0])
+        self.locked_dropout1 = torchnlp.nn.LockedDropout(p=DROP_OUTS[1])
         self.init_weights()
         if weight_tie == True:
             self.embedding.weight = self.scoring.weight
@@ -118,10 +118,6 @@ class LanguageModel(nn.Module):
         self.scoring.weight.data.uniform_(-0.1, 0.1)
 
     def init_hidden_weights(self, seqlen):
-        # hidden = []
-        #
-        # for i in range(self.lstmlayers):
-        #     hidden.append(torch.randn(self.num_directions, seqlen, self.hidden_size) / np.sqrt(self.hidden_size))
         return torch.randn(self.num_directions, seqlen, self.hidden_size, requires_grad=True) / np.sqrt(self.hidden_size)
 
     def net_run(self, embed, validation=False):
@@ -132,9 +128,10 @@ class LanguageModel(nn.Module):
         current_input = embed
         cur_output = None
         hidden = self.init_hidden_weights(embed.shape[1]).to(DEVICE)
+        cur_hidden = (hidden, hidden)
         for l, rnn in enumerate(self.rnns):
             # cur_output, cur_hidden = rnn(current_input, hidden[l])
-            cur_output, cur_hidden = rnn(current_input, (hidden, hidden))
+            cur_output, cur_hidden = rnn(current_input, cur_hidden)
             new_hidden.append(cur_hidden)
             cur_outputs.append(cur_output)
             if l != self.lstmlayers - 1:
