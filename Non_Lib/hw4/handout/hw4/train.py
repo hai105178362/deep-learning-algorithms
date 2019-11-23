@@ -30,6 +30,7 @@ EMBED_HIDDEN = 1150
 HIDDEN_SIZE = 1024
 DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
 LSTM_LAYERS = 3
+WEIGHT_TIE = True
 
 # BATCH_SIZE = 80
 # EMBED_SIZE = 2
@@ -341,7 +342,7 @@ print("Loader Init...")
 loader = LanguageModelDataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True)
 
 print("Model Init..")
-model = LanguageModel(len(vocab), weight_tie=True)
+model = LanguageModel(len(vocab), weight_tie=WEIGHT_TIE)
 # model.apply(weights_init)
 print("Trainer Init...")
 trainer = LanguageModelTrainer(model=model, loader=loader, max_epochs=NUM_EPOCHS, run_id=run_id)
