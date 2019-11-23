@@ -110,6 +110,7 @@ class LanguageModel(nn.Module):
         self.drop = torch.nn.Dropout(p=DROP_OUTS[-1])
         self.locked_dropout1 = torchnlp.nn.LockedDropout(p=DROP_OUTS[1])
         self.init_weights()
+        self.rnns = torch.nn.ModuleList(self.rnns)
         if weight_tie == True:
             self.embedding.weight = self.scoring.weight
 
