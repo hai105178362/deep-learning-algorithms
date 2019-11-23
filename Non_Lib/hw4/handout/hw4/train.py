@@ -92,17 +92,17 @@ class LanguageModel(nn.Module):
         self.hidden_size = HIDDEN_SIZE
         self.lstmlayers = LSTM_LAYERS
         self.num_directions = 2
+        if weight_tie == True:
+            self.embed_hidden = self.hidden_size
 
-        self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
+        self.embedding = torch.nn.Embedding(vocab_size, self.num_directions * self.embed_hidden, self.embed_size).to(DEVICE)
+
         self.rnns = []
         for l in range(self.lstmlayers):
             if l == 0:
-                self.rnns.append(torch.nn.LSTM(self.embed_hidden, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
+                self.rnns.append(torch.nn.LSTM(self.num_directions * self.embed_hidden, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
             elif l != self.lstmlayers - 1:
-                if weight_tie == True:
-                    self.rnns.append(torch.nn.LSTM(self.num_directions * self.hidden_size, self.embed_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
-                else:
-                    self.rnns.append(torch.nn.LSTM(self.num_directions * self.hidden_size, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
+                self.rnns.append(torch.nn.LSTM(self.num_directions * self.hidden_size, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
             else:
                 self.rnns.append(torch.nn.LSTM(self.num_directions * self.hidden_size, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
         # self.rnns = [WeightDropLSTM(rnn, ['weight_hh_l0'], weight_dropout=0.65) for rnn in self.rnns]
@@ -208,8 +208,8 @@ class LanguageModelTrainer:
         self.run_id = run_id
 
         # TODO: Define your optimizer and criterion here
-        self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
-        # self.optimizer = torch.optim.ASGD(model.parameters(), lr=1e-2, weight_decay=1e-7)
+        # self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
+        self.optimizer = torch.optim.ASGD(model.parameters(), lr=1e-2, weight_decay=1e-4)
         self.criterion = nn.CrossEntropyLoss().to(DEVICE)
         # self.criterion = nn.NLLLoss().to(DEVICE)
 
@@ -242,7 +242,7 @@ class LanguageModelTrainer:
         cur = result.view(s[0] * s[1], s[2])
         loss = self.criterion(cur, targets.view(-1))
         # Adding L2 Norm
-        par = torch.tensor(10e-6).to(DEVICE)
+        par = torch.tensor(10e-5).to(DEVICE)
         l2_reg = torch.tensor(0.).to(DEVICE)
         for param in model.parameters():
             l2_reg += torch.norm(param)
@@ -341,7 +341,7 @@ print("Loader Init...")
 loader = LanguageModelDataLoader(dataset=dataset, batch_size=BATCH_SIZE, shuffle=True)
 
 print("Model Init..")
-model = LanguageModel(len(vocab), weight_tie=False)
+model = LanguageModel(len(vocab), weight_tie=True)
 # model.apply(weights_init)
 print("Trainer Init...")
 trainer = LanguageModelTrainer(model=model, loader=loader, max_epochs=NUM_EPOCHS, run_id=run_id)
