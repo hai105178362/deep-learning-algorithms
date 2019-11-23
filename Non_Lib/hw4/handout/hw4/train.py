@@ -31,6 +31,7 @@ HIDDEN_SIZE = 1024
 DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
 LSTM_LAYERS = 3
 WEIGHT_TIE = True
+WDROP = False
 
 # BATCH_SIZE = 80
 # EMBED_SIZE = 2
@@ -93,6 +94,7 @@ class LanguageModel(nn.Module):
         self.hidden_size = HIDDEN_SIZE
         self.lstmlayers = LSTM_LAYERS
         self.num_directions = 2
+        self.wdrop = WDROP
         if weight_tie == True:
             self.embed_hidden = self.hidden_size
 
@@ -109,9 +111,13 @@ class LanguageModel(nn.Module):
         # self.rnns = [WeightDropLSTM(rnn, ['weight_hh_l0'], weight_dropout=0.65) for rnn in self.rnns]
         self.scoring = torch.nn.Linear(in_features=self.hidden_size * self.num_directions, out_features=vocab_size).to(DEVICE)
         self.drop = torch.nn.Dropout(p=DROP_OUTS[-1])
+        self.embeddrop = torch.nn.Dropout(p=0.4)
+
         # self.locked_dropout1 = torchnlp.nn.LockedDropout(p=DROP_OUTS[1])
         self.locked_dropouts = [torchnlp.nn.LockedDropout(p=i) for i in DROP_OUTS]
         self.init_weights()
+        # if self.wdrop == True:
+        #     self.rnns = [WeightDrop(rnn, ['weight_hh_l0'], dropout=wdrop) for rnn in self.rnns]
         self.rnns = torch.nn.ModuleList(self.rnns)
         if weight_tie == True:
             self.embedding.weight = self.scoring.weight
@@ -129,7 +135,7 @@ class LanguageModel(nn.Module):
         # raw_output, hidden = self.rnn(emb, hidden)
         cur_outputs = []
         outputs = []
-        current_input = embed
+        current_input = self.embeddrop(embed)
         cur_output = None
         hidden = self.init_hidden_weights(embed.shape[1]).to(DEVICE)
         cur_hidden = (hidden, hidden)
@@ -140,7 +146,7 @@ class LanguageModel(nn.Module):
             cur_outputs.append(cur_output)
             if l != self.lstmlayers - 1:
                 # cur_output = self.locked_dropout1(cur_output)
-                cur_output = self.locked_dropouts[l](cur_output)
+                cur_output = self.locked_dropouts[l+1](cur_output)
                 outputs.append(cur_output)
             current_input = cur_output
         hidden = new_hidden
