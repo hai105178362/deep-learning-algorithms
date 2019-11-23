@@ -10,7 +10,7 @@ from tests import test_prediction, test_generation
 from helper import loader
 import csv
 from torchnlp.nn import lock_dropout
-from torchnlp.nn import WeightDropLSTM
+from torchnlp.nn import WeightDrop
 import torchnlp
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
@@ -97,7 +97,7 @@ class LanguageModel(nn.Module):
         self.num_directions = NUM_DIRECTIONS
         self.wdrop = WDROP
         if weight_tie == True:
-            self.embed_hidden = self.hidden_size
+            self.hidden_size = self.embed_hidden
 
         self.embedding = torch.nn.Embedding(vocab_size, self.num_directions * self.embed_hidden, self.embed_size).to(DEVICE)
 
@@ -117,8 +117,8 @@ class LanguageModel(nn.Module):
         # self.locked_dropout1 = torchnlp.nn.LockedDropout(p=DROP_OUTS[1])
         self.locked_dropouts = [torchnlp.nn.LockedDropout(p=i) for i in DROP_OUTS]
         self.init_weights()
-        # if self.wdrop == True:
-        #     self.rnns = [WeightDrop(rnn, ['weight_hh_l0'], dropout=wdrop) for rnn in self.rnns]
+        if self.wdrop == True:
+            self.rnns = [WeightDrop(rnn, ['weight_hh_l0'], dropout=self.wdrop) for rnn in self.rnns]
         self.rnns = torch.nn.ModuleList(self.rnns)
         if weight_tie == True:
             self.embedding.weight = self.scoring.weight
