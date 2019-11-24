@@ -31,9 +31,9 @@ EMBED_SIZE = 400
 EMBED_HIDDEN = 1150
 HIDDEN_SIZE = 1150
 DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
-LSTM_LAYERS = 4
+LSTM_LAYERS = 3
 WEIGHT_TIE = True
-WDROP = True
+WDROP = False
 NUM_DIRECTIONS = 1
 
 # BATCH_SIZE = 80
@@ -158,7 +158,6 @@ class LanguageModel(nn.Module):
             new_hidden.append(cur_hidden)
             cur_outputs.append(cur_output)
             if l != self.lstmlayers - 1:
-                # cur_output = self.locked_dropout1(cur_output)
                 cur_output = self.locked_dropouts[l + 1](cur_output)
                 outputs.append(cur_output)
             current_input = cur_output
