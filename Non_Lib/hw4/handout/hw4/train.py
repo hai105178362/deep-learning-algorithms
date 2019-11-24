@@ -359,13 +359,13 @@ model = LanguageModel(len(vocab), weight_tie=WEIGHT_TIE)
 # model.apply(weights_init)
 print("Trainer Init...")
 trainer = LanguageModelTrainer(model=model, loader=loader, max_epochs=NUM_EPOCHS, run_id=run_id)
-best_nll = 5.2
+best_nll = 5.3
 for epoch in range(NUM_EPOCHS):
     print("Epoch: ", epoch + 1)
     trainer.train()
     nll = trainer.test()
     print("nll: ", nll)
-    if nll < best_nll:
+    if nll+0.1 < best_nll:
         best_nll = nll
         print("Saving model, predictions and generated output for epoch " + str(epoch) + " with NLL: " + str(best_nll))
         trainer.save()
