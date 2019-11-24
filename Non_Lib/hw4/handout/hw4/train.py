@@ -167,7 +167,7 @@ class LanguageModel(nn.Module):
         # _, current_word = torch.max(output, dim=1)  # 1 x 1
         print(output.shape)
         print(output[-1].unsqueeze(0).shape)
-        return output[-1].unsqueeze(0)
+        return output[-1]
         # return output.unsqueeze(0)
 
     def generate(self, seq, n_words):  # L x V
