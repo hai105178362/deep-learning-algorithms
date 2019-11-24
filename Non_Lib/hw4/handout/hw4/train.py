@@ -55,10 +55,9 @@ class LanguageModelDataLoader(DataLoader):
     """
 
     def __init__(self, dataset, batch_size, shuffle=True):
-
+        self.shuffle = shuffle
         self.data = np.array(dataset)
-        if shuffle == True:
-            np.random.shuffle(self.data)
+
         # self.largetext = []
         # for i in data:
         #     self.largetext = np.concatenate((self.largetext, i), axis=None)
@@ -69,6 +68,8 @@ class LanguageModelDataLoader(DataLoader):
         # raise NotImplemented
 
     def __iter__(self):
+        if self.shuffle == True:
+            np.random.shuffle(self.data)
         self.largetext = []
         for i in self.data:
             self.largetext = np.concatenate((self.largetext, i), axis=None)
@@ -153,7 +154,7 @@ class LanguageModel(nn.Module):
             cur_outputs.append(cur_output)
             if l != self.lstmlayers - 1:
                 # cur_output = self.locked_dropout1(cur_output)
-                cur_output = self.locked_dropouts[l+1](cur_output)
+                cur_output = self.locked_dropouts[l + 1](cur_output)
                 outputs.append(cur_output)
             current_input = cur_output
         hidden = new_hidden
@@ -238,9 +239,9 @@ class LanguageModelTrainer:
             cur_loss.backward()
             self.optimizer.step()
             epoch_loss += cur_loss
-            if (batch_num + 1) % 50*NUM_DIRECTIONS == 0:
+            if (batch_num + 1) % 50 * NUM_DIRECTIONS == 0:
                 end_time = time.time()
-                print("batch:{}     loss:{}     time:{}".format(batch_num + 1,cur_loss.item(),end_time-cur_time))
+                print("batch:{}     loss:{}     time:{}".format(batch_num + 1, cur_loss.item(), end_time - cur_time))
                 cur_time = end_time
         epoch_loss = epoch_loss / (batch_num + 1)
         print('[TRAIN]  Epoch [%d/%d]   Loss: %.4f'
