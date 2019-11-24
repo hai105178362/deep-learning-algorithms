@@ -106,11 +106,11 @@ class LanguageModel(nn.Module):
         self.rnns = []
         for l in range(self.lstmlayers):
             if l == 0:
-                self.rnns.append(torch.nn.LSTM(self.num_directions * self.embed_hidden, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
+                self.rnns.append(torch.nn.LSTM(self.num_directions * self.embed_hidden, self.hidden_size, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
             elif l != self.lstmlayers - 1:
-                self.rnns.append(torch.nn.LSTM(self.num_directions * self.hidden_size, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
+                self.rnns.append(torch.nn.LSTM(self.num_directions * self.hidden_size, self.hidden_size, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
             else:
-                self.rnns.append(torch.nn.LSTM(self.num_directions * self.hidden_size, self.hidden_size, bidirectional=True, num_layers=1, dropout=0).to(DEVICE))
+                self.rnns.append(torch.nn.LSTM(self.num_directions * self.hidden_size, self.hidden_size, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
         # self.rnns = [WeightDropLSTM(rnn, ['weight_hh_l0'], weight_dropout=0.65) for rnn in self.rnns]
         self.scoring = torch.nn.Linear(in_features=self.hidden_size * self.num_directions, out_features=vocab_size).to(DEVICE)
         self.drop = torch.nn.Dropout(p=DROP_OUTS[-1])
