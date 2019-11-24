@@ -151,7 +151,7 @@ class LanguageModel(nn.Module):
         output = self.scoring(cur_output)
         output = self.drop(output)
         if validation == True:
-            output = output.view(output.shape[0], output.shape[2])
+            output = output.reshape(output.shape[0], output.shape[2])
         outputs.append(output)
         return output, hidden
 
@@ -165,6 +165,8 @@ class LanguageModel(nn.Module):
         embed = self.embedding(seq).unsqueeze(1)
         output, _ = self.net_run(embed, validation=True)
         # _, current_word = torch.max(output, dim=1)  # 1 x 1
+        print(output.shape)
+        print(output[-1].unsqueeze(0).shape)
         return output[-1].unsqueeze(0)
         # return output.unsqueeze(0)
 
