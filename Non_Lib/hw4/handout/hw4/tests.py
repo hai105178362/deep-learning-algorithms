@@ -12,7 +12,7 @@ def array_to_str(arr, vocab):
 
 def test_prediction(out, targ):
     out = log_softmax(out, 1)
-    print(out.shape,targ.shape)
+    # print(out.shape,targ.shape)
     nlls = out[np.arange(out.shape[0]), targ]
     nll = -np.mean(nlls)
     return nll

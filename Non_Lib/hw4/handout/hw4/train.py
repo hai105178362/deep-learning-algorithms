@@ -165,8 +165,6 @@ class LanguageModel(nn.Module):
         embed = self.embedding(seq).unsqueeze(1)
         output, _ = self.net_run(embed, validation=True)
         # _, current_word = torch.max(output, dim=1)  # 1 x 1
-        print(output.shape)
-        print(output[-1].unsqueeze(0).shape)
         return output[-1]
         # return output.unsqueeze(0)
 
