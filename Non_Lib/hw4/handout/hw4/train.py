@@ -36,7 +36,6 @@ LSTM_LAYERS = 3
 WEIGHT_TIE = True
 WDROP = True
 
-
 # BATCH_SIZE = 80
 # EMBED_SIZE = 2
 # EMBED_HIDDEN = 2
@@ -57,11 +56,9 @@ class LanguageModelDataLoader(DataLoader):
 
     def __init__(self, dataset, batch_size, shuffle=True):
         self.shuffle = shuffle
-        # self.data = np.array(dataset)
-
-        # self.largetext = []
-        # for i in data:
-        #     self.largetext = np.concatenate((self.largetext, i), axis=None)
+        self.largetext = []
+        for i in dataset:
+            self.largetext = np.concatenate((self.largetext, i), axis=None)
         super().__init__(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
         self.lenarr = [35, 70]
         self.seqlen = np.random.choice(self.lenarr, 1, p=[0.1, 0.90])
@@ -69,16 +66,8 @@ class LanguageModelDataLoader(DataLoader):
         # raise NotImplemented
 
     def __iter__(self):
-        data = np.array(dataset)
-        if self.shuffle:
-            np.random.shuffle(data)
-        largetext = []
-        # largetext = data.reshape(1,2075677)
-        for i in data:
-            largetext = np.concatenate((largetext, i), axis=None)
-        # print(largetext)
-        # print(len(largetext))
-        # exit()
+
+        largetext = self.largetext
         start_idx = 0
         tot_len = len(largetext)
         print("totlen:{}".format(tot_len))
