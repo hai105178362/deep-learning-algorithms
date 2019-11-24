@@ -142,8 +142,8 @@ class LanguageModel(nn.Module):
             current_input = cur_output
         output = self.scoring(cur_output)
         output = self.drop(output)
-        if WEIGHT_TIE:
-            self.scoring.weight = self.embedding.weight
+        # if WEIGHT_TIE:
+        #     self.scoring.weight = self.embedding.weight
         if validation == True:
             output = output.reshape(output.shape[0], output.shape[2])
         return output
