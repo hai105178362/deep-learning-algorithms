@@ -70,7 +70,7 @@ class LanguageModelDataLoader(DataLoader):
         print("totlen:{}".format(tot_len))
         while True:
             seqlen = int(np.random.normal(self.seqlen, self.sigma))
-            if start_idx + seqlen * self.batch_size + 1 >= tot_len:
+            if start_idx + (seqlen+1) * self.batch_size + 1 >= tot_len:
                 break
             cur = (largetext[start_idx:start_idx + (seqlen + 1) * self.batch_size]) \
                 .reshape(shape=(self.batch_size, seqlen + 1)).to(DEVICE)
