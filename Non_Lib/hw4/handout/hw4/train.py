@@ -112,7 +112,7 @@ class LanguageModel(nn.Module):
         # wdrnn = WeightDrop(torch.nn.LSTM(10, 10), ['weight_hh_l0'], dropout=0.9)
 
         self.scoring = torch.nn.Linear(in_features=self.embed_size, out_features=vocab_size).to(DEVICE)
-        self.drop = torch.nn.Dropout(p=DROP_OUTS[-1])
+        self.worddrop = torch.nn.Dropout(p=DROP_OUTS[-1])
         self.embeddrop = torch.nn.Dropout(p=0.4)
         self.locked_dropouts = [torchnlp.nn.LockedDropout(p=i) for i in DROP_OUTS]
         self.init_weights()
@@ -151,18 +151,20 @@ class LanguageModel(nn.Module):
         return output
 
     def forward(self, x):
+        x = self.worddrop(x)
         embed = self.embedding(x)
         output = self.net_run(embed)
         result = output.view(-1, self.batch_size, self.vocab_size)
         return result
 
     def predict(self, seq):  # L x V
+        seq = self.worddrop(seq)
         embed = self.embedding(seq).unsqueeze(1)
         output = self.net_run(embed, validation=True)
         return output[-1]
 
     def generate(self, seq, n_words):  # L x V
-        cur_seq = seq
+        cur_seq = self.worddrop(seq)
         generated_words = []
         embed = self.embedding(cur_seq).unsqueeze(1)
         output = self.net_run(embed, validation=True)

@@ -55,7 +55,7 @@ class EmbeddingDropout(torch.nn.Embedding):
                  norm_type=2,
                  scale_grad_by_freq=False,
                  sparse=False,
-                 dropout=0.4,
+                 dropout=0.1,
                  scale=None):
         """Embedding constructor.
         Args:
