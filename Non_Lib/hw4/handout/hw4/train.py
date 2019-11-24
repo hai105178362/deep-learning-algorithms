@@ -13,6 +13,7 @@ from torchnlp.nn import lock_dropout
 from torchnlp.nn import WeightDrop
 from torchnlp.nn import WeightDropLSTM
 import torchnlp
+import time
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
@@ -226,6 +227,7 @@ class LanguageModelTrainer:
         self.model.train()  # set to training mode
         epoch_loss = 0
         num_batches = 0
+        cur_time = time.time()
         for batch_num, (inputs, targets) in enumerate(self.loader):
             self.optimizer.zero_grad()
             cur_loss = self.train_batch(inputs, targets)
@@ -233,8 +235,9 @@ class LanguageModelTrainer:
             self.optimizer.step()
             epoch_loss += cur_loss
             if (batch_num + 1) % 100*NUM_DIRECTIONS == 0:
-                print("batch:{}".format(batch_num + 1))
-                print("cur_loss is:", cur_loss.item())
+                end_time = time.time()
+                print("batch:{}     loss:{}     time:{}".format(batch_num + 1,cur_loss.item(),end_time-cur_time))
+                cur_time = end_time
         epoch_loss = epoch_loss / (batch_num + 1)
         print('[TRAIN]  Epoch [%d/%d]   Loss: %.4f'
               % (self.epochs + 1, self.max_epochs, epoch_loss))
