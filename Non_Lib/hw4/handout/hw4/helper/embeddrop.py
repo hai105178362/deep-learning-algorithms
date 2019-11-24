@@ -6,6 +6,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 def _get_dropped_weights(w_raw, dropout_p, is_training):
@@ -99,4 +100,4 @@ class EmbeddingDropout(torch.nn.Embedding):
                            max_norm=self.max_norm,
                            norm_type=self.norm_type,
                            scale_grad_by_freq=self.scale_grad_by_freq,
-                           sparse=self.sparse)
+                           sparse=self.sparse).to(DEVICE)
