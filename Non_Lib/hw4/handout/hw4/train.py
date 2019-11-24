@@ -95,8 +95,8 @@ class LanguageModel(nn.Module):
         # if weight_tie == True:
         #     self.hidden_size = self.embed_hidden
 
-        self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
-        # self.embedding = torch.nn.Embedding(vocab_size, self.embed_size,self.embed_hidden).to(DEVICE)
+        # self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
+        self.embedding = torch.nn.Embedding(vocab_size, self.embed_size,self.embed_hidden).to(DEVICE)
 
         self.rnns = []
         for l in range(self.lstmlayers):
@@ -105,11 +105,11 @@ class LanguageModel(nn.Module):
             elif l != self.lstmlayers - 1:
                 self.rnns.append(torch.nn.LSTM(self.hidden_size, self.hidden_size, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
             else:
-                self.rnns.append(torch.nn.LSTM(self.hidden_size, self.embed_hidden, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
+                self.rnns.append(torch.nn.LSTM(self.hidden_size, self.embed_size, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
         # self.rnns = [WeightDropLSTM(rnn, ['weight_hh_l0'], weight_dropout=0.65) for rnn in self.rnns]
         # wdrnn = WeightDrop(torch.nn.LSTM(10, 10), ['weight_hh_l0'], dropout=0.9)
 
-        self.scoring = torch.nn.Linear(in_features=self.embed_hidden, out_features=vocab_size).to(DEVICE)
+        self.scoring = torch.nn.Linear(in_features=self.embed_size, out_features=vocab_size).to(DEVICE)
         self.drop = torch.nn.Dropout(p=DROP_OUTS[-1])
         self.embeddrop = torch.nn.Dropout(p=0.4)
         self.locked_dropouts = [torchnlp.nn.LockedDropout(p=i) for i in DROP_OUTS]
