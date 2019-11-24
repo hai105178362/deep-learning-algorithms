@@ -56,33 +56,38 @@ class LanguageModelDataLoader(DataLoader):
 
     def __init__(self, dataset, batch_size, shuffle=True):
         self.shuffle = shuffle
-        self.data = np.array(dataset)
+        # self.data = np.array(dataset)
 
         # self.largetext = []
         # for i in data:
         #     self.largetext = np.concatenate((self.largetext, i), axis=None)
-        super().__init__(dataset=self.data, batch_size=batch_size, shuffle=shuffle)
+        super().__init__(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
         self.lenarr = [35, 70]
         self.seqlen = np.random.choice(self.lenarr, 1, p=[0.05, 0.95])
         self.sigma = 5
         # raise NotImplemented
 
     def __iter__(self):
-        if self.shuffle == True:
-            np.random.shuffle(self.data)
-        self.largetext = self.data.flatten()
-        # for i in self.data:
-        #     self.largetext = np.concatenate((self.largetext, i), axis=None)
+        data = np.array(dataset)
+        if self.shuffle:
+            np.random.shuffle(data)
+        largetext = []
+        # largetext = data.reshape(1,2075677)
+        for i in data:
+            largetext = np.concatenate((largetext, i), axis=None)
+        # print(largetext)
+        # print(len(largetext))
+        # exit()
         start_idx = 0
-        tot_len = self.largetext.__len__()
+        tot_len = len(largetext)
         print("totlen:{}".format(tot_len))
         while True:
             seqlen = int(np.random.normal(self.seqlen, self.sigma))
             if start_idx + seqlen * self.batch_size + 1 >= tot_len:
                 break
-            sentences = torch.LongTensor(self.largetext[start_idx:start_idx + seqlen * self.batch_size]) \
+            sentences = torch.LongTensor(largetext[start_idx:start_idx + seqlen * self.batch_size]) \
                 .reshape(shape=(self.batch_size, seqlen)).to(DEVICE)
-            labels = torch.LongTensor(self.largetext[start_idx + 1:start_idx + seqlen * self.batch_size + 1]) \
+            labels = torch.LongTensor(largetext[start_idx + 1:start_idx + seqlen * self.batch_size + 1]) \
                 .reshape(shape=(self.batch_size, seqlen)).to(DEVICE)
             start_idx += seqlen * self.batch_size
             yield (sentences, labels)
@@ -244,7 +249,7 @@ class LanguageModelTrainer:
                 end_time = time.time()
                 print("batch:{}     loss:{}     time:{}".format(batch_num + 1, cur_loss.item(), end_time - cur_time))
                 cur_time = end_time
-            n+=1
+            n += 1
         epoch_loss = epoch_loss / (n + 1)
         print('[TRAIN]  Epoch [%d/%d]   Loss: %.4f'
               % (self.epochs + 1, self.max_epochs, epoch_loss))
