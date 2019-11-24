@@ -70,9 +70,9 @@ class LanguageModelDataLoader(DataLoader):
     def __iter__(self):
         if self.shuffle == True:
             np.random.shuffle(self.data)
-        self.largetext = []
-        for i in self.data:
-            self.largetext = np.concatenate((self.largetext, i), axis=None)
+        self.largetext = self.data.flatten()
+        # for i in self.data:
+        #     self.largetext = np.concatenate((self.largetext, i), axis=None)
         start_idx = 0
         tot_len = self.largetext.__len__()
         print("totlen:{}".format(tot_len))
