@@ -31,9 +31,9 @@ EMBED_SIZE = 400
 EMBED_HIDDEN = 1150
 HIDDEN_SIZE = 1150
 DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
-LSTM_LAYERS = 3
+LSTM_LAYERS = 4
 WEIGHT_TIE = True
-WDROP = False
+WDROP = True
 NUM_DIRECTIONS = 1
 
 # BATCH_SIZE = 80
@@ -63,7 +63,7 @@ class LanguageModelDataLoader(DataLoader):
         #     self.largetext = np.concatenate((self.largetext, i), axis=None)
         super().__init__(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
         self.lenarr = [35, 70]
-        self.seqlen = np.random.choice(self.lenarr, 1, p=[0.05, 0.95])
+        self.seqlen = np.random.choice(self.lenarr, 1, p=[0.1, 0.90])
         self.sigma = 5
         # raise NotImplemented
 
@@ -228,7 +228,7 @@ class LanguageModelTrainer:
         self.run_id = run_id
 
         # TODO: Define your optimizer and criterion here
-        self.optimizer = torch.optim.Adam(model.parameters(), lr=2e-3, weight_decay=1e-6)
+        self.optimizer = torch.optim.Adam(model.parameters(), lr=3e-3, weight_decay=1e-5)
         # self.optimizer = torch.optim.ASGD(model.parameters(), lr=30, weight_decay=1e-5)
         self.criterion = nn.CrossEntropyLoss().to(DEVICE)
         # self.criterion = nn.NLLLoss().to(DEVICE)
@@ -266,7 +266,7 @@ class LanguageModelTrainer:
         cur = result.view(s[0] * s[1], s[2])
         loss = self.criterion(cur, targets.view(-1))
         # Adding L2 Norm
-        par = torch.tensor(10e-5).to(DEVICE)
+        par = torch.tensor(10e-6).to(DEVICE)
         l2_reg = torch.tensor(0.).to(DEVICE)
         for param in model.parameters():
             l2_reg += torch.norm(param)
