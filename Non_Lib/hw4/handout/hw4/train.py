@@ -164,6 +164,7 @@ class LanguageModel(nn.Module):
         return output[-1]
 
     def generate(self, seq, n_words):  # L x V
+        cur_seq = seq
         # cur_seq = self.worddrop(seq)
         generated_words = []
         embed = self.embedding(cur_seq).unsqueeze(1)
