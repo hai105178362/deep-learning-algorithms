@@ -96,7 +96,7 @@ class LanguageModel(nn.Module):
             self.hidden_size = self.embed_hidden
 
         # self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
-        self.embedding = torch.nn.Embedding(vocab_size, self.embed_size).to(DEVICE)
+        self.embedding = torch.nn.Embedding(vocab_size, self.embed_size,self.embed_hidden).to(DEVICE)
 
         self.rnns = []
         for l in range(self.lstmlayers):
