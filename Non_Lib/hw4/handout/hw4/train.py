@@ -29,7 +29,7 @@ dataset = train_data
 vocab_size = len(vocab)
 BATCH_SIZE = 80
 EMBED_SIZE = 400
-EMBED_HIDDEN = 512
+EMBED_HIDDEN = 1024
 HIDDEN_SIZE = 1150
 DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
 LSTM_LAYERS = 3
@@ -101,7 +101,7 @@ class LanguageModel(nn.Module):
         self.rnns = []
         for l in range(self.lstmlayers):
             if l == 0:
-                self.rnns.append(torch.nn.LSTM(self.embed_hidden, self.hidden_size, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
+                self.rnns.append(torch.nn.LSTM(self.embed_size, self.hidden_size, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
             elif l != self.lstmlayers - 1:
                 self.rnns.append(torch.nn.LSTM(self.hidden_size, self.hidden_size, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
             else:
