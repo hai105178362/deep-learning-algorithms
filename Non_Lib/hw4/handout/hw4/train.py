@@ -33,8 +33,8 @@ EMBED_HIDDEN = 1150
 HIDDEN_SIZE = 1150
 DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
 LSTM_LAYERS = 3
-WEIGHT_TIE = False
-WDROP = True
+WEIGHT_TIE = True
+WDROP = False
 
 # BATCH_SIZE = 80
 # EMBED_SIZE = 2
@@ -111,8 +111,6 @@ class LanguageModel(nn.Module):
         self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
         self.drop = torch.nn.Dropout(p=DROP_OUTS[-1])
         self.embeddrop = torch.nn.Dropout(p=0.4)
-
-        # self.locked_dropout1 = torchnlp.nn.LockedDropout(p=DROP_OUTS[1])
         self.locked_dropouts = [torchnlp.nn.LockedDropout(p=i) for i in DROP_OUTS]
         self.init_weights()
         for l, rnn in enumerate(self.rnns):
@@ -127,36 +125,27 @@ class LanguageModel(nn.Module):
     def init_weights(self):
         self.embedding.weight.data.uniform_(-0.1, 0.1)
         self.scoring.bias.data.fill_(0)
-        self.scoring.weight.data.uniform_(-0.1, 0.1)
+        # self.scoring.weight.data.uniform_(-0.1, 0.1)
 
     # def init_hidden_weights(self, seqlen):
     #     return torch.randn(1, seqlen, self.hidden_size) / np.sqrt(self.hidden_size)
 
     def net_run(self, embed, validation=False):
-        # new_hidden = []
-        # raw_output, hidden = self.rnn(emb, hidden)
         cur_outputs = []
-        # outputs = []
         current_input = self.embeddrop(embed)
         cur_output = None
-        # hidden = self.init_hidden_weights(embed.shape[1]).to(DEVICE)
-        # cur_hidden = (hidden, hidden)
         for l, rnn in enumerate(self.rnns):
-            # cur_output, cur_hidden = rnn(current_input, hidden[l])
-            # cur_output, cur_hidden = rnn(current_input, cur_hidden)
             cur_output, cur_hidden = rnn(current_input)
-            # new_hidden.append(cur_hidden)
             cur_outputs.append(cur_output)
             if l != self.lstmlayers - 1:
                 cur_output = self.locked_dropouts[l + 1](cur_output)
-                # outputs.append(cur_output)
             current_input = cur_output
-        # hidden = new_hidden
         output = self.scoring(cur_output)
         output = self.drop(output)
+        if WEIGHT_TIE:
+            self.embedding.weight = self.scoring.weight
         if validation == True:
             output = output.reshape(output.shape[0], output.shape[2])
-        # outputs.append(output)
         return output
 
     def forward(self, x):
@@ -168,9 +157,7 @@ class LanguageModel(nn.Module):
     def predict(self, seq):  # L x V
         embed = self.embedding(seq).unsqueeze(1)
         output = self.net_run(embed, validation=True)
-        # _, current_word = torch.max(output, dim=1)  # 1 x 1
         return output[-1]
-        # return output.unsqueeze(0)
 
     def generate(self, seq, n_words):  # L x V
         cur_seq = seq
@@ -189,7 +176,6 @@ class LanguageModel(nn.Module):
                 cur_word = current_words[-1].unsqueeze(0)
                 cur_seq = torch.cat((cur_seq, cur_word), dim=0)
                 generated_words.append(cur_word)
-                # generated_words = torch.cat((generated_words, current_word),0)
         return torch.cat(generated_words, dim=0)
 
 
