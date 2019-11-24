@@ -233,6 +233,7 @@ class LanguageModelTrainer:
         epoch_loss = 0
         num_batches = 0
         cur_time = time.time()
+        n = 0
         for batch_num, (inputs, targets) in enumerate(self.loader):
             self.optimizer.zero_grad()
             cur_loss = self.train_batch(inputs, targets)
@@ -243,7 +244,8 @@ class LanguageModelTrainer:
                 end_time = time.time()
                 print("batch:{}     loss:{}     time:{}".format(batch_num + 1, cur_loss.item(), end_time - cur_time))
                 cur_time = end_time
-        epoch_loss = epoch_loss / (batch_num + 1)
+            n+=1
+        epoch_loss = epoch_loss / (n + 1)
         print('[TRAIN]  Epoch [%d/%d]   Loss: %.4f'
               % (self.epochs + 1, self.max_epochs, epoch_loss))
         self.train_losses.append(epoch_loss)
