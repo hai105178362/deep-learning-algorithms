@@ -36,12 +36,12 @@ LSTM_LAYERS = 3
 WEIGHT_TIE = True
 WDROP = False
 
-# BATCH_SIZE = 80
-# EMBED_SIZE = 2
-# EMBED_HIDDEN = 2
-# HIDDEN_SIZE = 2
-# DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
-# LSTM_LAYERS = 1
+BATCH_SIZE = 80
+EMBED_SIZE = 2
+EMBED_HIDDEN = 2
+HIDDEN_SIZE = 2
+DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
+LSTM_LAYERS = 1
 
 vocab_human = []
 with open('../dataset/vocab.csv') as f:
@@ -74,10 +74,6 @@ class LanguageModelDataLoader(DataLoader):
                 break
             cur = (largetext[start_idx:start_idx + (seqlen + 1) * self.batch_size]) \
                 .reshape(shape=(self.batch_size, seqlen + 1)).to(DEVICE)
-            # sentences = torch.LongTensor(largetext[start_idx:start_idx + seqlen * self.batch_size]) \
-            #     .reshape(shape=(self.batch_size, seqlen)).to(DEVICE)
-            # labels = torch.LongTensor(largetext[start_idx + 1:start_idx + seqlen * self.batch_size + 1]) \
-            #     .reshape(shape=(self.batch_size, seqlen)).to(DEVICE)
             start_idx += seqlen * self.batch_size
             yield (cur[:, :seqlen], cur[:, 1:seqlen + 1])
 
@@ -316,13 +312,15 @@ class TestLanguageModel:
             :return: a np.ndarray of logits
         """
         print("starting prediction...")
-        ans = np.zeros(shape=(1, vocab_size))
+        ans = np.empty(shape=(1, vocab_size))
         input = torch.LongTensor(inp).to(DEVICE)
         # model.eval()
-        for i in input:
-            cur_word = model.predict(i).detach().cpu().numpy()
-            ans = np.append(ans, cur_word, axis=0)
-        return ans[1:]
+        ans = np.array([model.predict(i).detach().cpu().numpy() for i in input])
+        return ans
+        # for i in input:
+        #     cur_word = model.predict(i).detach().cpu().numpy()
+        #     ans = np.append(ans, cur_word, axis=0)
+        # return ans[1:]
         raise NotImplemented
 
     def generation(inp, forward, model):
