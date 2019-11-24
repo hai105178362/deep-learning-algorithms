@@ -15,6 +15,7 @@ from torchnlp.nn import WeightDropLSTM
 import torchnlp
 import time
 from helper.wdrop import WeightDrop
+from helper.embeddrop import EmbeddingDropout
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
@@ -96,7 +97,8 @@ class LanguageModel(nn.Module):
         #     self.hidden_size = self.embed_hidden
 
         # self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
-        self.embedding = torch.nn.Embedding(vocab_size, self.embed_size,self.embed_hidden).to(DEVICE)
+        # self.embedding = torch.nn.Embedding(vocab_size, self.embed_size, self.embed_hidden).to(DEVICE)
+        self.embedding =EmbeddingDropout(vocab_size, self.embed_size, self.embed_hidden).to(DEVICE)
 
         self.rnns = []
         for l in range(self.lstmlayers):
@@ -128,12 +130,33 @@ class LanguageModel(nn.Module):
         self.scoring.bias.data.fill_(0)
         self.scoring.weight.data.uniform_(-0.1, 0.1)
 
+    def embedded_dropout(self, embed, words, dropout=0.4, scale=None):
+        if dropout:
+            mask = embed.weight.data.new().resize_((embed.weight.size(0), 1)).bernoulli_(1 - dropout).expand_as(embed.weight) / (1 - dropout)
+            mask = Variable(mask)
+            masked_embed_weight = mask * embed.weight
+        else:
+            masked_embed_weight = embed.weight
+        if scale:
+            masked_embed_weight = scale.expand_as(masked_embed_weight) * masked_embed_weight
+
+        padding_idx = embed.padding_idx
+        if padding_idx is None:
+            padding_idx = -1
+        X = embed._backend.Embedding.apply(words, masked_embed_weight,
+                                           padding_idx, embed.max_norm, embed.norm_type,
+                                           embed.scale_grad_by_freq, embed.sparse
+                                           )
+        return X
+
     # def init_hidden_weights(self, seqlen):
     #     return torch.randn(1, seqlen, self.hidden_size) / np.sqrt(self.hidden_size)
 
     def net_run(self, embed, validation=False):
         cur_outputs = []
-        current_input = self.embeddrop(embed)
+        current_input = embed
+        # current_input = self.embeddrop(embed)
+        # current_input = self.embedded_dropout(embed, self.vocab_size, 0.4)
         cur_output = None
         for l, rnn in enumerate(self.rnns):
             cur_output, cur_hidden = rnn(current_input)
