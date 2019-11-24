@@ -36,12 +36,12 @@ LSTM_LAYERS = 3
 WEIGHT_TIE = True
 WDROP = False
 
-BATCH_SIZE = 80
-EMBED_SIZE = 2
-EMBED_HIDDEN = 2
-HIDDEN_SIZE = 2
-DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
-LSTM_LAYERS = 1
+# BATCH_SIZE = 80
+# EMBED_SIZE = 2
+# EMBED_HIDDEN = 2
+# HIDDEN_SIZE = 2
+# DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
+# LSTM_LAYERS = 1
 
 vocab_human = []
 with open('../dataset/vocab.csv') as f:
@@ -127,7 +127,7 @@ class LanguageModel(nn.Module):
         self.scoring.weight.data.uniform_(-0.1, 0.1)
 
     def init_hidden_weights(self, seqlen):
-        return torch.randn(1, seqlen, self.hidden_size, requires_grad=True) / np.sqrt(self.hidden_size)
+        return torch.randn(1, seqlen, self.hidden_size, requires_grad=False) / np.sqrt(self.hidden_size)
 
     def net_run(self, embed, validation=False):
         new_hidden = []
