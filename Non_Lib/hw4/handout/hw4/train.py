@@ -359,7 +359,7 @@ model = LanguageModel(len(vocab), weight_tie=WEIGHT_TIE)
 # model.apply(weights_init)
 print("Trainer Init...")
 trainer = LanguageModelTrainer(model=model, loader=loader, max_epochs=NUM_EPOCHS, run_id=run_id)
-best_nll = 5.3
+best_nll = 5.4
 for epoch in range(NUM_EPOCHS):
     print("Epoch: ", epoch + 1)
     trainer.train()
