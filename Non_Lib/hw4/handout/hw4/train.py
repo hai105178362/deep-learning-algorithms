@@ -29,7 +29,7 @@ dataset = train_data
 vocab_size = len(vocab)
 BATCH_SIZE = 80
 EMBED_SIZE = 400
-EMBED_HIDDEN = 1024
+EMBED_HIDDEN = 1280
 HIDDEN_SIZE = 1150
 DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
 LSTM_LAYERS = 3
@@ -203,8 +203,8 @@ class LanguageModelTrainer:
         self.run_id = run_id
 
         # TODO: Define your optimizer and criterion here
-        # self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
-        self.optimizer = torch.optim.ASGD(model.parameters(), lr=1, weight_decay=1e-5)
+        self.optimizer = torch.optim.Adam(model.parameters(), lr=5e-3, weight_decay=1e-5)
+        # self.optimizer = torch.optim.ASGD(model.parameters(), lr=1, weight_decay=1e-5)
         self.criterion = nn.CrossEntropyLoss().to(DEVICE)
         # self.criterion = nn.NLLLoss().to(DEVICE)
 
@@ -245,11 +245,11 @@ class LanguageModelTrainer:
         # targets = targets.reshape(shape=(s2[0]*s2[1],1))
         loss = self.criterion(result, targets)
         # Adding L2 Norm
-        # par = torch.tensor(10e-6).to(DEVICE)
-        # l2_reg = torch.tensor(0.).to(DEVICE)
-        # for param in model.parameters():
-        #     l2_reg += torch.norm(param)
-        # loss += par * l2_reg
+        par = torch.tensor(10e-6).to(DEVICE)
+        l2_reg = torch.tensor(0.).to(DEVICE)
+        for param in model.parameters():
+            l2_reg += torch.norm(param)
+        loss += par * l2_reg
         return loss
 
     def test(self):
