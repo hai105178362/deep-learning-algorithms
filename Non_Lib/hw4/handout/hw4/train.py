@@ -218,7 +218,7 @@ class LanguageModelTrainer:
 
         # TODO: Define your optimizer and criterion here
         # self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
-        self.optimizer = torch.optim.ASGD(model.parameters(), lr=1e-2, weight_decay=1e-5)
+        self.optimizer = torch.optim.ASGD(model.parameters(), lr=30, weight_decay=1e-5)
         self.criterion = nn.CrossEntropyLoss().to(DEVICE)
         # self.criterion = nn.NLLLoss().to(DEVICE)
 
