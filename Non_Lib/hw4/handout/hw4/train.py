@@ -34,7 +34,7 @@ HIDDEN_SIZE = 1150
 DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
 LSTM_LAYERS = 3
 WEIGHT_TIE = True
-WDROP = True
+WDROP = False
 
 # BATCH_SIZE = 80
 # EMBED_SIZE = 2
@@ -56,17 +56,14 @@ class LanguageModelDataLoader(DataLoader):
 
     def __init__(self, dataset, batch_size, shuffle=True):
         self.shuffle = shuffle
-        self.largetext = []
-        for i in dataset:
-            self.largetext = np.concatenate((self.largetext, i), axis=None)
+        self.largetext = torch.cat([torch.from_numpy(i).long() for i in dataset])
         super().__init__(dataset=dataset, batch_size=batch_size, shuffle=shuffle)
         self.lenarr = [35, 70]
-        self.seqlen = np.random.choice(self.lenarr, 1, p=[0.1, 0.90])
+        self.seqlen = np.random.choice(self.lenarr, 1, p=[0.05, 0.95])
         self.sigma = 5
         # raise NotImplemented
 
     def __iter__(self):
-
         largetext = self.largetext
         start_idx = 0
         tot_len = len(largetext)
@@ -75,12 +72,14 @@ class LanguageModelDataLoader(DataLoader):
             seqlen = int(np.random.normal(self.seqlen, self.sigma))
             if start_idx + seqlen * self.batch_size + 1 >= tot_len:
                 break
-            sentences = torch.LongTensor(largetext[start_idx:start_idx + seqlen * self.batch_size]) \
-                .reshape(shape=(self.batch_size, seqlen)).to(DEVICE)
-            labels = torch.LongTensor(largetext[start_idx + 1:start_idx + seqlen * self.batch_size + 1]) \
-                .reshape(shape=(self.batch_size, seqlen)).to(DEVICE)
+            cur = (largetext[start_idx:start_idx + (seqlen + 1) * self.batch_size]) \
+                .reshape(shape=(self.batch_size, seqlen + 1)).to(DEVICE)
+            # sentences = torch.LongTensor(largetext[start_idx:start_idx + seqlen * self.batch_size]) \
+            #     .reshape(shape=(self.batch_size, seqlen)).to(DEVICE)
+            # labels = torch.LongTensor(largetext[start_idx + 1:start_idx + seqlen * self.batch_size + 1]) \
+            #     .reshape(shape=(self.batch_size, seqlen)).to(DEVICE)
             start_idx += seqlen * self.batch_size
-            yield (sentences, labels)
+            yield (cur[:, :seqlen], cur[:, 1:seqlen + 1])
 
 
 class LanguageModel(nn.Module):
