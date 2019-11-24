@@ -14,6 +14,7 @@ from torchnlp.nn import WeightDrop
 from torchnlp.nn import WeightDropLSTM
 import torchnlp
 import time
+from helper.wdrop import WeightDrop
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
@@ -33,8 +34,8 @@ HIDDEN_SIZE = 1150
 DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
 LSTM_LAYERS = 3
 WEIGHT_TIE = True
-WDROP = False
-NUM_DIRECTIONS = 1
+WDROP = True
+
 
 # BATCH_SIZE = 80
 # EMBED_SIZE = 2
@@ -106,23 +107,24 @@ class LanguageModel(nn.Module):
         self.embed_hidden = EMBED_HIDDEN
         self.hidden_size = HIDDEN_SIZE
         self.lstmlayers = LSTM_LAYERS
-        self.num_directions = NUM_DIRECTIONS
         self.wdrop = WDROP
         if weight_tie == True:
             self.hidden_size = self.embed_hidden
 
-        self.embedding = torch.nn.Embedding(vocab_size, self.num_directions * self.embed_hidden, self.embed_size).to(DEVICE)
+        self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
 
         self.rnns = []
         for l in range(self.lstmlayers):
             if l == 0:
-                self.rnns.append(torch.nn.LSTM(self.num_directions * self.embed_hidden, self.hidden_size, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
+                self.rnns.append(torch.nn.LSTM(self.embed_hidden, self.hidden_size, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
             elif l != self.lstmlayers - 1:
-                self.rnns.append(torch.nn.LSTM(self.num_directions * self.hidden_size, self.hidden_size, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
+                self.rnns.append(torch.nn.LSTM(self.hidden_size, self.hidden_size, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
             else:
-                self.rnns.append(torch.nn.LSTM(self.num_directions * self.hidden_size, self.hidden_size, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
+                self.rnns.append(torch.nn.LSTM(self.hidden_size, self.hidden_size, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
         # self.rnns = [WeightDropLSTM(rnn, ['weight_hh_l0'], weight_dropout=0.65) for rnn in self.rnns]
-        self.scoring = torch.nn.Linear(in_features=self.hidden_size * self.num_directions, out_features=vocab_size).to(DEVICE)
+        # wdrnn = WeightDrop(torch.nn.LSTM(10, 10), ['weight_hh_l0'], dropout=0.9)
+
+        self.scoring = torch.nn.Linear(in_features=self.hidden_size, out_features=vocab_size).to(DEVICE)
         self.drop = torch.nn.Dropout(p=DROP_OUTS[-1])
         self.embeddrop = torch.nn.Dropout(p=0.4)
 
@@ -130,7 +132,7 @@ class LanguageModel(nn.Module):
         self.locked_dropouts = [torchnlp.nn.LockedDropout(p=i) for i in DROP_OUTS]
         self.init_weights()
         if self.wdrop == True:
-            self.rnns = [WeightDrop(rnn, ['weight_hh_l0'], dropout=0.65) for rnn in self.rnns]
+            self.rnns = [WeightDrop(rnn, ['weight_hh_l0'], dropout=0.65).to(DEVICE) for rnn in self.rnns]
         self.rnns = torch.nn.ModuleList(self.rnns)
         if weight_tie == True:
             self.embedding.weight = self.scoring.weight
@@ -141,7 +143,7 @@ class LanguageModel(nn.Module):
         self.scoring.weight.data.uniform_(-0.1, 0.1)
 
     def init_hidden_weights(self, seqlen):
-        return torch.randn(self.num_directions, seqlen, self.hidden_size, requires_grad=True) / np.sqrt(self.hidden_size)
+        return torch.randn(1, seqlen, self.hidden_size, requires_grad=True) / np.sqrt(self.hidden_size)
 
     def net_run(self, embed, validation=False):
         new_hidden = []
@@ -244,7 +246,7 @@ class LanguageModelTrainer:
             cur_loss.backward()
             self.optimizer.step()
             epoch_loss += cur_loss
-            if (batch_num + 1) % 50 * NUM_DIRECTIONS == 0:
+            if (batch_num + 1) % 50 == 0:
                 end_time = time.time()
                 print("batch:{}     loss:{}     time:{}".format(batch_num + 1, cur_loss.item(), end_time - cur_time))
                 cur_time = end_time
