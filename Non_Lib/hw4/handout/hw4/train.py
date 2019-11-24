@@ -119,13 +119,13 @@ class LanguageModel(nn.Module):
         if self.wdrop == True:
             self.rnns = [WeightDrop(rnn, ['weight_hh_l0'], dropout=0.65).to(DEVICE) for rnn in self.rnns]
         self.rnns = torch.nn.ModuleList(self.rnns)
-        if weight_tie == True:
-            self.scoring.weight = self.embedding.weight
+        # if weight_tie == True:
+        #     self.scoring.weight = self.embedding.weight
 
     def init_weights(self):
         self.embedding.weight.data.uniform_(-0.1, 0.1)
         self.scoring.bias.data.fill_(0)
-        # self.scoring.weight.data.uniform_(-0.1, 0.1)
+        self.scoring.weight.data.uniform_(-0.1, 0.1)
 
     # def init_hidden_weights(self, seqlen):
     #     return torch.randn(1, seqlen, self.hidden_size) / np.sqrt(self.hidden_size)
