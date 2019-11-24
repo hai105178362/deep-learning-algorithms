@@ -250,10 +250,13 @@ class LanguageModelTrainer:
 
         """
         result, hidden = self.model(inputs)
-        s1,s2 = result.shape,targets.shape
+        s1, s2 = result.shape, targets.shape
         # _, cur = torch.max(result, dim=2)
-        result = result.reshape(s1[0] * s1[1], s1[2])
-        targets = targets.reshape(shape=(1,s2[0]*s2[1]))
+        result = torch.reshape(result, shape=(s1[0] * s1[1], s1[2]))
+        targets = targets.reshape( -1)
+        # print(targets.shape)
+        # exit()
+        # targets = targets.reshape(shape=(s2[0]*s2[1],1))
         loss = self.criterion(result, targets)
         # Adding L2 Norm
         # par = torch.tensor(10e-6).to(DEVICE)

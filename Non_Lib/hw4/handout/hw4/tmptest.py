@@ -18,7 +18,7 @@ fixtures_gen_test = np.load('../fixtures/generation_test.npy', allow_pickle=True
 # fixtures_generation_test = np.load('../fixtures/generation_test.npy', allow_pickle=True)  # test
 vocab = np.load('../dataset/vocab.npy', allow_pickle=True)
 
-print(fixtures_pred['inp'].shape)
+# print(fixtures_pred['inp'].shape)
 # print(fixtures_pred['out'])
 # print(fixtures_gen.shape)
 # print(fixtures_gen.shape)
@@ -27,3 +27,7 @@ print(fixtures_pred['inp'].shape)
 # for i in inp:
 #     inputs = torch.LongTensor(i).unsqueeze(0)
 #     print(inputs.shape)
+
+input = torch.randn(3, 5, requires_grad=True)
+target = torch.empty(3, dtype=torch.long).random_(5)
+print(input.shape,target.shape)
