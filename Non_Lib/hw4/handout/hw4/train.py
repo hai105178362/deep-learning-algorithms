@@ -164,11 +164,9 @@ class LanguageModel(nn.Module):
     def predict(self, seq):  # L x V
         embed = self.embedding(seq).unsqueeze(1)
         output, _ = self.net_run(embed, validation=True)
-
-        print(output.shape)
-        exit()
         # _, current_word = torch.max(output, dim=1)  # 1 x 1
         return output[-1].unsqueeze(0)
+        # return output.unsqueeze(0)
 
     def generate(self, seq, n_words):  # L x V
         cur_seq = seq
