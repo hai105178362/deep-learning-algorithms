@@ -92,8 +92,8 @@ class LanguageModel(nn.Module):
         self.hidden_size = HIDDEN_SIZE
         self.lstmlayers = LSTM_LAYERS
         self.wdrop = WDROP
-        if weight_tie == True:
-            self.hidden_size = self.embed_hidden
+        # if weight_tie == True:
+        #     self.hidden_size = self.embed_hidden
 
         self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
         # self.embedding = torch.nn.Embedding(vocab_size, self.embed_size,self.embed_hidden).to(DEVICE)
