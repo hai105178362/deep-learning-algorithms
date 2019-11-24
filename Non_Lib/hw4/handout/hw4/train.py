@@ -27,7 +27,7 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 dataset = train_data
 vocab_size = len(vocab)
 BATCH_SIZE = 80
-EMBED_SIZE = 400
+EMBED_SIZE = 600
 EMBED_HIDDEN = 1150
 HIDDEN_SIZE = 1150
 DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
@@ -218,7 +218,7 @@ class LanguageModelTrainer:
         self.run_id = run_id
 
         # TODO: Define your optimizer and criterion here
-        self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
+        self.optimizer = torch.optim.Adam(model.parameters(), lr=2e-3, weight_decay=1e-6)
         # self.optimizer = torch.optim.ASGD(model.parameters(), lr=30, weight_decay=1e-5)
         self.criterion = nn.CrossEntropyLoss().to(DEVICE)
         # self.criterion = nn.NLLLoss().to(DEVICE)
