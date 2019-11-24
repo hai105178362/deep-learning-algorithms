@@ -95,12 +95,13 @@ class LanguageModel(nn.Module):
         if weight_tie == True:
             self.hidden_size = self.embed_hidden
 
-        self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
+        # self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
+        self.embedding = torch.nn.Embedding(vocab_size, self.embed_size).to(DEVICE)
 
         self.rnns = []
         for l in range(self.lstmlayers):
             if l == 0:
-                self.rnns.append(torch.nn.LSTM(self.embed_hidden, self.hidden_size, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
+                self.rnns.append(torch.nn.LSTM(self.embed_size, self.hidden_size, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
             elif l != self.lstmlayers - 1:
                 self.rnns.append(torch.nn.LSTM(self.hidden_size, self.hidden_size, bidirectional=False, num_layers=1, dropout=0).to(DEVICE))
             else:
@@ -119,8 +120,8 @@ class LanguageModel(nn.Module):
         if self.wdrop == True:
             self.rnns = [WeightDrop(rnn, ['weight_hh_l0'], dropout=0.65).to(DEVICE) for rnn in self.rnns]
         self.rnns = torch.nn.ModuleList(self.rnns)
-        # if weight_tie == True:
-        #     self.scoring.weight = self.embedding.weight
+        if weight_tie == True:
+            self.scoring.weight = self.embedding.weight
 
     def init_weights(self):
         self.embedding.weight.data.uniform_(-0.1, 0.1)
