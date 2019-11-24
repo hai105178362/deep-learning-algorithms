@@ -256,11 +256,11 @@ class LanguageModelTrainer:
         cur = result.view(s[0] * s[1], s[2])
         loss = self.criterion(cur, targets.view(-1))
         # Adding L2 Norm
-        par = torch.tensor(10e-6).to(DEVICE)
-        l2_reg = torch.tensor(0.).to(DEVICE)
-        for param in model.parameters():
-            l2_reg += torch.norm(param)
-        loss += par * l2_reg
+        # par = torch.tensor(10e-6).to(DEVICE)
+        # l2_reg = torch.tensor(0.).to(DEVICE)
+        # for param in model.parameters():
+        #     l2_reg += torch.norm(param)
+        # loss += par * l2_reg
         return loss
 
     def test(self):
