@@ -55,19 +55,23 @@ class LanguageModelDataLoader(DataLoader):
     """
 
     def __init__(self, dataset, batch_size, shuffle=True):
-        data = np.array(dataset)
+
+        self.data = np.array(dataset)
         if shuffle == True:
-            np.random.shuffle(data)
-        self.largetext = []
-        for i in data:
-            self.largetext = np.concatenate((self.largetext, i), axis=None)
-        super().__init__(dataset=self.largetext, batch_size=batch_size, shuffle=shuffle)
+            np.random.shuffle(self.data)
+        # self.largetext = []
+        # for i in data:
+        #     self.largetext = np.concatenate((self.largetext, i), axis=None)
+        super().__init__(dataset=self.data, batch_size=batch_size, shuffle=shuffle)
         self.lenarr = [35, 70]
         self.seqlen = np.random.choice(self.lenarr, 1, p=[0.05, 0.95])
         self.sigma = 5
         # raise NotImplemented
 
     def __iter__(self):
+        self.largetext = []
+        for i in self.data:
+            self.largetext = np.concatenate((self.largetext, i), axis=None)
         start_idx = 0
         tot_len = self.largetext.__len__()
         print("totlen:{}".format(tot_len))
