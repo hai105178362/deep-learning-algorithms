@@ -130,28 +130,6 @@ class LanguageModel(nn.Module):
         self.scoring.bias.data.fill_(0)
         self.scoring.weight.data.uniform_(-0.1, 0.1)
 
-    def embedded_dropout(self, embed, words, dropout=0.4, scale=None):
-        if dropout:
-            mask = embed.weight.data.new().resize_((embed.weight.size(0), 1)).bernoulli_(1 - dropout).expand_as(embed.weight) / (1 - dropout)
-            mask = Variable(mask)
-            masked_embed_weight = mask * embed.weight
-        else:
-            masked_embed_weight = embed.weight
-        if scale:
-            masked_embed_weight = scale.expand_as(masked_embed_weight) * masked_embed_weight
-
-        padding_idx = embed.padding_idx
-        if padding_idx is None:
-            padding_idx = -1
-        X = embed._backend.Embedding.apply(words, masked_embed_weight,
-                                           padding_idx, embed.max_norm, embed.norm_type,
-                                           embed.scale_grad_by_freq, embed.sparse
-                                           )
-        return X
-
-    # def init_hidden_weights(self, seqlen):
-    #     return torch.randn(1, seqlen, self.hidden_size) / np.sqrt(self.hidden_size)
-
     def net_run(self, embed, validation=False):
         cur_outputs = []
         current_input = embed
@@ -226,7 +204,7 @@ class LanguageModelTrainer:
         self.run_id = run_id
 
         # TODO: Define your optimizer and criterion here
-        self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-2, weight_decay=1e-5)
+        self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
         # self.optimizer = torch.optim.ASGD(model.parameters(), lr=1, weight_decay=1e-5)
         self.criterion = nn.CrossEntropyLoss().to(DEVICE)
         # self.criterion = nn.NLLLoss().to(DEVICE)
