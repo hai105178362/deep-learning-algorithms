@@ -234,7 +234,7 @@ class LanguageModelTrainer:
             cur_loss.backward()
             self.optimizer.step()
             epoch_loss += cur_loss
-            if (batch_num + 1) % 100*NUM_DIRECTIONS == 0:
+            if (batch_num + 1) % 50*NUM_DIRECTIONS == 0:
                 end_time = time.time()
                 print("batch:{}     loss:{}     time:{}".format(batch_num + 1,cur_loss.item(),end_time-cur_time))
                 cur_time = end_time
