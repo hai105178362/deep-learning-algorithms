@@ -71,7 +71,7 @@ class LanguageModelDataLoader(DataLoader):
         print("totlen:{}".format(tot_len))
         while True:
             seqlen = int(np.random.normal(self.seqlen, self.sigma))
-            if start_idx + (seqlen+1) * self.batch_size + 1 >= tot_len:
+            if start_idx + (seqlen + 1) * self.batch_size + 1 >= tot_len:
                 break
             cur = (largetext[start_idx:start_idx + (seqlen + 1) * self.batch_size]) \
                 .reshape(shape=(self.batch_size, seqlen + 1)).to(DEVICE)
@@ -151,22 +151,23 @@ class LanguageModel(nn.Module):
                 outputs.append(cur_output)
             current_input = cur_output
         hidden = new_hidden
-        cur_output = self.drop(cur_output)
-        output = self.scoring(cur_output)
+        final_drop = self.drop(cur_output)
+        output = self.scoring(final_drop)
+        rnn_final_layer = cur_output
         if validation == True:
             output = output.reshape(output.shape[0], output.shape[2])
         outputs.append(output)
-        return output, hidden
+        return output, hidden, rnn_final_layer, final_drop
 
     def forward(self, x):
         embed = self.embedding(x)
-        output, hidden = self.net_run(embed)
+        output, hidden, rnn_final_layer, final_drop = self.net_run(embed)
         result = output.view(-1, self.batch_size, self.vocab_size)
-        return result, hidden
+        return result, hidden, rnn_final_layer, final_drop
 
     def predict(self, seq):  # L x V
         embed = self.embedding(seq).unsqueeze(1)
-        output, _ = self.net_run(embed, validation=True)
+        output, _, _, _ = self.net_run(embed, validation=True)
         # _, current_word = torch.max(output, dim=1)  # 1 x 1
         return output[-1]
         # return output.unsqueeze(0)
@@ -175,7 +176,7 @@ class LanguageModel(nn.Module):
         cur_seq = seq
         generated_words = []
         embed = self.embedding(cur_seq).unsqueeze(1)
-        output, _ = self.net_run(embed, validation=True)
+        output, _, _, _ = self.net_run(embed, validation=True)
         _, current_words = torch.max(output, dim=1)  # 1 x 1
         cur_word = current_words[-1].unsqueeze(0)
         generated_words.append(cur_word)
@@ -215,7 +216,7 @@ class LanguageModelTrainer:
         self.run_id = run_id
 
         # TODO: Define your optimizer and criterion here
-        self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
+        self.optimizer = torch.optim.Adam(model.parameters(), lr=2e-3, weight_decay=1e-5)
         # self.optimizer = torch.optim.ASGD(model.parameters(), lr=30, weight_decay=1e-5)
         self.criterion = nn.CrossEntropyLoss().to(DEVICE)
         # self.criterion = nn.NLLLoss().to(DEVICE)
@@ -232,7 +233,7 @@ class LanguageModelTrainer:
             cur_loss.backward()
             self.optimizer.step()
             epoch_loss += cur_loss
-            if (batch_num + 1) % 50 == 0:
+            if (batch_num + 1) % 100 == 0:
                 end_time = time.time()
                 print("batch:{}     loss:{}     time:{}".format(batch_num + 1, cur_loss.item(), end_time - cur_time))
                 cur_time = end_time
@@ -247,21 +248,16 @@ class LanguageModelTrainer:
             TODO: Define code for training a single batch of inputs
 
         """
-        result, hidden = self.model(inputs)
+        result, hidden, rnn_final_layer, final_drop = self.model(inputs)
         s1, s2 = result.shape, targets.shape
         # _, cur = torch.max(result, dim=2)
         result = torch.reshape(result, shape=(s1[0] * s1[1], s1[2]))
-        targets = targets.reshape( -1)
-        # print(targets.shape)
-        # exit()
-        # targets = targets.reshape(shape=(s2[0]*s2[1],1))
+        targets = targets.reshape(-1)
         loss = self.criterion(result, targets)
-        # Adding L2 Norm
-        # par = torch.tensor(10e-6).to(DEVICE)
-        # l2_reg = torch.tensor(0.).to(DEVICE)
-        # for param in model.parameters():
-        #     l2_reg += torch.norm(param)
-        # loss += par * l2_reg
+        # Activiation Regularization
+        loss = loss + sum(2 * i.pow(2).mean() for i in final_drop[-1:])
+        # Temporal Activation Regularization (slowness)
+        loss = loss + sum(1 * (j[1:] - j[:-1]).pow(2).mean() for j in rnn_final_layer[-1:])
         return loss
 
     def test(self):
@@ -348,7 +344,7 @@ class TestLanguageModel:
 
 # TODO: define other hyperparameters here
 
-NUM_EPOCHS = 150
+NUM_EPOCHS = 5000
 run_id = str(int(time.time()))
 if not os.path.exists('./experiments'):
     os.mkdir('./experiments')
@@ -362,13 +358,13 @@ model = LanguageModel(len(vocab), weight_tie=WEIGHT_TIE)
 # model.apply(weights_init)
 print("Trainer Init...")
 trainer = LanguageModelTrainer(model=model, loader=loader, max_epochs=NUM_EPOCHS, run_id=run_id)
-best_nll = 5.4
+best_nll = 5.2
 for epoch in range(NUM_EPOCHS):
     print("Epoch: ", epoch + 1)
     trainer.train()
     nll = trainer.test()
     print("nll: ", nll)
-    if nll+0.1 < best_nll:
+    if nll + 0.01 < best_nll or nll < 5.1:
         best_nll = nll
         print("Saving model, predictions and generated output for epoch " + str(epoch) + " with NLL: " + str(best_nll))
         trainer.save()

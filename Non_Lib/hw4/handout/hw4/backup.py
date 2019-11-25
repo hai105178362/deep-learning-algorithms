@@ -15,6 +15,7 @@ from torchnlp.nn import WeightDropLSTM
 import torchnlp
 import time
 from helper.wdrop import WeightDrop
+from helper.embeddrop import EmbeddingDropout
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
@@ -95,7 +96,8 @@ class LanguageModel(nn.Module):
         if weight_tie == True:
             self.hidden_size = self.embed_hidden
 
-        self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
+        # self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
+        self.embedding = EmbeddingDropout(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
 
         self.rnns = []
         for l in range(self.lstmlayers):
@@ -113,7 +115,7 @@ class LanguageModel(nn.Module):
         self.embeddrop = torch.nn.Dropout(p=0.4)
 
         # self.locked_dropout1 = torchnlp.nn.LockedDropout(p=DROP_OUTS[1])
-        self.locked_dropouts = [torchnlp.nn.LockedDropout(p=i) for i in DROP_OUTS]
+        self.locked_dropouts = torchnlp.nn.LockedDropout(p=0.3)
         self.init_weights()
         if self.wdrop == True:
             self.rnns = [WeightDrop(rnn, ['weight_hh_l0'], dropout=0.65).to(DEVICE) for rnn in self.rnns]
@@ -134,7 +136,8 @@ class LanguageModel(nn.Module):
         # raw_output, hidden = self.rnn(emb, hidden)
         cur_outputs = []
         outputs = []
-        current_input = self.embeddrop(embed)
+        # current_input = self.embeddrop(embed)
+        current_input = embed
         cur_output = None
         hidden = self.init_hidden_weights(embed.shape[1]).to(DEVICE)
         cur_hidden = (hidden, hidden)
@@ -144,12 +147,12 @@ class LanguageModel(nn.Module):
             new_hidden.append(cur_hidden)
             cur_outputs.append(cur_output)
             if l != self.lstmlayers - 1:
-                cur_output = self.locked_dropouts[l + 1](cur_output)
+                cur_output = self.locked_dropouts(cur_output)
                 outputs.append(cur_output)
             current_input = cur_output
         hidden = new_hidden
+        cur_output = self.drop(cur_output)
         output = self.scoring(cur_output)
-        output = self.drop(output)
         if validation == True:
             output = output.reshape(output.shape[0], output.shape[2])
         outputs.append(output)
