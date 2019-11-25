@@ -134,6 +134,7 @@ class LanguageModel(nn.Module):
 
     def net_run(self, embed, validation=False):
         cur_outputs = []
+        current_input = embed
         # current_input = self.embeddrop(embed)
         cur_output = None
         # hidden = self.init_hidden_weights(embed.shape[1]).to(DEVICE)
