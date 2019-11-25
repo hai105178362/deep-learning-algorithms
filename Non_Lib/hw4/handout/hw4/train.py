@@ -116,7 +116,7 @@ class LanguageModel(nn.Module):
         if weight_tie == True:
             self.scoring.weight = self.embedding.weight
         for l, rnn in enumerate(self.rnns):
-            rnn.weight_hh_l0.data.fill_(1 / np.sqrt(self.hidden_size))
+            rnn.weight_hh_l0.data.fill_(1 / np.sqrt(self.embed_size))
 
         if self.wdrop == True:
             self.rnns = [WeightDrop(rnn, ['weight_hh_l0'], dropout=0.65).to(DEVICE) for rnn in self.rnns]

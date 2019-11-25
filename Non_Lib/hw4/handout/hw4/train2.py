@@ -117,7 +117,7 @@ class LanguageModel(nn.Module):
         self.locked_dropouts = torchnlp.nn.LockedDropout(p=0.3)
         self.init_weights()
         for l, rnn in enumerate(self.rnns):
-            rnn.weight_hh_l0.data.fill_(1 / np.sqrt(self.hidden_size))
+            rnn.weight_hh_l0.data.fill_(1 / np.sqrt(self.embed_size))
         if self.wdrop == True:
             self.rnns = [WeightDrop(rnn, ['weight_hh_l0'], dropout=0.65).to(DEVICE) for rnn in self.rnns]
         self.rnns = torch.nn.ModuleList(self.rnns)
