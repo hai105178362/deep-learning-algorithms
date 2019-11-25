@@ -14,8 +14,8 @@ from torchnlp.nn import WeightDrop
 from torchnlp.nn import WeightDropLSTM
 import torchnlp
 import time
-from helper.embeddrop import EmbeddingDropout
 from helper.wdrop import WeightDrop
+from helper.embeddrop import EmbeddingDropout
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
@@ -117,8 +117,6 @@ class LanguageModel(nn.Module):
         # self.locked_dropout1 = torchnlp.nn.LockedDropout(p=DROP_OUTS[1])
         self.locked_dropouts = [torchnlp.nn.LockedDropout(p=i) for i in DROP_OUTS]
         self.init_weights()
-        for l, rnn in enumerate(self.rnns):
-            rnn.weight_hh_l0.data.fill_(1 / np.sqrt(self.embed_size))
         if self.wdrop == True:
             self.rnns = [WeightDrop(rnn, ['weight_hh_l0'], dropout=0.65).to(DEVICE) for rnn in self.rnns]
         self.rnns = torch.nn.ModuleList(self.rnns)
@@ -131,19 +129,18 @@ class LanguageModel(nn.Module):
         self.scoring.weight.data.uniform_(-0.1, 0.1)
 
     def init_hidden_weights(self, seqlen):
-        return torch.randn(1, seqlen, self.embed_size, requires_grad=False) / np.sqrt(self.embed_size)
+        return torch.randn(1, seqlen, self.hidden_size, requires_grad=False) / np.sqrt(self.hidden_size)
 
     def net_run(self, embed, validation=False):
         new_hidden = []
         # raw_output, hidden = self.rnn(emb, hidden)
         cur_outputs = []
         outputs = []
-        current_input = self.embeddrop(embed)
+        # current_input = self.embeddrop(embed)
+        current_input = embed
         cur_output = None
-        # hidden = self.init_hidden_weights(embed.shape[1]).to(DEVICE)
-        cur_hidden = None
-        # cur_hidden = (hidden, hidden)
-
+        hidden = self.init_hidden_weights(embed.shape[1]).to(DEVICE)
+        cur_hidden = (hidden, hidden)
         for l, rnn in enumerate(self.rnns):
             # cur_output, cur_hidden = rnn(current_input, hidden[l])
             cur_output, cur_hidden = rnn(current_input, cur_hidden)
