@@ -30,7 +30,7 @@ dataset = train_data
 vocab_size = len(vocab)
 BATCH_SIZE = 80
 EMBED_SIZE = 400
-EMBED_HIDDEN = 1280
+EMBED_HIDDEN = 1150
 HIDDEN_SIZE = 1150
 DROP_OUTS = [0.4, 0.3, 0.4, 0.1]
 LSTM_LAYERS = 3
@@ -93,8 +93,6 @@ class LanguageModel(nn.Module):
         self.hidden_size = HIDDEN_SIZE
         self.lstmlayers = LSTM_LAYERS
         self.wdrop = WDROP
-        # if weight_tie == True:
-        #     self.hidden_size = self.embed_hidden
 
         # self.embedding = torch.nn.Embedding(vocab_size, self.embed_hidden, self.embed_size).to(DEVICE)
         # self.embedding = torch.nn.Embedding(vocab_size, self.embed_size, self.embed_hidden).to(DEVICE)
@@ -113,7 +111,6 @@ class LanguageModel(nn.Module):
 
         self.scoring = torch.nn.Linear(in_features=self.embed_size, out_features=vocab_size).to(DEVICE)
         self.drop = torch.nn.Dropout(p=DROP_OUTS[-1])
-        self.embeddrop = torch.nn.Dropout(p=0.4)
         self.locked_dropouts = [torchnlp.nn.LockedDropout(p=i) for i in DROP_OUTS]
         self.init_weights()
         if weight_tie == True:
@@ -207,7 +204,7 @@ class LanguageModelTrainer:
         self.run_id = run_id
 
         # TODO: Define your optimizer and criterion here
-        self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=1e-5)
+        self.optimizer = torch.optim.Adam(model.parameters(), lr=1e-2, weight_decay=1e-5)
         # self.optimizer = torch.optim.ASGD(model.parameters(), lr=1, weight_decay=1e-5)
         self.criterion = nn.CrossEntropyLoss().to(DEVICE)
         # self.criterion = nn.NLLLoss().to(DEVICE)
@@ -249,11 +246,11 @@ class LanguageModelTrainer:
         # targets = targets.reshape(shape=(s2[0]*s2[1],1))
         loss = self.criterion(result, targets)
         # Adding L2 Norm
-        par = torch.tensor(10e-6).to(DEVICE)
-        l2_reg = torch.tensor(0.).to(DEVICE)
-        for param in model.parameters():
-            l2_reg += torch.norm(param)
-        loss += par * l2_reg
+        # par = torch.tensor(10e-6).to(DEVICE)
+        # l2_reg = torch.tensor(0.).to(DEVICE)
+        # for param in model.parameters():
+        #     l2_reg += torch.norm(param)
+        # loss += par * l2_reg
         return loss
 
     def test(self):
