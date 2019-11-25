@@ -139,8 +139,8 @@ class LanguageModel(nn.Module):
         outputs = []
         current_input = self.embeddrop(embed)
         cur_output = None
-        hidden = self.init_hidden_weights(embed.shape[1]).to(DEVICE)
-        cur_hidden = (hidden, hidden)
+        # hidden = self.init_hidden_weights(embed.shape[1]).to(DEVICE)
+        cur_hidden = None
         for l, rnn in enumerate(self.rnns):
             # cur_output, cur_hidden = rnn(current_input, hidden[l])
             cur_output, cur_hidden = rnn(current_input, cur_hidden)
