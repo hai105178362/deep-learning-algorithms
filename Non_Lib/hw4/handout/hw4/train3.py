@@ -115,7 +115,7 @@ class LanguageModel(nn.Module):
         self.embeddrop = torch.nn.Dropout(p=0.4)
 
         # self.locked_dropout1 = torchnlp.nn.LockedDropout(p=DROP_OUTS[1])
-        self.locked_dropouts = [torchnlp.nn.LockedDropout(p=i) for i in DROP_OUTS]
+        self.locked_dropouts = torchnlp.nn.LockedDropout(p=0.3)
         self.init_weights()
         if self.wdrop == True:
             self.rnns = [WeightDrop(rnn, ['weight_hh_l0'], dropout=0.65).to(DEVICE) for rnn in self.rnns]
@@ -147,12 +147,12 @@ class LanguageModel(nn.Module):
             new_hidden.append(cur_hidden)
             cur_outputs.append(cur_output)
             if l != self.lstmlayers - 1:
-                cur_output = self.locked_dropouts[l + 1](cur_output)
+                cur_output = self.locked_dropouts(cur_output)
                 outputs.append(cur_output)
             current_input = cur_output
         hidden = new_hidden
+        cur_output = self.drop(cur_output)
         output = self.scoring(cur_output)
-        output = self.drop(output)
         if validation == True:
             output = output.reshape(output.shape[0], output.shape[2])
         outputs.append(output)
