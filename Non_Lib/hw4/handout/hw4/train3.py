@@ -184,7 +184,7 @@ class LanguageModel(nn.Module):
         if n_words > 1:
             for i in range(n_words - 1):
                 embed = self.embedding(cur_seq).unsqueeze(1)
-                output, _ = self.net_run(embed, validation=True)
+                output, _, _, _ = self.net_run(embed, validation=True)
                 _, current_words = torch.max(output, dim=1)  # 1 x 1
                 cur_word = current_words[-1].unsqueeze(0)
                 cur_seq = torch.cat((cur_seq, cur_word), dim=0)
