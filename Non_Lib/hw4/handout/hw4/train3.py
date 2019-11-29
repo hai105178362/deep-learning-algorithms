@@ -154,6 +154,8 @@ class LanguageModel(nn.Module):
         final_drop = self.drop(cur_output)
         output = self.scoring(final_drop)
         rnn_final_layer = cur_output
+        print(output.shape)
+        exit()
         if validation == True:
             output = output.reshape(output.shape[0], output.shape[2])
         outputs.append(output)

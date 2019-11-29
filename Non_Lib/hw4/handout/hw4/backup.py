@@ -71,7 +71,7 @@ class LanguageModelDataLoader(DataLoader):
         print("totlen:{}".format(tot_len))
         while True:
             seqlen = int(np.random.normal(self.seqlen, self.sigma))
-            if start_idx + (seqlen+1) * self.batch_size + 1 >= tot_len:
+            if start_idx + (seqlen + 1) * self.batch_size + 1 >= tot_len:
                 break
             cur = (largetext[start_idx:start_idx + (seqlen + 1) * self.batch_size]) \
                 .reshape(shape=(self.batch_size, seqlen + 1)).to(DEVICE)
@@ -251,7 +251,7 @@ class LanguageModelTrainer:
         s1, s2 = result.shape, targets.shape
         # _, cur = torch.max(result, dim=2)
         result = torch.reshape(result, shape=(s1[0] * s1[1], s1[2]))
-        targets = targets.reshape( -1)
+        targets = targets.reshape(-1)
         # print(targets.shape)
         # exit()
         # targets = targets.reshape(shape=(s2[0]*s2[1],1))
@@ -368,7 +368,7 @@ for epoch in range(NUM_EPOCHS):
     trainer.train()
     nll = trainer.test()
     print("nll: ", nll)
-    if nll+0.1 < best_nll:
+    if nll + 0.1 < best_nll or nll < 5:
         best_nll = nll
         print("Saving model, predictions and generated output for epoch " + str(epoch) + " with NLL: " + str(best_nll))
         trainer.save()
