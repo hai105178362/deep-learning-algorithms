@@ -22,5 +22,5 @@ saved_models/
 */dataset
 dataset/
 *.__pycache__/
-*/__pycache__/
+__pycache__/
 */experiments/
