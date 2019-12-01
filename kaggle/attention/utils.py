@@ -38,18 +38,48 @@ def transform_letter_to_index(transcript):
     :param letter_list: Letter list defined above
     :return letter_to_index_list: Returns a list for all the transcript sentence to index
     '''
-    start_idx = 0
-    end_idx = len(letter_list) + 1
     letter_to_index_list = []
-    # print(letter_to_index_list)
     for n, i in enumerate(transcript):
-        cur_sentence = np.array([0])
+        cur_sentence = []
+        for n2, j in enumerate(i):
+            cur_word = str(j)[2:-1]
+            if n2 == 0:
+                word_idx = np.array([letter_list.index('<sos>')] + [letter_list.index(char) for char in cur_word])
+            elif n2 == len(i) - 1:
+                word_idx = np.array([letter_list.index(' ')] + [letter_list.index(char) for char in cur_word] + [letter_list.index('<eos>')])
+            else:
+                word_idx = np.array([letter_list.index(' ')] + [letter_list.index(char) for char in cur_word])
+            cur_sentence = np.append(cur_sentence, word_idx)
+        letter_to_index_list.append(cur_sentence)
+    # print(np.array(letter_to_index_list).shape)
+    # exit()
+    return np.array(letter_to_index_list)
+
+
+def build_vocab(transcripts):
+    vocab = set()
+    for i in (transcripts):
         for j in i:
             cur_word = str(j)[2:-1]
-            word_idx = np.array([letter_list.index(' ')] + [letter_list.index(char) + 1 for char in cur_word])
-            cur_sentence = np.append([cur_sentence], [word_idx])
-        letter_to_index_list.append(cur_sentence)
-    return np.array(letter_to_index_list)
+            vocab.add(cur_word)
+    return ['SOS/EOS'] + [' '] + list(vocab)
+
+
+def transform_word_to_index(transcripts, vocab):
+    word_to_index_list = []
+    for n, i in enumerate(transcripts):
+        cur_sentence = [0]
+        for n2, j in enumerate(i):
+            cur_word = str(j)[2:-1]
+            if n2 == 0:
+                word_idx = [vocab.index(cur_word)]
+            elif n2 == len(i) - 1:
+                word_idx = np.array([vocab.index(' ')] + [vocab.index(cur_word)] + [0])
+            else:
+                word_idx = np.array([vocab.index(' ')] + [vocab.index(cur_word)])
+            cur_sentence = np.append(cur_sentence, word_idx)
+        word_to_index_list.append(cur_sentence)
+    return np.array(word_to_index_list)
 
 
 class Speech2Text_Dataset(Dataset):
@@ -101,8 +131,10 @@ def generate_train_data(x, y):
 
 
 utterance, transcript = get_data()
+vocab = build_vocab(transcript)
 letter_to_index_list = transform_letter_to_index(transcript)
-tx, ty = generate_train_data(utterance, letter_to_index_list)
+word_to_index_list = transform_word_to_index(transcripts=transcript, vocab=vocab)
+tx, ty = generate_train_data(utterance, word_to_index_list)
 train_dataset = Speech2Text_Dataset(speech=tx, text=ty, train=True)
 # print(train_dataset.__getitem__(0))
 # train_loader = DataLoader(train_dataset, shuffle=False, batch_size=config.train_batch_size, collate_fn=collate_train)

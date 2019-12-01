@@ -53,7 +53,7 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
 
 
 def main():
-    model = net.Seq2Seq(input_dim=40, vocab_size=len(utils.letter_list), hidden_dim=config.hidden_dim)
+    model = net.Seq2Seq(input_dim=40, vocab_size=len(utils.vocab), hidden_dim=config.hidden_dim)
     criterion = nn.CrossEntropyLoss(reduction='sum')
     optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
     train(model=model, train_loader=utils.train_loader, num_epochs=config.num_epochs, criterion=criterion, optimizer=optimizer)

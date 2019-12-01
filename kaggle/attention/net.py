@@ -97,7 +97,7 @@ class Decoder(nn.Module):
 
             # When attention is True you should replace the values[i,:,:] with the context you get from attention
             print(char_embed.shape,values[i,:,:].shape)
-            exit()
+            # exit()
             inp = torch.cat([char_embed, values[i, :, :]], dim=1)
             hidden_states[0] = self.lstm1(inp, hidden_states[0])
 
