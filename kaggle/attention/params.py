@@ -18,6 +18,7 @@ def init_parser():
     parser.add_argument('--num_workers', type=int, default=1)
     parser.add_argument('--mode', type=str, default="dev")
     parser.add_argument('--hidden_dim', type=int, default=128)
+    parser.add_argument('--shuffle', type=bool, default=True)
     config = parser.parse_args()
     return config
 
