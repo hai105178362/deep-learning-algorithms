@@ -49,7 +49,7 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
                     pred2words = torch.argmax(predictions, dim=1)
                     # print(pred2words)
                     print(text_input[:10])
-                    print(predictions[:10])
+                    print(pred2words[:10])
                     # print(''.join([du.letter_list[i] for i in text_input[:min(20, len(text_input) - 1)]]))
                     # print(''.join([du.letter_list[i - 1] for i in pred2words[:min(20, len(pred2words) - 1)] if i != 1]))
                     print("current_loss: {}".format(current_loss))
