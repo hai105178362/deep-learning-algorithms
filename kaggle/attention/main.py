@@ -19,7 +19,7 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
     for epochs in range(num_epochs):
         loss_sum = 0
         since = time.time()
-        print("training...")
+        print("epoch: {}".format(epochs))
         for (batch_num, collate_output) in enumerate(train_loader):
             with torch.autograd.set_detect_anomaly(True):
 
