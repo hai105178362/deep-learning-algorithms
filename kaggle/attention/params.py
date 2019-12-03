@@ -5,11 +5,11 @@ import argparse
 
 def init_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path_dev_new', type=str, default="dataset.nosync/11785-fall19-hw4p2/dev_new.npy")
-    parser.add_argument('--path_dev_transcripts', type=str, default="dataset.nosync/11785-fall19-hw4p2/dev_transcripts.npy")
-    parser.add_argument('--path_test_new', type=str, default="dataset.nosync/11785-fall19-hw4p2/dev_transcripts.npy")
-    parser.add_argument('--path_train_transcripts', type=str, default="dataset.nosync/11785-fall19-hw4p2/dev_transcripts.npy")
-    parser.add_argument('--path_train_new', type=str, default="dataset.nosync/11785-fall19-hw4p2/dev_transcripts.npy")
+    parser.add_argument('--path_dev_new', type=str, default="dataset.nosync/dev_new.npy")
+    parser.add_argument('--path_dev_transcripts', type=str, default="dataset.nosync/dev_transcripts.npy")
+    parser.add_argument('--path_test_new', type=str, default="dataset.nosync/dev_transcripts.npy")
+    parser.add_argument('--path_train_transcripts', type=str, default="dataset.nosync/dev_transcripts.npy")
+    parser.add_argument('--path_train_new', type=str, default="dataset.nosync/dev_transcripts.npy")
     parser.add_argument('--lr', type=float, default=0.1)
     parser.add_argument('--weight_decay', type=float, default=0.0001)
     parser.add_argument('--num_epochs', type=int, default=1500)
