@@ -63,8 +63,9 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
 
 
 def eval(model, data_loader):
+    model.eval()
+    model.load_state_dict(state_dict=torch.load('saved_models/{}.pt'.format(config.model_name), map_location=net.DEVICE))
     for (batch_num, collate_output) in enumerate(data_loader):
-        model.eval()
         speech_input, text_input, speech_len, text_len = collate_output
         speech_input = speech_input.to(device)
         text_input = text_input.to(device)
@@ -78,7 +79,7 @@ def eval(model, data_loader):
 
         predictions = predictions.contiguous().view(-1, predictions.size(-1))
         # print(predictions)
-        print(predictions)
+        print(predictions[:20])
 
 
 def main():

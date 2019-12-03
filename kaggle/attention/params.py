@@ -19,6 +19,7 @@ def init_parser():
     parser.add_argument('--mode', type=str, default="dev")
     parser.add_argument('--hidden_dim', type=int, default=128)
     parser.add_argument('--train_mode', type=bool, default=True)
+    parser.add_argument('--model_name', type=str, default=None)
     config = parser.parse_args()
     return config
 
