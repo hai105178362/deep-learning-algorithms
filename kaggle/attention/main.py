@@ -35,6 +35,7 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
                 mask = mask.view(-1).to(device)
 
                 predictions = predictions.contiguous().view(-1, predictions.size(-1))
+                # print(predictions)
                 text_input = text_input.contiguous().view(-1)
 
                 loss = criterion(predictions, text_input)
@@ -46,8 +47,9 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
                 current_loss = float(masked_loss.item()) / int(torch.sum(mask).item())
                 print(current_loss)
 
-                if batch_num % 15 == 0:
-                    pred2words = torch.argmax(predictions, dim=-1)
+                if batch_num % 1 == 0:
+                    pred2words = torch.argmax(predictions, dim=1)
+                    print(pred2words)
                     print(''.join([du.letter_list[i] for i in text_input[:min(20, len(text_input) - 1)]]))
                     print(''.join([du.letter_list[i] for i in pred2words[:min(20, len(pred2words) - 1)]]))
 
