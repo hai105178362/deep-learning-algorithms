@@ -41,6 +41,8 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
 
                 loss = criterion(predictions, text_input)
                 masked_loss = torch.sum(loss * mask)
+                print(masked_loss)
+                exit()
                 masked_loss.backward()
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 2)
                 optimizer.step()
