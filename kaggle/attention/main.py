@@ -89,9 +89,9 @@ def main():
     criterion = nn.CrossEntropyLoss(reduce=None).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
     if config.train_mode == True:
-        train(model=model, train_loader=du.train_loader, num_epochs=config.num_epochs, criterion=criterion, optimizer=optimizer)
+        train(model=model, train_loader=du.data_loader, num_epochs=config.num_epochs, criterion=criterion, optimizer=optimizer)
     else:
-        eval(model=model, data_loader=du.train_loader)
+        eval(model=model, data_loader=du.data_loader)
 
 
 if __name__ == "__main__":
