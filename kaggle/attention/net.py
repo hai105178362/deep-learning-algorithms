@@ -42,9 +42,9 @@ class Encoder(nn.Module):
     def __init__(self, input_dim, hidden_dim, value_size=128, key_size=128):
         super(Encoder, self).__init__()
         # self.embed = nn.Embedding(input_dim, hidden_dim)
-        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim, num_layers=1, bidirectional=True, batch_first=False)
+        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim, num_layers=1, bidirectional=True, batch_first=False).to(device)
         # Here you need to define the blocks of pBLSTMs
-        self.pblstm = pBLSTM(input_dim=hidden_dim * 2, hidden_dim=hidden_dim)
+        self.pblstm = pBLSTM(input_dim=hidden_dim * 2, hidden_dim=hidden_dim).to(device)
 
         self.key_network = nn.Linear(hidden_dim * 2, value_size)
         self.value_network = nn.Linear(hidden_dim * 2, key_size)
@@ -66,7 +66,7 @@ class Encoder(nn.Module):
 class Attention(nn.Module):
     def __init__(self):
         super(Attention, self).__init__()
-        self.softmax = nn.Softmax(dim=1)
+        self.softmax = nn.Softmax(dim=1).to(device)
 
     def forward(self, query, key, value, text_lens):
         '''
@@ -94,14 +94,14 @@ class Attention(nn.Module):
 class Decoder(nn.Module):
     def __init__(self, vocab_size, hidden_dim, value_size=128, key_size=128, isAttended=True):
         super(Decoder, self).__init__()
-        self.embedding = nn.Embedding(vocab_size, hidden_dim)
+        self.embedding = nn.Embedding(vocab_size, hidden_dim).to(device)
 
-        self.lstm1 = nn.LSTMCell(input_size=hidden_dim + value_size, hidden_size=hidden_dim)
-        self.lstm2 = nn.LSTMCell(input_size=hidden_dim, hidden_size=key_size)
+        self.lstm1 = nn.LSTMCell(input_size=hidden_dim + value_size, hidden_size=hidden_dim).to(device)
+        self.lstm2 = nn.LSTMCell(input_size=hidden_dim, hidden_size=key_size).to(device)
         self.isAttended = isAttended
         if (isAttended):
             self.attention = Attention()
-        self.character_prob = nn.Linear(key_size + value_size, vocab_size)
+        self.character_prob = nn.Linear(key_size + value_size, vocab_size).to(device)
 
     def forward(self, key, values, text=None, text_lens=None, train=True):
         '''
