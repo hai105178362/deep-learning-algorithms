@@ -44,10 +44,10 @@ class Encoder(nn.Module):
         # self.embed = nn.Embedding(input_dim, hidden_dim)
         self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim, num_layers=1, bidirectional=True, batch_first=False).to(device)
         # Here you need to define the blocks of pBLSTMs
-        self.pblstm = pBLSTM(input_dim=hidden_dim * 2, hidden_dim=hidden_dim).to(device)
+        self.pblstm = pBLSTM(input_dim=hidden_dim * 2, hidden_dim=hidden_dim)
 
-        self.key_network = nn.Linear(hidden_dim * 2, value_size)
-        self.value_network = nn.Linear(hidden_dim * 2, key_size)
+        self.key_network = nn.Linear(hidden_dim * 2, value_size).to(device)
+        self.value_network = nn.Linear(hidden_dim * 2, key_size).to(device)
 
     def forward(self, x, lens):
         # rnn_inp = utils.rnn.pack_padded_sequence(x, lengths=lens, batch_first=False, enforce_sorted=False)
