@@ -60,6 +60,8 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
                         jobtime = str(now.hour) + str(now.minute)
                         modelpath = "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs))
                         torch.save(model.state_dict(), modelpath)
+                        print("model saved at: ","snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs)))
+                        best_loss = current_loss
 
 
 def eval(model, data_loader):
@@ -88,6 +90,8 @@ def main():
     optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
     if config.train_mode == True:
         train(model=model, train_loader=du.train_loader, num_epochs=config.num_epochs, criterion=criterion, optimizer=optimizer)
+    else:
+        eval(model=model, data_loader=du.train_loader)
 
 
 if __name__ == "__main__":
