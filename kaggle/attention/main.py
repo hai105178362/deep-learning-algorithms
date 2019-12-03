@@ -26,9 +26,7 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
                 speech_input, text_input, speech_len, text_len = collate_output
                 speech_input = speech_input.to(device)
                 text_input = text_input.to(device)
-                print("predicting...")
                 predictions = model(speech_input, speech_len, text_input, text_len=text_len)
-                print("masking...")
                 mask = torch.zeros(text_input.size()).to(device)
 
                 for length in text_len:
@@ -41,13 +39,12 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
 
                 loss = criterion(predictions, text_input)
                 masked_loss = torch.sum(loss * mask)
-                print(masked_loss)
-                exit()
                 masked_loss.backward()
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 2)
                 optimizer.step()
 
                 current_loss = float(masked_loss.item()) / int(torch.sum(mask).item())
+                print(current_loss)
 
                 if batch_num % 15 == 0:
                     pred2words = torch.argmax(predictions, dim=-1)
