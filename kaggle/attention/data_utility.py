@@ -13,7 +13,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 from params import config
 
-letter_list = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', \
+letter_list = ['','A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', \
                'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '-', "'", '.', '_', '+', ' ', '<sos>', '<eos>']
 
 
@@ -51,8 +51,6 @@ def transform_letter_to_index(transcript):
                 word_idx = np.array([letter_list.index(' ')] + [letter_list.index(char) for char in cur_word])
             cur_sentence = np.append(cur_sentence, word_idx)
         letter_to_index_list.append(cur_sentence)
-    # print(np.array(letter_to_index_list).shape)
-    # exit()
     return np.array(letter_to_index_list)
 
 
@@ -101,10 +99,12 @@ class Speech2Text_Dataset(Dataset):
 
 def collate_train(batch_data):
     inputs, targets = zip(*batch_data)
+
     inputs_len = torch.IntTensor([len(_) for _ in inputs])
     targets_len = torch.IntTensor([len(_) for _ in targets])
     inputs = torch.nn.utils.rnn.pad_sequence(inputs)
     targets = torch.nn.utils.rnn.pad_sequence(targets)
+    targets = torch.transpose(targets, 0, 1)
     '''
     Complete this function.
     I usually return padded speech and text data, and length of
@@ -131,19 +131,19 @@ def generate_train_data(x, y):
 
 
 utterance, transcript = get_data()
-vocab = build_vocab(transcript)
+# vocab = build_vocab(transcript)
+vocab = letter_list
 letter_to_index_list = transform_letter_to_index(transcript)
-word_to_index_list = transform_word_to_index(transcripts=transcript, vocab=vocab)
-tx, ty = generate_train_data(utterance, word_to_index_list)
+# word_to_index_list = transform_word_to_index(transcripts=transcript, vocab=vocab)
+tx, ty = generate_train_data(utterance, letter_to_index_list)
 train_dataset = Speech2Text_Dataset(speech=tx, text=ty, train=True)
-# print(train_dataset.__getitem__(0))
-# train_loader = DataLoader(train_dataset, shuffle=False, batch_size=config.train_batch_size, collate_fn=collate_train)
 train_loader = DataLoader(train_dataset, shuffle=False, batch_size=config.train_batch_size, collate_fn=collate_train)
 if __name__ == "__main__":
     for batch_num, (inputs, targets, inputs_len, targets_len) in enumerate(train_loader):
-        print(inputs)
-        print(inputs.shape)
-        print(targets.shape)
+        # print(inputs)
+        # print(inputs.shape)
+        print(targets)
+        print([letter_list[i] for i in targets[1]])
         print(inputs_len, targets_len)
         exit()
     print(letter_to_index_list[0])
