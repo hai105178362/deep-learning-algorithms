@@ -137,7 +137,7 @@ letter_to_index_list = transform_letter_to_index(transcript)
 # word_to_index_list = transform_word_to_index(transcripts=transcript, vocab=vocab)
 tx, ty = generate_train_data(utterance, letter_to_index_list)
 train_dataset = Speech2Text_Dataset(speech=tx, text=ty, train=True)
-train_loader = DataLoader(train_dataset, shuffle=config.shuffle, batch_size=config.train_batch_size, collate_fn=collate_train)
+train_loader = DataLoader(train_dataset, shuffle=config.train_mode, batch_size=config.train_batch_size, collate_fn=collate_train)
 if __name__ == "__main__":
     for batch_num, (inputs, targets, inputs_len, targets_len) in enumerate(train_loader):
         # print(inputs)
