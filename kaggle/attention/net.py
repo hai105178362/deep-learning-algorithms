@@ -52,17 +52,18 @@ class Encoder(nn.Module):
         self.key_network = nn.Linear(hidden_dim * 2, value_size).to(device)
         self.value_network = nn.Linear(hidden_dim * 2, key_size).to(device)
 
-    def forward(self, x, lens):
+    def forward(self, x, seqlen):
         outputs, _ = self.lstm(x)
         # Use the outputs and pass it through the pBLSTM blocks
         outputs, _ = self.pblstm1(outputs)
-        # outputs, _ = self.pblstm2(outputs)
+        outputs, _ = self.pblstm2(outputs)
         linear_input, _ = self.pblstm3(outputs)
 
         keys = self.key_network(linear_input)
         value = self.value_network(linear_input)
+        out_seq_sizes = [size // 8 for size in seqlen]
 
-        return keys, value
+        return keys, value, seqlen
 
 
 class Attention(nn.Module):
@@ -182,9 +183,9 @@ class Seq2Seq(nn.Module):
         self.decoder = Decoder(vocab_size, hidden_dim)
 
     def forward(self, speech_input, speech_len, text_input=None, text_len=None, train=par.train_mode):
-        key, value = self.encoder(speech_input, speech_len)
+        key, value, seq_len = self.encoder(speech_input, speech_len)
         if train:
-            predictions = self.decoder(key, value, text_input, text_lens=text_len)
+            predictions = self.decoder(key, value, text_input, text_lens=seq_len)
         else:
             predictions = self.decoder(key, value, text=None, train=False)
 
