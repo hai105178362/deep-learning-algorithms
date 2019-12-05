@@ -7,7 +7,7 @@ def init_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--path_dev_new', type=str, default="dataset.nosync/dev_new.npy")
     parser.add_argument('--path_dev_transcripts', type=str, default="dataset.nosync/dev_transcripts.npy")
-    parser.add_argument('--path_test_new', type=str, default="dataset.nosync/test_new.npy")
+    parser.add_argument('--path_test_new', type=str, default="dataset.nosync/dev_new.npy")
     parser.add_argument('--path_train_transcripts', type=str, default="dataset.nosync/dev_transcripts.npy")
     parser.add_argument('--path_train_new', type=str, default="dataset.nosync/dev_transcripts.npy")
     parser.add_argument('--lr', type=float, default=0.0005)

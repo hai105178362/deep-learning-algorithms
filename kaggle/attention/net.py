@@ -84,6 +84,7 @@ class Attention(nn.Module):
         value = value.transpose(1, 0)
         energy = torch.bmm(key, query).squeeze(2)
         mask = Variable(energy.data.new(energy.size(0), energy.size(1)).zero_(), requires_grad=False)
+        # print(query.shape,key.shape,value.shape,energy.shape,mask.shape)
         if par.train_mode:
             for i, size in enumerate(text_lens):
                 mask[i, :size] = 1
@@ -126,11 +127,12 @@ class Decoder(nn.Module):
             max_len = text.shape[1]
             embeddings = self.embedding(text)
         else:
-            max_len = 250
+            max_len = min(250, values.shape[0])
         predictions = []
         hidden_states = [None, None]
         prediction = torch.zeros(batch_size, 1).to(device)
-
+        # print(values.shape)
+        # exit()
         for i in range(max_len):
             '''
             Here you should implement Gumble noise and teacher forcing techniques
@@ -154,11 +156,11 @@ class Decoder(nn.Module):
             hidden_states[1] = self.lstm2(inp_2, hidden_states[1])
 
             output = hidden_states[1][0]
+            assert output.shape == values[i, :, :].shape, "shape not match-> output:{}   value:{}".format(output.shape, values[i, :, :].shape)
             prediction = self.character_prob(torch.cat([output, values[i, :, :]], dim=1))
             predictions.append(prediction.unsqueeze(1))
 
         return torch.cat(predictions, dim=1)
-
 
 
 class Seq2Seq(nn.Module):
@@ -173,16 +175,17 @@ class Seq2Seq(nn.Module):
         if train:
             predictions = self.decoder(key, value, text_input, text_lens=text_len)
         else:
-            context = key.transpose(0, 1)
-            state = tuple(st.transpose(0, 1).reshape(1, -1) for st in value)
-            input_token = torch.LongTensor([du.letter_list.index('<sos>')])
-            seq = ['<sos>']
-            while seq[-1] != '<eos>' and len(seq) <= 10:
-                out, state, _ = self.decoder(context, input_token, speech_len, state=state)
-                # Get the most probable token, append it to the output sequence, and make it the next input token.
-                out_token = torch.argmax(out.squeeze())
-                seq.append(du.letter_list[out_token])
-                input_token = torch.LongTensor([out_token])
-                print(input_token)
+            predictions = self.decoder(key, value, text=None, train=False)
+            # context = key.transpose(0, 1)
+            # state = tuple(st.transpose(0, 1).reshape(1, -1) for st in value)
+            # input_token = torch.LongTensor([du.letter_list.index('<sos>')])
+            # seq = ['<sos>']
+            # while seq[-1] != '<eos>' and len(seq) <= 10:
+            #     out, state, _ = self.decoder(context, input_token, speech_len, state=state)
+            #     # Get the most probable token, append it to the output sequence, and make it the next input token.
+            #     out_token = torch.argmax(out.squeeze())
+            #     seq.append(du.letter_list[out_token])
+            #     input_token = torch.LongTensor([out_token])
+            #     print(input_token)
 
         return predictions
