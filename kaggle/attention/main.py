@@ -19,6 +19,7 @@ import net
 
 def train(model, train_loader, num_epochs, criterion, optimizer):
     best_loss = 0.1
+    # model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
     for epochs in range(num_epochs):
         loss_sum = 0
         since = time.time()
