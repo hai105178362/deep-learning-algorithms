@@ -43,7 +43,7 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
 
                 loss = criterion(predictions, text_input)
                 # masked_loss = torch.sum(loss * mask)
-                masked_loss = torch.logsumexp(loss * mask)
+                masked_loss = torch.logsumexp(loss * mask,0)
 
                 masked_loss.backward()
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 2)
