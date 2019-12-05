@@ -89,7 +89,7 @@ class Attention(nn.Module):
             for i, size in enumerate(text_lens):
                 mask[i, :size] = 1
         else:
-            for i in range(config.test_batch_size):
+            for i in range(key.shape[0]):
                 mask[i, :250] = 1
         attention_score = self.softmax(energy)
         attention_score = mask * attention_score
@@ -123,16 +123,22 @@ class Decoder(nn.Module):
         batch_size = key.shape[1]
 
         if (train):
-            # max_len = text.shape[1]
             max_len = text.shape[1]
             embeddings = self.embedding(text)
+            # print(embeddings.shape,key.shape,values.shape)
+            # exit()
         else:
             max_len = min(250, values.shape[0])
+            # text = torch.zeros(len(du.letter_list), max_len)
+            # for i in range(len(text)):
+            #     text[i][0] = du.letter_list.index('<sos>')
+            # embeddings = self.embedding(text.type(torch.LongTensor))
+            # print(embeddings.shape,key.shape,values.shape)
+            # exit()
+
         predictions = []
         hidden_states = [None, None]
         prediction = torch.zeros(batch_size, 1).to(device)
-        # print(values.shape)
-        # exit()
         for i in range(max_len):
             '''
             Here you should implement Gumble noise and teacher forcing techniques
@@ -142,8 +148,15 @@ class Decoder(nn.Module):
             else:
                 # if i == 0:
                 #     for j in range(len(prediction)):
-                #         prediction[j] = du.letter_list.index('<sos>')
-                char_embed = self.embedding(prediction.argmax(dim=-1))
+                #         prediction[j] =
+                # else:
+                #     prediction = torch.argmax(prediction, dim=1)
+                # prediction = prediction.type(torch.LongTensor).flatten()
+                # char_embed = self.embedding(prediction)
+                # print(prediction.shape)
+                pred = prediction.argmax(dim=-1)
+                char_embed = self.embedding(pred)
+
             if self.isAttended:
                 context, mask = self.attention(char_embed, key, values, text_lens)
                 inp = torch.cat([char_embed, context], dim=1)
@@ -156,10 +169,8 @@ class Decoder(nn.Module):
             hidden_states[1] = self.lstm2(inp_2, hidden_states[1])
 
             output = hidden_states[1][0]
-            assert output.shape == values[i, :, :].shape, "shape not match-> output:{}   value:{}".format(output.shape, values[i, :, :].shape)
-            prediction = self.character_prob(torch.cat([output, values[i, :, :]], dim=1))
+            prediction = self.character_prob(torch.cat([output, context], dim=1))
             predictions.append(prediction.unsqueeze(1))
-
         return torch.cat(predictions, dim=1)
 
 
@@ -176,16 +187,5 @@ class Seq2Seq(nn.Module):
             predictions = self.decoder(key, value, text_input, text_lens=text_len)
         else:
             predictions = self.decoder(key, value, text=None, train=False)
-            # context = key.transpose(0, 1)
-            # state = tuple(st.transpose(0, 1).reshape(1, -1) for st in value)
-            # input_token = torch.LongTensor([du.letter_list.index('<sos>')])
-            # seq = ['<sos>']
-            # while seq[-1] != '<eos>' and len(seq) <= 10:
-            #     out, state, _ = self.decoder(context, input_token, speech_len, state=state)
-            #     # Get the most probable token, append it to the output sequence, and make it the next input token.
-            #     out_token = torch.argmax(out.squeeze())
-            #     seq.append(du.letter_list[out_token])
-            #     input_token = torch.LongTensor([out_token])
-            #     print(input_token)
 
         return predictions
