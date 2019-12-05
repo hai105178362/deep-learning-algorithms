@@ -59,7 +59,7 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
                     text_input = [x for x in text_input if x != 0]
                     pred2words = [x for x in pred2words if x != 0]
                     print(''.join([du.letter_list[i-1] for i in text_input[:min(50, len(text_input) - 1)]]))
-                    print(''.join([du.letter_list[i] for i in pred2words[:min(50, len(pred2words) - 1)]]))
+                    print(''.join([du.letter_list[i-1] for i in pred2words[:min(50, len(pred2words) - 1)]]))
                     print("current_loss: {}".format(current_loss))
                     if current_loss < best_loss:
                         now = datetime.datetime.now()
