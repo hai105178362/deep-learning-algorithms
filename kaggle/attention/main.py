@@ -80,14 +80,15 @@ def eval(model, data_loader):
             # print(predictions.shape)
             pred2words_per_batch = torch.argmax(predictions, dim=2).data
             for pred2words in pred2words_per_batch:
-                pred2words = [x for x in pred2words if (x != 0)]
-                # print(pred2words)
+                print(pred2words)
+                # pred2words = [x for x in pred2words if (x != 0)]
+                print(pred2words)
                 print(''.join([du.letter_list[i] for i in pred2words[:min(150, len(pred2words) - 1)]]))
-            # exit()
+                exit()
 
 
 def main():
-    model = net.Seq2Seq(input_dim=40, vocab_size=len(du.vocab) + 1, hidden_dim=config.hidden_dim)
+    model = net.Seq2Seq(input_dim=40, vocab_size=len(du.vocab) , hidden_dim=config.hidden_dim)
     criterion = nn.CrossEntropyLoss(reduce=False).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.lr,weight_decay=config.weight_decay)
     if par.train_mode:

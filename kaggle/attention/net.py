@@ -125,11 +125,11 @@ class Decoder(nn.Module):
 
         if (train):
             max_len = text.shape[1]
-            embeddings = self.embedding(text)
-            # print(embeddings.shape,key.shape,values.shape)
+            # print(text.shape)
             # exit()
+            embeddings = self.embedding(text)
         else:
-            max_len = min(250, values.shape[0])
+            max_len = 250
             # text = torch.zeros(len(du.letter_list), max_len)
             # for i in range(len(text)):
             #     text[i][0] = du.letter_list.index('<sos>')
@@ -180,7 +180,7 @@ class Seq2Seq(nn.Module):
         super(Seq2Seq, self).__init__()
 
         self.encoder = Encoder(input_dim, hidden_dim)
-        self.decoder = Decoder(vocab_size, hidden_dim)
+        self.decoder = Decoder(vocab_size + 1, hidden_dim)
 
     def forward(self, speech_input, speech_len, text_input=None, text_len=None, train=par.train_mode):
         key, value, seq_len = self.encoder(speech_input, speech_len)
@@ -188,5 +188,4 @@ class Seq2Seq(nn.Module):
             predictions = self.decoder(key, value, text_input, text_lens=seq_len)
         else:
             predictions = self.decoder(key, value, text=None, train=False)
-
         return predictions
