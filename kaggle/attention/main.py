@@ -38,7 +38,8 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
                 mask = mask.view(-1).to(device)
 
                 predictions = predictions.contiguous().view(-1, predictions.size(-1))
-                # print(predictions)
+                # print([sum(predictions[i]) for i in range(len(predictions))])
+                # exit()
                 text_input = text_input.contiguous().view(-1)
 
                 loss = criterion(predictions, text_input)
@@ -52,8 +53,8 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
                 current_loss = float(masked_loss.item()) / int(torch.sum(mask).item())
                 if batch_num % 20 == 0:
                     pred2words = torch.argmax(predictions, dim=1)
-                    print(pred2words[:20].data)
-                    print(text_input[:20])
+                    print(text_input[:20].numpy())
+                    print(pred2words[:20].data.numpy())
                     pred2words = [x for x in pred2words if x != 0]
                     print(''.join([du.letter_list[i] for i in text_input[:min(20, len(text_input) - 1)]]))
                     print(''.join([du.letter_list[i] for i in pred2words[:min(20, len(text_input) - 1)]]))
@@ -67,25 +68,27 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
                         best_loss = current_loss
 
 
-def eval(model, data_loader):
-    model.eval()
-    model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
-    for (batch_num, collate_output) in enumerate(data_loader):
-        speech_input, speech_len = collate_output
-        speech_input = speech_input.to(device)
-        predictions = model(speech_input, speech_len)
-        # mask = torch.zeros(text_input.size()).to(device)
-
-        # for length in text_len:
-        #     mask[:, :length] = 1
-        #
-        # mask = mask.view(-1).to(device)
-
-        predictions = predictions.contiguous().view(-1, predictions.size(-1))
-        pred2words = torch.argmax(predictions, dim=1)
-        # print(predictions)
-        print(pred2words[:20])
-        exit()
+# def eval(model, data_loader):
+#     with torch.no_grad():
+#         model.eval()
+#         model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
+#         for (batch_num, collate_output) in enumerate(data_loader):
+#             speech_input, speech_len = collate_output
+#             speech_input = speech_input.to(device)
+#             predictions = model(speech_input, speech_len)
+#             # mask = torch.zeros(text_input.size()).to(device)
+#
+#             # for length in text_len:
+#             #     mask[:, :length] = 1
+#             #
+#             # mask = mask.view(-1).to(device)
+#             predictions = predictions.contiguous().view(-1, predictions.size(-1))
+#             # print(sum(predictions[0]))
+#             # exit()
+#             # pred2words = torch.argmax(predictions, dim=1)
+#             # print(predictions)
+#             print(pred2words[:20])
+#             exit()def eval(model, data_loader):
 
 
 def main():

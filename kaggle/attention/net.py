@@ -133,6 +133,9 @@ class Decoder(nn.Module):
             if (train):
                 char_embed = embeddings[:, i, :]
             else:
+                print(prediction)
+                print(prediction.argmax(dim=-1))
+                exit()
                 char_embed = self.embedding(prediction.argmax(dim=-1))
             if self.isAttended:
                 context, mask = self.attention(char_embed, key, values, text_lens)
