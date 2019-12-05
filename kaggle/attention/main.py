@@ -48,7 +48,7 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
                 optimizer.step()
 
                 current_loss = float(masked_loss.item()) / int(torch.sum(mask).item())
-                if batch_num % 1 == 0:
+                if batch_num % 20 == 0:
                     pred2words = torch.argmax(predictions, dim=1)
                     print(pred2words[:10])
                     print(''.join([du.letter_list[i] for i in text_input[:min(20, len(text_input) - 1)]]))
