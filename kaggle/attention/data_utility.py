@@ -143,7 +143,7 @@ if par.train_mode:
     tx, ty = generate_data(x=utterance, y=letter_to_index_list)
     train_dataset = Speech2Text_Dataset(speech=tx, text=ty)
     # data_loader = DataLoader(train_dataset, shuffle=par.train_mode, batch_size=config.train_batch_size, collate_fn=collate_train)
-    data_loader = DataLoader(train_dataset, shuffle=False, batch_size=config.train_batch_size, collate_fn=collate_train)
+    data_loader = DataLoader(train_dataset, shuffle=par.train_mode, batch_size=config.train_batch_size, collate_fn=collate_train)
 else:
     utterance, _ = get_data()
     x = generate_data(x=utterance)
