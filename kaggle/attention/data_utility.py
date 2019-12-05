@@ -13,7 +13,7 @@ import params as par
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-letter_list = ['','A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', \
+letter_list = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', \
                'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '-', "'", '.', '_', '+', ' ', '<sos>', '<eos>']
 
 
@@ -99,6 +99,7 @@ class Speech2Text_Dataset(Dataset):
 
 def collate_train(batch_data):
     inputs, targets = zip(*batch_data)
+    targets = [i+1 for i in targets]
 
     inputs_len = torch.IntTensor([len(_) for _ in inputs])
     targets_len = torch.IntTensor([len(_) for _ in targets])
