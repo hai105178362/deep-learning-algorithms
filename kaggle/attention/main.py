@@ -87,8 +87,8 @@ def eval(model, data_loader):
             # exit()
             # pred2words = torch.argmax(predictions, dim=1)
             # print(predictions)
-            print(pred2words[:20])
-            exit()def eval(model, data_loader):
+            # print(pred2words[:20])
+            exit()
 
 
 def main():
