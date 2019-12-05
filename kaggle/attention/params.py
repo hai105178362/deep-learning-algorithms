@@ -25,5 +25,6 @@ def init_parser():
 
 config = init_parser()
 train_mode = True
+batch_size = 32
 if config.mode == "test":
     train_mode = False

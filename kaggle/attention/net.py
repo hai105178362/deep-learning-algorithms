@@ -10,6 +10,7 @@ import pickle as pk
 from torch.utils.data import DataLoader, Dataset
 import time
 from torch.autograd import Variable
+import data_utility as du
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -44,19 +45,20 @@ class Encoder(nn.Module):
         # self.embed = nn.Embedding(input_dim, hidden_dim)
         self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim, num_layers=1, bidirectional=True, batch_first=False).to(device)
         # Here you need to define the blocks of pBLSTMs
-        self.pblstm = pBLSTM(input_dim=hidden_dim * 2, hidden_dim=hidden_dim)
+        self.pblstm1 = pBLSTM(input_dim=hidden_dim * 2, hidden_dim=hidden_dim)
+        self.pblstm2 = pBLSTM(input_dim=hidden_dim * 2, hidden_dim=hidden_dim)
+        self.pblstm3 = pBLSTM(input_dim=hidden_dim * 2, hidden_dim=hidden_dim)
 
         self.key_network = nn.Linear(hidden_dim * 2, value_size).to(device)
         self.value_network = nn.Linear(hidden_dim * 2, key_size).to(device)
 
     def forward(self, x, lens):
-        # rnn_inp = utils.rnn.pack_padded_sequence(x, lengths=lens, batch_first=False, enforce_sorted=False)
-        # print(x.shape)
-        # print(rnn_inp.data.shape)
-        # outputs, _ = self.lstm(rnn_inp)
         outputs, _ = self.lstm(x)
         # Use the outputs and pass it through the pBLSTM blocks
-        linear_input, _ = self.pblstm(outputs)
+        outputs, _ = self.pblstm1(outputs)
+        # outputs, _ = self.pblstm2(outputs)
+        linear_input, _ = self.pblstm3(outputs)
+
         keys = self.key_network(linear_input)
         value = self.value_network(linear_input)
 
@@ -116,8 +118,11 @@ class Decoder(nn.Module):
         :param train: Train or eval mode
         :return predictions: Returns the character perdiction probability
         '''
+
         batch_size = key.shape[1]
+
         if (train):
+            # max_len = text.shape[1]
             max_len = text.shape[1]
             embeddings = self.embedding(text)
         else:
@@ -125,7 +130,7 @@ class Decoder(nn.Module):
         predictions = []
         hidden_states = [None, None]
         prediction = torch.zeros(batch_size, 1).to(device)
-        # state, output_word = self.get_initial_state(batch_size)
+
         for i in range(max_len):
             '''
             Here you should implement Gumble noise and teacher forcing techniques
@@ -133,9 +138,9 @@ class Decoder(nn.Module):
             if (train):
                 char_embed = embeddings[:, i, :]
             else:
-                print(prediction)
-                print(prediction.argmax(dim=-1))
-                exit()
+                # if i == 0:
+                #     for j in range(len(prediction)):
+                #         prediction[j] = du.letter_list.index('<sos>')
                 char_embed = self.embedding(prediction.argmax(dim=-1))
             if self.isAttended:
                 context, mask = self.attention(char_embed, key, values, text_lens)
@@ -149,18 +154,11 @@ class Decoder(nn.Module):
             hidden_states[1] = self.lstm2(inp_2, hidden_states[1])
 
             output = hidden_states[1][0]
-            # print(output.shape,values[i].shape)
             prediction = self.character_prob(torch.cat([output, values[i, :, :]], dim=1))
             predictions.append(prediction.unsqueeze(1))
 
         return torch.cat(predictions, dim=1)
 
-    def get_initial_state(self, batch_size=32):
-        hidden = [h.repeat(batch_size, 1) for h in self.rnn_inith]
-        cell = [c.repeat(batch_size, 1) for c in self.rnn_initc]
-        # <sos> (same vocab as <eos>)
-        output_word = Variable(hidden[0].data.new(batch_size).long().fill_(chr2idx['<eos>']))
-        return [hidden, cell], output_word
 
 
 class Seq2Seq(nn.Module):
@@ -170,10 +168,21 @@ class Seq2Seq(nn.Module):
         self.encoder = Encoder(input_dim, hidden_dim)
         self.decoder = Decoder(vocab_size, hidden_dim)
 
-    def forward(self, speech_input, speech_len, text_input=None, text_len=None, train=True):
+    def forward(self, speech_input, speech_len, text_input=None, text_len=None, train=par.train_mode):
         key, value = self.encoder(speech_input, speech_len)
-        if (train):
+        if train:
             predictions = self.decoder(key, value, text_input, text_lens=text_len)
         else:
-            predictions = self.decoder(key, value, text=None, train=False)
+            context = key.transpose(0, 1)
+            state = tuple(st.transpose(0, 1).reshape(1, -1) for st in value)
+            input_token = torch.LongTensor([du.letter_list.index('<sos>')])
+            seq = ['<sos>']
+            while seq[-1] != '<eos>' and len(seq) <= 10:
+                out, state, _ = self.decoder(context, input_token, speech_len, state=state)
+                # Get the most probable token, append it to the output sequence, and make it the next input token.
+                out_token = torch.argmax(out.squeeze())
+                seq.append(du.letter_list[out_token])
+                input_token = torch.LongTensor([out_token])
+                print(input_token)
+
         return predictions
