@@ -87,8 +87,8 @@ def eval(model, data_loader):
 
 def main():
     model = net.Seq2Seq(input_dim=40, vocab_size=len(du.vocab) + 1, hidden_dim=config.hidden_dim)
-    criterion = nn.CrossEntropyLoss(reduce=None).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=config.lr)
+    criterion = nn.CrossEntropyLoss(reduce=False).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=config.lr,weight_decay=config.weight_decay)
     if par.train_mode:
         train(model=model, train_loader=du.data_loader, num_epochs=config.num_epochs, criterion=criterion, optimizer=optimizer)
     else:
