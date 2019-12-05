@@ -31,7 +31,9 @@ class pBLSTM(nn.Module):
         inp = torch.transpose(x, 0, 1)
         inp_shape = (inp.shape)
         i, j, k = inp_shape[0], inp_shape[1], inp_shape[2]
-        if j % 2 != 0:
+        if j ==1:
+            pass
+        elif j % 2 != 0:
             inp = inp[:, :j - 1, :]
         inp = inp.reshape(i, j // 2, k * 2)
         inp = torch.transpose(inp, 1, 0)
@@ -125,17 +127,9 @@ class Decoder(nn.Module):
 
         if (train):
             max_len = text.shape[1]
-            # print(text.shape)
-            # exit()
             embeddings = self.embedding(text)
         else:
             max_len = 250
-            # text = torch.zeros(len(du.letter_list), max_len)
-            # for i in range(len(text)):
-            #     text[i][0] = du.letter_list.index('<sos>')
-            # embeddings = self.embedding(text.type(torch.LongTensor))
-            # print(embeddings.shape,key.shape,values.shape)
-            # exit()
 
         predictions = []
         hidden_states = [None, None]
@@ -147,14 +141,6 @@ class Decoder(nn.Module):
             if (train):
                 char_embed = embeddings[:, i, :]
             else:
-                # if i == 0:
-                #     for j in range(len(prediction)):
-                #         prediction[j] =
-                # else:
-                #     prediction = torch.argmax(prediction, dim=1)
-                # prediction = prediction.type(torch.LongTensor).flatten()
-                # char_embed = self.embedding(prediction)
-                # print(prediction.shape)
                 pred = prediction.argmax(dim=-1)
                 char_embed = self.embedding(pred)
 
@@ -188,4 +174,6 @@ class Seq2Seq(nn.Module):
             predictions = self.decoder(key, value, text_input, text_lens=seq_len)
         else:
             predictions = self.decoder(key, value, text=None, train=False)
+            # predictions=(predictions[:,:,2:])
+            # exit()
         return predictions

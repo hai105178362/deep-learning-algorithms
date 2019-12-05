@@ -58,8 +58,8 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
                     print(pred2words[:].data.detach().cpu().numpy())
                     text_input = [x for x in text_input if x != 0]
                     pred2words = [x for x in pred2words if x != 0]
-                    print(''.join([du.letter_list[i-1] for i in text_input[:min(50, len(text_input) - 1)]]))
-                    print(''.join([du.letter_list[i-1] for i in pred2words[:min(50, len(pred2words) - 1)]]))
+                    print(''.join([du.letter_list[i - 1] for i in text_input[:min(50, len(text_input) - 1)]]))
+                    print(''.join([du.letter_list[i - 1] for i in pred2words[:min(50, len(pred2words) - 1)]]))
                     print("current_loss: {}".format(current_loss))
                     if current_loss < best_loss:
                         now = datetime.datetime.now()
@@ -77,7 +77,6 @@ def eval(model, data_loader):
         for (batch_num, collate_output) in enumerate(data_loader):
             speech_input, speech_len = collate_output
             predictions = model(speech_input, speech_len)
-            # print(predictions.shape)
             pred2words_per_batch = torch.argmax(predictions, dim=2).data
             for pred2words in pred2words_per_batch:
                 print(pred2words)
@@ -88,9 +87,9 @@ def eval(model, data_loader):
 
 
 def main():
-    model = net.Seq2Seq(input_dim=40, vocab_size=len(du.vocab) , hidden_dim=config.hidden_dim)
-    criterion = nn.CrossEntropyLoss(reduce=False).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=config.lr,weight_decay=config.weight_decay)
+    model = net.Seq2Seq(input_dim=40, vocab_size=len(du.vocab), hidden_dim=config.hidden_dim)
+    criterion = nn.CrossEntropyLoss(reduce=None).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
     if par.train_mode:
         train(model=model, train_loader=du.data_loader, num_epochs=config.num_epochs, criterion=criterion, optimizer=optimizer)
     else:
