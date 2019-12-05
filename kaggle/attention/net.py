@@ -65,7 +65,7 @@ class Encoder(nn.Module):
         value = self.value_network(linear_input)
         out_seq_sizes = [size // 8 for size in seqlen]
 
-        return keys, value, seqlen
+        return keys, value, out_seq_sizes
 
 
 class Attention(nn.Module):
