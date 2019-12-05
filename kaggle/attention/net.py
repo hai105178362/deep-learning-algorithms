@@ -1,5 +1,7 @@
 import numpy as np
 import torch
+import params as par
+from params import config
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
@@ -27,8 +29,6 @@ class pBLSTM(nn.Module):
         # inp, lens = utils.rnn.pad_packed_sequence(x)
         inp = torch.transpose(x, 0, 1)
         inp_shape = (inp.shape)
-        # print(inp_shape)
-        # exit()
         i, j, k = inp_shape[0], inp_shape[1], inp_shape[2]
         if j % 2 != 0:
             inp = inp[:, :j - 1, :]
@@ -82,8 +82,12 @@ class Attention(nn.Module):
         value = value.transpose(1, 0)
         energy = torch.bmm(key, query).squeeze(2)
         mask = Variable(energy.data.new(energy.size(0), energy.size(1)).zero_(), requires_grad=False)
-        for i, size in enumerate(text_lens):
-            mask[i, :size] = 1
+        if par.train_mode:
+            for i, size in enumerate(text_lens):
+                mask[i, :size] = 1
+        else:
+            for i in range(config.test_batch_size):
+                mask[i, :250] = 1
         attention_score = self.softmax(energy)
         attention_score = mask * attention_score
         attention_score = attention_score / torch.sum(attention_score, dim=1).unsqueeze(1).expand_as(attention_score)
@@ -103,7 +107,7 @@ class Decoder(nn.Module):
             self.attention = Attention()
         self.character_prob = nn.Linear(key_size + value_size, vocab_size).to(device)
 
-    def forward(self, key, values, text=None, text_lens=None, train=True):
+    def forward(self, key, values, text=None, text_lens=None, train=par.train_mode):
         '''
         :param text_lens:
         :param key :(T,N,key_size) Output of the Encoder Key projection layer
@@ -142,6 +146,7 @@ class Decoder(nn.Module):
             hidden_states[1] = self.lstm2(inp_2, hidden_states[1])
 
             output = hidden_states[1][0]
+            # print(output.shape,values[i].shape)
             prediction = self.character_prob(torch.cat([output, values[i, :, :]], dim=1))
             predictions.append(prediction.unsqueeze(1))
 
