@@ -1,0 +1,920 @@
+sos_index:  1 	eos_index:  2 	pad_index:  0
+num_classes 35
+SimpleSeq2Seq(
+  (encoder): SimpleEncoder(
+    (encoder): LSTM(40, 384, num_layers=2, batch_first=True, bidirectional=True)
+  )
+  (decoder): SimpleDecoder(
+    (embedding): Embedding(35, 1536)
+    (decoder1): LSTMCell(1536, 1536)
+    (projection): Linear(in_features=1536, out_features=35, bias=True)
+  )
+)
+Current learning_rate:
+0.001
+cuda
+Epoch: 1	Batch: 50	Train-Loss: 3.0377	Time: 82.21s
+Epoch: 1	Batch: 100	Train-Loss: 2.9781	Time: 72.53s
+Epoch: 1	Batch: 150	Train-Loss: 2.9536	Time: 68.14s
+cuda
+Epoch: 1	Batch: 5	Valid-Loss: 2.8707	Valid-Edit_dist: 232.7828	Time: 11.63s
+ prev_lev_distance: inf	curr_lev_distance: 232.97080369241192  saving the model
+saved the model
+Current learning_rate:
+0.001
+cuda
+Epoch: 2	Batch: 50	Train-Loss: 2.8761	Time: 69.38s
+Epoch: 2	Batch: 100	Train-Loss: 2.8736	Time: 70.29s
+Epoch: 2	Batch: 150	Train-Loss: 2.8704	Time: 69.26s
+cuda
+Epoch: 2	Batch: 5	Valid-Loss: 2.8524	Valid-Edit_dist: 230.9938	Time: 11.95s
+ prev_lev_distance: 232.97080369241192	curr_lev_distance: 230.83134315718158  saving the model
+saved the model
+Current learning_rate:
+0.001
+cuda
+Epoch: 3	Batch: 50	Train-Loss: 2.8546	Time: 70.62s
+Epoch: 3	Batch: 100	Train-Loss: 2.8515	Time: 68.99s
+Epoch: 3	Batch: 150	Train-Loss: 2.8490	Time: 69.02s
+cuda
+BUT IS                                                                                                                                                                                                                                                    
+-LATIONS PERIOD DOUBLE-QUOTE THERE'S A VERY SIGNIFICANT DIFFERENCE BETWEEN POLICY MAKING ON THE STATE AND FEDERAL LEVELS COMMA DOUBLE-QUOTE SAYS JOHN SHANNON COMMA EXECUTIVE DIRECTOR OF THE ADVISORY COMMISSION ON INTERGOVERNMENTAL RELATIONS PERIOD<eos>
+
+BOTH ST                                                                                                                                                                                                                                                   
+THOSE CONTRACTS STRENGTHEN JOB SECURITY PROVISIONS COMMA INCLUDE PLANT CLOSING MORATORIUMS COMMA AND RAISE THE COST OF OUTSOURCING PERIOD<eos>
+
+IN TEE                                                                                                                                                                                                                                                    
+IN ANY COMPANY WITH TWENTY FIVE THOUSAND EMPLOYEES IT'S PRETTY EASY FOR SOMEBODY NOT TO KNOW SOMETHING HE SAYS<eos>
+
+MOLIT                                                                                                                                                                                                                                                     
+MILITARY POLICY WAS TO KEEP THE TRAVEL ROUTES OPEN AND PROTECT THE SETTLED AREAS<eos>
+
+ORIGIN                                                                                                                                                                                                                                                    
+ORIGINS OR CAUSES OF SPONTANEOUS MUTATION ARE NOT YET COMPLETELY CLEAR<eos>
+
+MOREO                                                                                                                                                                                                                                                     
+MODERN ELECTRONICS HAS BECOME HIGHLY DEPENDENT ON INORGANIC CHEMISTRY<eos>
+
+I TOE                                                                                                                                                                                                                                                     
+I DON'T THINK SO HE RESPONDS AFTER SOME THOUGHT<eos>
+
+Epoch: 3	Batch: 5	Valid-Loss: 2.8266	Valid-Edit_dist: 231.7250	Time: 12.25s
+Current learning_rate:
+0.001
+cuda
+Epoch: 4	Batch: 50	Train-Loss: 2.8315	Time: 69.75s
+Epoch: 4	Batch: 100	Train-Loss: 2.8285	Time: 68.82s
+Epoch: 4	Batch: 150	Train-Loss: 2.8266	Time: 68.10s
+cuda
+Epoch: 4	Batch: 5	Valid-Loss: 2.7947	Valid-Edit_dist: 230.5312	Time: 12.26s
+ prev_lev_distance: 230.83134315718158	curr_lev_distance: 230.28912601626018  saving the model
+saved the model
+Current learning_rate:
+0.001
+cuda
+Epoch: 5	Batch: 50	Train-Loss: 2.8087	Time: 71.21s
+Epoch: 5	Batch: 100	Train-Loss: 2.8056	Time: 71.63s
+Epoch: 5	Batch: 150	Train-Loss: 2.8029	Time: 73.68s
+cuda
+Epoch: 5	Batch: 5	Valid-Loss: 2.7516	Valid-Edit_dist: 223.8703	Time: 11.52s
+ prev_lev_distance: 230.28912601626018	curr_lev_distance: 223.24760755420053  saving the model
+saved the model
+Current learning_rate:
+0.001
+cuda
+Epoch: 6	Batch: 50	Train-Loss: 2.7847	Time: 69.59s
+Epoch: 6	Batch: 100	Train-Loss: 2.7790	Time: 68.85s
+Epoch: 6	Batch: 150	Train-Loss: 2.7739	Time: 68.68s
+cuda
+BUT A                                                                                                                                                                                                                                                     
+BY THE TRUCKING GROUP'S COUNT COMMA ARKANSAS COMMA INDIANA COMMA KENTUCKY COMMA MARYLAND COMMA NEW JERSEY AND VERMONT HAD ALSO COLLECTED FLAT HYPHEN RATE TAXES ON TRUCKERS PERIOD<eos>
+
+AFTER TEE                                                                                                                                                                                                                                                 
+AFTER A SERIES OF MEETINGS AMONG MICROSOFT AND ASHTON TATE TECHNICAL PEOPLE A GROUP GATHERED AT THE MARRIOTT HOTEL NEAR THE LOS ANGELES AIRPORT IN LATE JUNE<eos>
+
+SISTE                                                                                                                                                                                                                                                     
+SINCE THEY ARE TAKING THEIR PROFIT AND LOSS IN ANOTHER CURRENCY A DECLINE IN THE VALUE OF THE DOLLAR WILL REDUCE THEIR RATE OF RETURN<eos>
+
+THEY CAN ALSO SHOW HOW HH                                                                                                                                                                          
+THEY CAN ALSO SHOW HOW THE SHAPE AND SIZE OF CONTINENTS AND OCEANS HAVE CHANGED OVER TIME<eos>
+
+THE CANASS                                                                                                                                                                                                                                                
+THE CASELOAD IS CREATING DELAYS THAT ARE UNUSUAL EVEN FOR THE LEGAL WORLD<eos>
+
+UNUSUALLY HIGH LEVELS OF ED REE                        EN EEEEE                          EN EEEEE            EEEEEEEEEEEEEEEEEEEEEEEEEEE      EEEEEEEEEEEEEEEE       EEEEEEEEEEEE        EEEEEEEEE                                            EEEEEEEEEEEE
+UNUSUALLY HIGH LEVELS OF RADIATION WERE DETECTED IN MANY EUROPEAN COUNTRIES<eos>
+
+A TANKE                                                                                                                                                                                                                                                   
+I THINK IT WILL CONTINUE TO GROW MODERATELY<eos>
+
+Epoch: 6	Batch: 5	Valid-Loss: 2.6937	Valid-Edit_dist: 220.6219	Time: 11.68s
+ prev_lev_distance: 223.24760755420053	curr_lev_distance: 219.65023712737127  saving the model
+saved the model
+Current learning_rate:
+0.001
+cuda
+Epoch: 7	Batch: 50	Train-Loss: 2.7423	Time: 72.67s
+Epoch: 7	Batch: 100	Train-Loss: 2.7350	Time: 69.64s
+Epoch: 7	Batch: 150	Train-Loss: 2.7291	Time: 68.99s
+cuda
+Epoch: 7	Batch: 5	Valid-Loss: 2.6153	Valid-Edit_dist: 209.0156	Time: 11.48s
+ prev_lev_distance: 219.65023712737127	curr_lev_distance: 208.73746612466124  saving the model
+saved the model
+Current learning_rate:
+0.001
+cuda
+Epoch: 8	Batch: 50	Train-Loss: 2.7076	Time: 82.86s
+Epoch: 8	Batch: 100	Train-Loss: 2.6893	Time: 68.65s
+Epoch: 8	Batch: 150	Train-Loss: 2.6785	Time: 68.25s
+cuda
+Epoch: 8	Batch: 5	Valid-Loss: 2.5070	Valid-Edit_dist: 151.8109	Time: 11.07s
+ prev_lev_distance: 208.73746612466124	curr_lev_distance: 149.92744325880759  saving the model
+saved the model
+Current learning_rate:
+0.001
+cuda
+Epoch: 9	Batch: 50	Train-Loss: 2.6299	Time: 69.21s
+Epoch: 9	Batch: 100	Train-Loss: 2.6200	Time: 68.89s
+Epoch: 9	Batch: 150	Train-Loss: 2.6148	Time: 68.98s
+cuda
+AS AREE                                                                                                                                                                                                                                                   
+AS ONE BREASTS THE CURRENT OF THIS SOMETIMES CREAMY COMMA SOMETIMES AWKWARD SELF HYPHEN REGARDING STYLE LEFT-PARENTHESES IT'S OBVIOUSLY CATCHING RIGHT-PAREN COMMA ONE INEVITABLY THINKS OF DEATH BY DROWNING PERIOD<eos>
+
+AND IMMARC SELAR                                                                                                                                                 
+AND IT IS NO LONGER FOREIGN PRIVATE CITIZENS WHO WANT TO INVEST IN THE U. S. BUT FOREIGN GOVERNMENTS THAT ARE DOING THE INVESTING HERE BY SUPPORTING THE DOLLAR<eos>
+
+MEN ANNLL                                                                                                      ERRRR EE             
+MAYBE THEY WANT THE IMPOVERISHMENT THAT PAVES THE WAY FOR SUDDEN COMMA RADICAL UPHEAVAL PERIOD<eos>
+
+THAT'S                                                                                         EEEEER                 
+BASTIAN AND ASHTON REDESIGNED THE WORD PROCESSOR TO RUN ON THAT MACHINE PERIOD<eos>
+
+THE SOUTH CAROLINA EDUCATIONAL RADIO NETWORK HAS WON NATAA AAAAS AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAS
+THE SOUTH CAROLINA EDUCATIONAL RADIO NETWORK HAS WON NATIONAL BROADCASTING AWARDS<eos>
+
+MICROBIOLOGY IS THE STUDY OF ORGANISMS THAT CANNOT BE SEEN BY THE NAKED EYE
+MICROBIOLOGY IS THE STUDY OF ORGANISMS THAT CANNOT BE SEEN BY THE NAKED EYE<eos>
+
+A RR                                                                  
+AHA I CAN HEAR YOU SAY<eos>
+
+Epoch: 9	Batch: 5	Valid-Loss: 2.4037	Valid-Edit_dist: 110.7797	Time: 9.58s
+ prev_lev_distance: 149.92744325880759	curr_lev_distance: 109.32380589430893  saving the model
+saved the model
+Current learning_rate:
+0.001
+cuda
+Epoch: 10	Batch: 50	Train-Loss: 2.5592	Time: 70.01s
+Epoch: 10	Batch: 100	Train-Loss: 2.5488	Time: 69.80s
+Epoch: 10	Batch: 150	Train-Loss: 2.5442	Time: 68.22s
+cuda
+Epoch: 10	Batch: 5	Valid-Loss: 2.2538	Valid-Edit_dist: 132.5797	Time: 10.62s
+Current learning_rate:
+0.001
+cuda
+Epoch: 11	Batch: 50	Train-Loss: 2.5056	Time: 69.46s
+Epoch: 11	Batch: 100	Train-Loss: 2.5132	Time: 68.98s
+Epoch: 11	Batch: 150	Train-Loss: 2.5145	Time: 69.54s
+cuda
+Epoch: 11	Batch: 5	Valid-Loss: 2.1984	Valid-Edit_dist: 104.2141	Time: 9.84s
+ prev_lev_distance: 109.32380589430893	curr_lev_distance: 104.48632283197831  saving the model
+saved the model
+Current learning_rate:
+0.0001
+cuda
+Epoch: 12	Batch: 50	Train-Loss: 2.4607	Time: 71.66s
+Epoch: 12	Batch: 100	Train-Loss: 2.4485	Time: 69.08s
+Epoch: 12	Batch: 150	Train-Loss: 2.4421	Time: 67.83s
+cuda
+DOUBLE-QUOTE THE    SS                                                                                                                          E OEEEOEEEEEEOEEEEEEOEEEEEEOEEEEEEOEEEEEEOEEEEEEOEEEEO
+DOUBLE-QUOTE WE'LL CONSIDER OUR ALTERNATIVES AFTER THE VOTE COMMA DOUBLE-QUOTE SAID BURTON LEHMAN COMMA OF THE NEW YORK LAW FIRM OF SCHULTE ROTH AMPERSAND ZABEL PERIOD<eos>
+
+COMMRECS S                                                                                                
+CONGRESS AUTHORIZED THE F. S. L. I. C. TO BORROW UP TO TEN POINT EIGHT THREE BILLION DOLLARS OVER THREE YEARS BY SELLING BONDS<eos>
+
+UNUSUALLY HIGH LEVELS OF RADIATION WERE DETECTED IN MANY EUROPEAN COUNTRIES GOVERNMENT INTERVENTION
+ON THE NATIONAL MARKET SYSTEM EIGHTY NINE POINT FOUR MILLION SHARES CHANGED HANDS OFF TWENTY ONE PERCENT FROM THURSDAY'S SURGE<eos>
+
+ORIGINS OR CAUSES OF SPONTANEOUS MUTATION ARE NOT YET COMPLETELY CLEAR
+ORIGINS OR CAUSES OF SPONTANEOUS MUTATION ARE NOT YET COMPLETELY CLEAR<eos>
+
+A LASSS                                                                                                 
+AT LEAST ONE PERSON WAS KILLED AND MORE THAN TWO HUNDRED AND FIFTY PEOPLE WERE INJURED IN THE BLASTS<eos>
+
+THE UNITED STATES UNDERTOOK TO DEFEND WESTERN EUROPE AGAINST SOVIET ATTACK
+THE UNITED STATES UNDERTOOK TO DEFEND WESTERN EUROPE AGAINST SOVIET ATTACK<eos>
+
+CHEPINTLD TH   EEEEE    EEE
+SHE BALKED<eos>
+
+Epoch: 12	Batch: 5	Valid-Loss: 2.1673	Valid-Edit_dist: 72.3906	Time: 9.10s
+ prev_lev_distance: 104.48632283197831	curr_lev_distance: 70.45511517615176  saving the model
+saved the model
+Current learning_rate:
+0.0001
+cuda
+Epoch: 13	Batch: 50	Train-Loss: 2.4150	Time: 69.96s
+Epoch: 13	Batch: 100	Train-Loss: 2.4160	Time: 68.55s
+Epoch: 13	Batch: 150	Train-Loss: 2.4161	Time: 68.64s
+cuda
+Epoch: 13	Batch: 5	Valid-Loss: 2.0996	Valid-Edit_dist: 67.5281	Time: 9.30s
+ prev_lev_distance: 70.45511517615176	curr_lev_distance: 68.38516260162602  saving the model
+saved the model
+Current learning_rate:
+0.0001
+cuda
+Epoch: 14	Batch: 50	Train-Loss: 2.4018	Time: 70.82s
+Epoch: 14	Batch: 100	Train-Loss: 2.3960	Time: 69.16s
+Epoch: 14	Batch: 150	Train-Loss: 2.3988	Time: 68.76s
+cuda
+Epoch: 14	Batch: 5	Valid-Loss: 2.1475	Valid-Edit_dist: 69.5812	Time: 8.97s
+Current learning_rate:
+0.0001
+cuda
+Epoch: 15	Batch: 50	Train-Loss: 2.3920	Time: 70.38s
+Epoch: 15	Batch: 100	Train-Loss: 2.4005	Time: 68.99s
+Epoch: 15	Batch: 150	Train-Loss: 2.3948	Time: 68.53s
+cuda
+HE SAID MOM                                                                                                                                                                                                    EEEEEOOIIO
+HE SPENT MOST OF THE DAY FIELDING PHONE CALLS FROM REPORTERS AND FROM GEORGIA COMPANIES THAT SUPPORT HIS FORECASTING CENTER WITH THREE THOUSAND COMMA FIVE HUNDRED DOLLAR ANNUAL SUBSCRIPTIONS PERIOD<eos>
+
+THE FLLLL   R                                                                                                                              
+THE FUEL FACTOR REPRESENTS FUEL USED TO GENERATE ELECTRICITY AND THE BASE RATE COMPONENT COVERS ALL OTHER COSTS IN PROVIDING ELECTRIC SERVICE<eos>
+
+BUT THE LOLL   S                                                                                                                     
+BUT THE LEGISLATORS HAVE TAKEN ON SUCH A HEAVY CASELOAD THAT ANALYSTS ARE SKEPTICAL MUCH NEW INFORMATION WILL COME OUT<eos>
+
+FOR THE FIRST TIME IN YEARS THE REPUBLICANS ALSO CAPTURED BOTH HOUSES OF CONGRESS
+FOR THE FIRST TIME IN YEARS THE REPUBLICANS ALSO CAPTURED BOTH HOUSES OF CONGRESS<eos>
+
+IN MOST CASES ONLY A FEW ARTIFACTS AND THE FOUNDATIONS OF BUILDINGS CAN BE SEEN
+IN MOST CASES ONLY A FEW ARTIFACTS AND THE FOUNDATIONS OF BUILDINGS CAN BE SEEN<eos>
+
+TO ANN NAN                                                                              
+CHINA UNDERWENT A POLITICAL CHILL AFTER FEBRUARY NINETEEN EIGHTY SEVEN<eos>
+
+THRR E                   EE EEE EEE EEER E
+PERISH THE THOUGHT PERIOD<eos>
+
+Epoch: 15	Batch: 5	Valid-Loss: 2.1577	Valid-Edit_dist: 68.3516	Time: 9.56s
+ prev_lev_distance: 68.38516260162602	curr_lev_distance: 66.54101033197831  saving the model
+saved the model
+Current learning_rate:
+0.0001
+cuda
+Epoch: 16	Batch: 50	Train-Loss: 2.3865	Time: 70.56s
+Epoch: 16	Batch: 100	Train-Loss: 2.3837	Time: 68.70s
+Epoch: 16	Batch: 150	Train-Loss: 2.3867	Time: 69.08s
+cuda
+Epoch: 16	Batch: 5	Valid-Loss: 2.1261	Valid-Edit_dist: 65.1813	Time: 8.66s
+ prev_lev_distance: 66.54101033197831	curr_lev_distance: 65.58166073848238  saving the model
+saved the model
+Current learning_rate:
+0.0001
+cuda
+Epoch: 17	Batch: 50	Train-Loss: 2.3795	Time: 70.18s
+Epoch: 17	Batch: 100	Train-Loss: 2.3749	Time: 69.37s
+Epoch: 17	Batch: 150	Train-Loss: 2.3814	Time: 69.32s
+cuda
+Epoch: 17	Batch: 5	Valid-Loss: 2.0736	Valid-Edit_dist: 64.6234	Time: 8.61s
+Current learning_rate:
+0.0001
+cuda
+Epoch: 18	Batch: 50	Train-Loss: 2.3619	Time: 70.25s
+Epoch: 18	Batch: 100	Train-Loss: 2.3762	Time: 69.02s
+Epoch: 18	Batch: 150	Train-Loss: 2.3753	Time: 68.68s
+cuda
+BISIDE COR                                                                                                                                                                                                         E EEI EEEDIIOIDDEE
+THIS PARADOXICAL NOTION SIMPLY ASSUMES THAT HIGHER TAX RATES WOULD NOT REDUCE INVESTMENT COMMA OUTPUT COMMA EMPLOYMENT COMMA PROFITS COMMA EQUITY VALUES COMMA OR RELATED SOURCES OF PRIVATE SAVINGS PERIOD<eos>
+
+MANY NHETE                                                                                                       ERODOI
+BUT IN NINETEEN EIGHTY SIX COMMA CLARK COMMA IN A CONSOLIDATION MOVE COMMA CLOSED THE FACILITY DASH A MAJOR BLOW PERIOD<eos>
+
+HE IS A MAJOR FIGURE AMONG WRITERS WHO BREAK AWAY FROM THE AMERICAN TRADITION OF REALISM
+HE HAS NEVER BEFORE EXTENDED AN OFFICIAL WELCOME TO A COW MUCH LESS THE MOST FAMOUS COW IN AMERICA BORDEN INCORPORATED'S ELSIE<eos>
+
+THE SOUTH CAROLINA EDUCATIONAL RADIO NETWORK HAS WON NATIONAL BROADCASTING AWARDS
+THE SOUTH CAROLINA EDUCATIONAL RADIO NETWORK HAS WON NATIONAL BROADCASTING AWARDS<eos>
+
+A LASS                                                                                             
+AT LEAST ONE PERSON WAS KILLED AND MORE THAN TWO HUNDRED AND FIFTY PEOPLE WERE INJURED IN THE BLASTS<eos>
+
+BOTH PETROLEUM AND NATURAL GAS DEPOSITS ARE SCATTERED THROUGH EASTERN OHIO
+BOTH PETROLEUM AND NATURAL GAS DEPOSITS ARE SCATTERED THROUGH EASTERN OHIO<eos>
+
+HE LASS                              
+SHE ALSO HAS A SENSE OF HUMOR<eos>
+
+Epoch: 18	Batch: 5	Valid-Loss: 2.1091	Valid-Edit_dist: 65.6297	Time: 9.60s
+Current learning_rate:
+0.0001
+cuda
+Epoch: 19	Batch: 50	Train-Loss: 2.3516	Time: 70.20s
+Epoch: 19	Batch: 100	Train-Loss: 2.3644	Time: 68.84s
+Epoch: 19	Batch: 150	Train-Loss: 2.3686	Time: 69.16s
+cuda
+Epoch: 19	Batch: 5	Valid-Loss: 2.0715	Valid-Edit_dist: 65.7969	Time: 8.65s
+Current learning_rate:
+0.0001
+cuda
+Epoch: 20	Batch: 50	Train-Loss: 2.3601	Time: 76.63s
+Epoch: 20	Batch: 100	Train-Loss: 2.3650	Time: 68.72s
+Epoch: 20	Batch: 150	Train-Loss: 2.3617	Time: 67.90s
+cuda
+Epoch: 20	Batch: 5	Valid-Loss: 2.1277	Valid-Edit_dist: 68.1656	Time: 8.85s
+ prev_lev_distance: 65.58166073848238	curr_lev_distance: 65.35624153116531  saving the model
+saved the model
+Current learning_rate:
+0.0001
+cuda
+Epoch: 21	Batch: 50	Train-Loss: 2.3792	Time: 70.91s
+Epoch: 21	Batch: 100	Train-Loss: 2.3673	Time: 68.57s
+Epoch: 21	Batch: 150	Train-Loss: 2.3661	Time: 68.41s
+cuda
+BUT MOST OOME                                                                                                                                                                             E   EEERRIEO IDOEDDI
+BUT MUCH OF THIS RESTRUCTURING IS LIKELY TO TAKE THE FORM OF ALLIANCES COMMA JOINT VENTURES OR FRIENDLY TAKEOVERS RATHER THAN AGGRESSIVE COMMA DEBT HYPHEN FINANCED RAIDS COMMA BUSINESSMEN SAY PERIOD<eos>
+
+THO MASS                                                                                                                                                EEEEEEIOODI
+THOSE CONTRACTS STRENGTHEN JOB SECURITY PROVISIONS COMMA INCLUDE PLANT CLOSING MORATORIUMS COMMA AND RAISE THE COST OF OUTSOURCING PERIOD<eos>
+
+A RECEAST                                                                           
+CROP PRICES ROSE SHARPLY SURGING AN AVERAGE FIVE POINT NINE PERCENT FROM THE PREVIOUS MONTH<eos>
+
+IN THE NETEER E ERR  E                                                            EEEEEEEEEE
+IN NEXT'S THREE YEARS SOME TWENTY EMPLOYEES OUT OF ABOUT ONE HUNDRED SEVENTY HAVE QUIT<eos>
+
+UNUSUALLY HIGH LEVELS OF RADIATION WERE DETECTED IN MANY EUROPEAN COUNTRIES
+UNUSUALLY HIGH LEVELS OF RADIATION WERE DETECTED IN MANY EUROPEAN COUNTRIES<eos>
+
+THE UNITED STATES UNDERTOOK TO DEFEND WESTERN EUROPE AGAINST SOVIET ATTACK
+THE UNITED STATES UNDERTOOK TO DEFEND WESTERN EUROPE AGAINST SOVIET ATTACK<eos>
+
+SHE AAS                                                            
+SHE REASSURES THE WOMAN ABOUT A PARKING PROBLEM<eos>
+
+Epoch: 21	Batch: 5	Valid-Loss: 2.1426	Valid-Edit_dist: 67.0828	Time: 9.04s
+ prev_lev_distance: 65.35624153116531	curr_lev_distance: 65.33595867208672  saving the model
+saved the model
+Current learning_rate:
+0.0001
+cuda
+Epoch: 22	Batch: 50	Train-Loss: 2.3531	Time: 70.10s
+Epoch: 22	Batch: 100	Train-Loss: 2.3533	Time: 68.82s
+Epoch: 22	Batch: 150	Train-Loss: 2.3600	Time: 69.14s
+cuda
+Epoch: 22	Batch: 5	Valid-Loss: 2.1100	Valid-Edit_dist: 63.0891	Time: 8.86s
+ prev_lev_distance: 65.33595867208672	curr_lev_distance: 63.554623983739845  saving the model
+saved the model
+Current learning_rate:
+1e-05
+cuda
+Epoch: 23	Batch: 50	Train-Loss: 2.3487	Time: 69.76s
+Epoch: 23	Batch: 100	Train-Loss: 2.3496	Time: 69.36s
+Epoch: 23	Batch: 150	Train-Loss: 2.3481	Time: 69.20s
+cuda
+Epoch: 23	Batch: 5	Valid-Loss: 2.1162	Valid-Edit_dist: 63.0766	Time: 9.87s
+Current learning_rate:
+1e-05
+cuda
+Epoch: 24	Batch: 50	Train-Loss: 2.3511	Time: 69.40s
+Epoch: 24	Batch: 100	Train-Loss: 2.3528	Time: 69.21s
+Epoch: 24	Batch: 150	Train-Loss: 2.3499	Time: 69.53s
+cuda
+WE ANE TT                                                                                                                                                                                              EEEIRIOEIDIIOROOO
+THE INDEPENDENT COMPUTER SPECIALISTS OFTEN FIND WORK THROUGH BROKERS COMMA WHO SUPPLY BANKS COMMA INSURANCE COMPANIES COMMA AEROSPACE MANUFACTURERS AND THE GOVERNMENT WITH DATA HYPHEN PROCESSING PERSONNEL PERIOD<eos>
+
+IN RECENT YEARS SHE HAS                                                                                                                          
+IN THE RECENT QUARTER IT PURCHASED FOUR POINT SEVEN BILLION DOLLARS OF MORTGAGES DOWN SLIGHTLY FROM FOUR POINT NINE BILLION DOLLARS IN THE YEAR BEFORE<eos>
+
+METAS A                                                                                               
+MASS MERCHANDISERS REPORTED SMALLER GAINS BECAUSE OF THEIR DURABLE GOODS ORIENTATION<eos>
+
+THE PROCESS BY WHICH THE LENS FOCUSES ON EXTERNAL OBJECTS IS CALLED ACCOMMODATION
+THE PROCESS BY WHICH THE LENS FOCUSES ON EXTERNAL OBJECTS IS CALLED ACCOMMODATION<eos>
+
+BUT MAN                                                                          EE EIEE DIDEE
+THE NEW COMPLEX IS SCHEDULED TO BE COMPLETED BY DECEMBER NINETEEN EIGHTY NINE PERIOD<eos>
+
+IN MOST CASES ONLY A FEW ARTIFACTS AND THE FOUNDATIONS OF BUILDINGS CAN BE SEEN
+IN MOST CASES ONLY A FEW ARTIFACTS AND THE FOUNDATIONS OF BUILDINGS CAN BE SEEN<eos>
+
+BOTH SILL                                   E EEEERODDD
+BOTH FLATLY DENIED THE RUMOR THEN PERIOD<eos>
+
+Epoch: 24	Batch: 5	Valid-Loss: 2.1330	Valid-Edit_dist: 65.3312	Time: 8.60s
+Current learning_rate:
+1e-05
+cuda
+Epoch: 25	Batch: 50	Train-Loss: 2.3395	Time: 69.40s
+Epoch: 25	Batch: 100	Train-Loss: 2.3375	Time: 68.40s
+Epoch: 25	Batch: 150	Train-Loss: 2.3449	Time: 69.39s
+cuda
+Epoch: 25	Batch: 5	Valid-Loss: 2.1084	Valid-Edit_dist: 63.1281	Time: 9.03s
+Current learning_rate:
+1e-05
+cuda
+Epoch: 26	Batch: 50	Train-Loss: 2.3486	Time: 70.01s
+Epoch: 26	Batch: 100	Train-Loss: 2.3410	Time: 69.54s
+Epoch: 26	Batch: 150	Train-Loss: 2.3457	Time: 70.75s
+cuda
+Epoch: 26	Batch: 5	Valid-Loss: 2.1864	Valid-Edit_dist: 66.5984	Time: 8.72s
+Current learning_rate:
+1e-05
+cuda
+Epoch: 27	Batch: 50	Train-Loss: 2.3488	Time: 69.65s
+Epoch: 27	Batch: 100	Train-Loss: 2.3497	Time: 70.43s
+Epoch: 27	Batch: 150	Train-Loss: 2.3463	Time: 68.58s
+cuda
+LAST WEEK COMMA T                                                                                                                                                       EEE
+LAST SPRING COMMA I. K. E. A. OPENED ITS SECOND U. S. STORE AS THE PREMIER ATTRACTION IN A HUGE DISCOUNT SHOPPING CENTER IN THE CAPITAL'S VIRGINIA SUBURBS PERIOD<eos>
+
+HOSS FFICI                                                                                                                      E EEEERIEIOD
+AS OF DECEMBER THIRTY FIRST COMMA NINETEEN EIGHTY SEVEN COMMA SEVENTY NINE POINT ONE MILLION DOLLARS WAS DRAWN UNDER SUCH LETTERS OF CREDIT PERIOD<eos>
+
+GOLD LLLS SS E                                                                                                       
+GOLD FIELDS COULDN'T BE REACHED FOR COMMENT ON THE TRADING AND NEWMONT OFFICIALS DIDN'T RETURN PHONE CALLS<eos>
+
+THE UNITESS                                                       E
+THE UNION STAGED A FORTY TWO HYPHEN DAY STRIKE SIX YEARS AGO PERIOD<eos>
+
+HIS MOST SIGNIFICANT SCIENTIFIC PUBLICATIONS WERE STUDIES OF BIRDS AND ANIMALS
+HIS MOST SIGNIFICANT SCIENTIFIC PUBLICATIONS WERE STUDIES OF BIRDS AND ANIMALS<eos>
+
+THE UNITED STATES UNDERTOOK TO DEFEND WESTERN EUROPE AGAINST SOVIET ATTACK
+THE UNITED STATES UNDERTOOK TO DEFEND WESTERN EUROPE AGAINST SOVIET ATTACK<eos>
+
+PALL COULS    E E                          EE
+THE PULP WILL BE USED TO PRODUCE NEWSPRINT<eos>
+
+Epoch: 27	Batch: 5	Valid-Loss: 2.1357	Valid-Edit_dist: 63.7406	Time: 8.56s
+Current learning_rate:
+1e-05
+cuda
+Epoch: 28	Batch: 50	Train-Loss: 2.3264	Time: 69.66s
+Epoch: 28	Batch: 100	Train-Loss: 2.3354	Time: 68.31s
+Epoch: 28	Batch: 150	Train-Loss: 2.3379	Time: 68.57s
+cuda
+Epoch: 28	Batch: 5	Valid-Loss: 2.1031	Valid-Edit_dist: 62.8937	Time: 8.79s
+Current learning_rate:
+1e-05
+cuda
+Epoch: 29	Batch: 50	Train-Loss: 2.3325	Time: 70.37s
+Epoch: 29	Batch: 100	Train-Loss: 2.3424	Time: 68.69s
+Epoch: 29	Batch: 150	Train-Loss: 2.3407	Time: 69.24s
+cuda
+Epoch: 29	Batch: 5	Valid-Loss: 2.1349	Valid-Edit_dist: 62.4250	Time: 8.48s
+Current learning_rate:
+1e-05
+cuda
+Epoch: 30	Batch: 50	Train-Loss: 2.3186	Time: 69.36s
+Epoch: 30	Batch: 100	Train-Loss: 2.3417	Time: 69.26s
+Epoch: 30	Batch: 150	Train-Loss: 2.3369	Time: 70.47s
+cuda
+DOUBLE-QUOTE IT SOLS                                                                                                                       EOEOEOEOOEEOOEE
+DOUBLE-QUOTE WE'LL CONSIDER OUR ALTERNATIVES AFTER THE VOTE COMMA DOUBLE-QUOTE SAID BURTON LEHMAN COMMA OF THE NEW YORK LAW FIRM OF SCHULTE ROTH AMPERSAND ZABEL PERIOD<eos>
+
+IN ANTEEN EIGHTY  E SS                                                                                                                                                                    
+IN NINETEEN EIGHTY FIVE A TEXAS COURT ORDERED TEXACO TO PAY PENNZOIL ELEVEN POINT ONE BILLION DOLLARS FOR IMPROPERLY INTERFERING WITH PENNZOIL'S ACQUISITION OF GETTY OIL COMPANY<eos>
+
+HOWEVER COMMA SEEE                                                                                      EEEREEEEEDOD
+HOWEVER COMMA PEPSI IS ALWAYS EXPLORING DIFFERENT COMMA MORE ECONOMIC WAYS TO SWEETEN OUR DRINKS PERIOD<eos>
+
+THE PROCESS BY WHICH THE LENS FOCUSES ON EXTERNAL OBJECTS IS CALLED ACCOMMODATION
+THE PROCESS BY WHICH THE LENS FOCUSES ON EXTERNAL OBJECTS IS CALLED ACCOMMODATION<eos>
+
+THE STATUE OF LIBERTY AND ELLIS ISLAND ARE WITHIN THE NEW JERSEY WATERS OF NEW YORK BAY
+THE STATUE OF LIBERTY AND ELLIS ISLAND ARE WITHIN THE NEW JERSEY WATERS OF NEW YORK BAY<eos>
+
+THEY BEGAN TO BUILD BOATS WITH THE SAME MATERIALS THEY USED FOR PORTABLE SHELTERS
+THEY BEGAN TO BUILD BOATS WITH THE SAME MATERIALS THEY USED FOR PORTABLE SHELTERS<eos>
+
+IT IS S                 EEEEEODD
+IT IS A TALL ORDER PERIOD<eos>
+
+Epoch: 30	Batch: 5	Valid-Loss: 2.1100	Valid-Edit_dist: 62.8859	Time: 8.67s
+ prev_lev_distance: 63.554623983739845	curr_lev_distance: 63.431084857723576  saving the model
+saved the model
+Current learning_rate:
+1e-05
+cuda
+Epoch: 31	Batch: 50	Train-Loss: 2.3471	Time: 70.77s
+Epoch: 31	Batch: 100	Train-Loss: 2.3406	Time: 69.06s
+Epoch: 31	Batch: 150	Train-Loss: 2.3396	Time: 69.57s
+cuda
+Epoch: 31	Batch: 5	Valid-Loss: 2.1691	Valid-Edit_dist: 64.9594	Time: 9.76s
+ prev_lev_distance: 63.431084857723576	curr_lev_distance: 63.07192157859078  saving the model
+saved the model
+Current learning_rate:
+1e-05
+cuda
+Epoch: 32	Batch: 50	Train-Loss: 2.3420	Time: 70.59s
+Epoch: 32	Batch: 100	Train-Loss: 2.3404	Time: 68.12s
+Epoch: 32	Batch: 150	Train-Loss: 2.3380	Time: 70.37s
+cuda
+Epoch: 32	Batch: 5	Valid-Loss: 2.2177	Valid-Edit_dist: 68.6078	Time: 8.73s
+Current learning_rate:
+1e-05
+cuda
+Epoch: 33	Batch: 50	Train-Loss: 2.3411	Time: 70.67s
+Epoch: 33	Batch: 100	Train-Loss: 2.3399	Time: 69.12s
+Epoch: 33	Batch: 150	Train-Loss: 2.3395	Time: 68.98s
+cuda
+WE AN TE                                                                                                                                                                                               EEEEIRIOOROODOR
+THE INDEPENDENT COMPUTER SPECIALISTS OFTEN FIND WORK THROUGH BROKERS COMMA WHO SUPPLY BANKS COMMA INSURANCE COMPANIES COMMA AEROSPACE MANUFACTURERS AND THE GOVERNMENT WITH DATA HYPHEN PROCESSING PERSONNEL PERIOD<eos>
+
+THE COMMISSION AOS                                                                                                                                                                 
+THE COMMISSION WAS FOUNDED IN NINETEEN SEVENTY THREE BY BANKER DAVID ROCKEFELLER TO ANALYZE MAJOR ISSUES FACING NORTH AMERICA WESTERN EUROPE AND JAPAN<eos>
+
+IT WOULD BE                                                                                                          
+IT WOULDN'T BE UNUSUAL FOR PRIVATE COMPANIES TO SELL AT A FIFTY PERCENT TO EIGHTY PERCENT DISCOUNT OFF THE PUBLIC VALUE HE SAID<eos>
+
+MICROBIOLOGY IS THE STUDY OF ORGANISMS THAT CANNOT BE SEEN BY THE NAKED EYE
+MICROBIOLOGY IS THE STUDY OF ORGANISMS THAT CANNOT BE SEEN BY THE NAKED EYE<eos>
+
+DURING THE FOLLOWING YEARS HE TRIED UNSUCCESSFULLY TO GET IT INTO PRODUCTION
+DURING THE FOLLOWING YEARS HE TRIED UNSUCCESSFULLY TO GET IT INTO PRODUCTION<eos>
+
+PHILOSOPHERS OF EDUCATION OFTEN DIFFER IN THEIR VIEWS ON THE NATURE OF KNOWLEDGE
+PHILOSOPHERS OF EDUCATION OFTEN DIFFER IN THEIR VIEWS ON THE NATURE OF KNOWLEDGE<eos>
+
+IT'S A               E
+IT'S KIND OF PECULIAR<eos>
+
+Epoch: 33	Batch: 5	Valid-Loss: 2.1929	Valid-Edit_dist: 66.5203	Time: 8.96s
+Current learning_rate:
+1.0000000000000002e-06
+cuda
+Epoch: 34	Batch: 50	Train-Loss: 2.3411	Time: 70.29s
+Epoch: 34	Batch: 100	Train-Loss: 2.3338	Time: 69.74s
+Epoch: 34	Batch: 150	Train-Loss: 2.3374	Time: 68.95s
+cuda
+Epoch: 34	Batch: 5	Valid-Loss: 2.0101	Valid-Edit_dist: 59.7984	Time: 8.88s
+Current learning_rate:
+1.0000000000000002e-06
+cuda
+Epoch: 35	Batch: 50	Train-Loss: 2.3321	Time: 71.34s
+Epoch: 35	Batch: 100	Train-Loss: 2.3334	Time: 69.24s
+Epoch: 35	Batch: 150	Train-Loss: 2.3344	Time: 70.60s
+cuda
+Epoch: 35	Batch: 5	Valid-Loss: 2.0624	Valid-Edit_dist: 61.6656	Time: 10.00s
+Current learning_rate:
+1.0000000000000002e-06
+cuda
+Epoch: 36	Batch: 50	Train-Loss: 2.3420	Time: 69.12s
+Epoch: 36	Batch: 100	Train-Loss: 2.3465	Time: 69.00s
+Epoch: 36	Batch: 150	Train-Loss: 2.3416	Time: 68.81s
+cuda
+IT IS S                                                                                                                                                                                              E    E EEERREDD
+AS ONE BREASTS THE CURRENT OF THIS SOMETIMES CREAMY COMMA SOMETIMES AWKWARD SELF HYPHEN REGARDING STYLE LEFT-PARENTHESES IT'S OBVIOUSLY CATCHING RIGHT-PAREN COMMA ONE INEVITABLY THINKS OF DEATH BY DROWNING PERIOD<eos>
+
+HOSS FF S S                                                                                                                      E EEEEEIREIOO
+AS OF DECEMBER THIRTY FIRST COMMA NINETEEN EIGHTY SEVEN COMMA SEVENTY NINE POINT ONE MILLION DOLLARS WAS DRAWN UNDER SUCH LETTERS OF CREDIT PERIOD<eos>
+
+THE HOT FLUID IS CIRCULATED THROUGH A TUBE LOCATED IN THE LOWER TANK OF THE RADIATOR
+THE HOT FLUID IS CIRCULATED THROUGH A TUBE LOCATED IN THE LOWER TANK OF THE RADIATOR<eos>
+
+DOUBLE-QUOTE WE LE                                               EEEEEOEEEEEEEE
+DOUBLE-QUOTE THE LABEL IS LIKE SEEING A MAN AT THE BEACH PERIOD DOUBLE-QUOTE<eos>
+
+THE ENORMOUS AMOUNTS OF CARBON DIOXIDE IN THE ATMOSPHERE CAUSE THIS HIGH PRESSURE
+THE ENORMOUS AMOUNTS OF CARBON DIOXIDE IN THE ATMOSPHERE CAUSE THIS HIGH PRESSURE<eos>
+
+EVEOP OR SS                                                                          EEE
+HE COULD LEARN MUCH THAT IS IF HE IS AWARE SOMETHING IS THERE TO BE LEARNED<eos>
+
+HE HADDED THAT ERR  EE  EE EE
+HE HAD TO PERIOD<eos>
+
+Epoch: 36	Batch: 5	Valid-Loss: 2.1174	Valid-Edit_dist: 62.6266	Time: 9.69s
+Current learning_rate:
+1.0000000000000002e-06
+cuda
+Epoch: 37	Batch: 50	Train-Loss: 2.3381	Time: 69.39s
+Epoch: 37	Batch: 100	Train-Loss: 2.3315	Time: 68.41s
+Epoch: 37	Batch: 150	Train-Loss: 2.3330	Time: 69.43s
+cuda
+Epoch: 37	Batch: 5	Valid-Loss: 2.1514	Valid-Edit_dist: 65.2828	Time: 9.01s
+Current learning_rate:
+1.0000000000000002e-06
+cuda
+Epoch: 38	Batch: 50	Train-Loss: 2.3329	Time: 70.28s
+Epoch: 38	Batch: 100	Train-Loss: 2.3359	Time: 68.38s
+Epoch: 38	Batch: 150	Train-Loss: 2.3349	Time: 69.21s
+cuda
+Epoch: 38	Batch: 5	Valid-Loss: 2.0842	Valid-Edit_dist: 64.1422	Time: 8.90s
+Current learning_rate:
+1.0000000000000002e-06
+cuda
+Epoch: 39	Batch: 50	Train-Loss: 2.3492	Time: 69.90s
+Epoch: 39	Batch: 100	Train-Loss: 2.3408	Time: 68.60s
+Epoch: 39	Batch: 150	Train-Loss: 2.3402	Time: 68.53s
+cuda
+IT IS S                                                                                                                                                                                             E    E EEERREDD
+AS ONE BREASTS THE CURRENT OF THIS SOMETIMES CREAMY COMMA SOMETIMES AWKWARD SELF HYPHEN REGARDING STYLE LEFT-PARENTHESES IT'S OBVIOUSLY CATCHING RIGHT-PAREN COMMA ONE INEVITABLY THINKS OF DEATH BY DROWNING PERIOD<eos>
+
+DOUBLE-QUOTE I S                                                                                                       E ODODEOEOEO
+DOUBLE-QUOTE IT'S AN ADDITIONAL DOLLAR OF FEDERAL SPENDING THAT WOULDN'T HAVE BEEN THERE BEFORE COMMA DOUBLE-QUOTE MR. SALISBURY SAID PERIOD<eos>
+
+WE THE TTTT                                                                                                               
+WITHOUT THE ADDITIONAL RESERVES CENTRUST WOULD HAVE REPORTED NET INCOME OF SEVENTEEN POINT FIVE MILLION DOLLARS<eos>
+
+PHILOSOPHERS OF EDUCATION OFTEN DIFFER IN THEIR VIEWS ON THE NATURE OF KNOWLEDGE
+PHILOSOPHERS OF EDUCATION OFTEN DIFFER IN THEIR VIEWS ON THE NATURE OF KNOWLEDGE<eos>
+
+UNUSUALLY HIGH LEVELS OF RADIATION WERE DETECTED IN MANY EUROPEAN COUNTRIES
+UNUSUALLY HIGH LEVELS OF RADIATION WERE DETECTED IN MANY EUROPEAN COUNTRIES<eos>
+
+THE UNITED STATES UNDERTOOK TO DEFEND WESTERN EUROPE AGAINST SOVIET ATTACK
+THE UNITED STATES UNDERTOOK TO DEFEND WESTERN EUROPE AGAINST SOVIET ATTACK<eos>
+
+IT'S A               E
+IT'S KIND OF PECULIAR<eos>
+
+Epoch: 39	Batch: 5	Valid-Loss: 2.1309	Valid-Edit_dist: 63.8047	Time: 8.93s
+Current learning_rate:
+1.0000000000000002e-06
+cuda
+Epoch: 40	Batch: 50	Train-Loss: 2.3319	Time: 70.96s
+Epoch: 40	Batch: 100	Train-Loss: 2.3368	Time: 69.70s
+Epoch: 40	Batch: 150	Train-Loss: 2.3379	Time: 68.64s
+cuda
+Epoch: 40	Batch: 5	Valid-Loss: 2.1429	Valid-Edit_dist: 63.6484	Time: 8.87s
+Current learning_rate:
+1.0000000000000002e-06
+cuda
+Epoch: 41	Batch: 50	Train-Loss: 2.3450	Time: 70.18s
+Epoch: 41	Batch: 100	Train-Loss: 2.3382	Time: 67.87s
+Epoch: 41	Batch: 150	Train-Loss: 2.3406	Time: 68.83s
+cuda
+Epoch: 41	Batch: 5	Valid-Loss: 2.1325	Valid-Edit_dist: 63.7703	Time: 10.01s
+Current learning_rate:
+1.0000000000000002e-06
+cuda
+Epoch: 42	Batch: 50	Train-Loss: 2.3388	Time: 70.51s
+Epoch: 42	Batch: 100	Train-Loss: 2.3319	Time: 68.42s
+Epoch: 42	Batch: 150	Train-Loss: 2.3347	Time: 68.91s
+cuda
+DOUBLE-QUOTE IT SOLS                                                                                                                       EOEOEOEOOEEO
+DOUBLE-QUOTE WE'LL CONSIDER OUR ALTERNATIVES AFTER THE VOTE COMMA DOUBLE-QUOTE SAID BURTON LEHMAN COMMA OF THE NEW YORK LAW FIRM OF SCHULTE ROTH AMPERSAND ZABEL PERIOD<eos>
+
+MR. REANAN S                                                                                                                         EEEEEREE
+MR. REINSDORF BELIEVES NIPPON LIFE INSURANCE COMPANY'S RECENT PURCHASE OF A STAKE IN SHEARSON SHOULD CREATE NEW OPPORTUNITIES FOR BALCOR PERIOD<eos>
+
+THAT BUT   PPOELE                                                               
+THAT WOULD PUT THE TOTAL COST AT ABOUT FOUR BILLION DOLLARS A BIG BET IN A VOLATILE MARKET<eos>
+
+HE IS A MAJOR FIGURE AMONG WRITERS WHO BREAK AWAY FROM THE AMERICAN TRADITION OF REALISM
+HE IS A MAJOR FIGURE AMONG WRITERS WHO BREAK AWAY FROM THE AMERICAN TRADITION OF REALISM<eos>
+
+LOWMARE S RRRR R EE                                                   
+LORIMAR'S GREAT STRENGTH IS ITS OWN TELEVISION PRODUCTION BUSINESS<eos>
+
+THE UNITED STATES UNDERTOOK TO DEFEND WESTERN EUROPE AGAINST SOVIET ATTACK
+THE UNITED STATES UNDERTOOK TO DEFEND WESTERN EUROPE AGAINST SOVIET ATTACK<eos>
+
+HE HADDED THAT ERR  EE  EE EE
+HE HAD TO PERIOD<eos>
+
+Epoch: 42	Batch: 5	Valid-Loss: 2.1259	Valid-Edit_dist: 64.5016	Time: 8.68s
+Current learning_rate:
+1.0000000000000002e-06
+cuda
+Epoch: 43	Batch: 50	Train-Loss: 2.3320	Time: 70.57s
+Epoch: 43	Batch: 100	Train-Loss: 2.3321	Time: 69.50s
+Epoch: 43	Batch: 150	Train-Loss: 2.3331	Time: 68.53s
+cuda
+Epoch: 43	Batch: 5	Valid-Loss: 2.1174	Valid-Edit_dist: 62.8844	Time: 8.67s
+Current learning_rate:
+1.0000000000000002e-06
+cuda
+Epoch: 44	Batch: 50	Train-Loss: 2.3270	Time: 70.11s
+Epoch: 44	Batch: 100	Train-Loss: 2.3331	Time: 68.34s
+Epoch: 44	Batch: 150	Train-Loss: 2.3350	Time: 68.89s
+cuda
+Epoch: 44	Batch: 5	Valid-Loss: 2.1572	Valid-Edit_dist: 64.6266	Time: 8.75s
+Current learning_rate:
+1.0000000000000002e-07
+cuda
+Epoch: 45	Batch: 50	Train-Loss: 2.3467	Time: 72.66s
+Epoch: 45	Batch: 100	Train-Loss: 2.3334	Time: 73.76s
+Epoch: 45	Batch: 150	Train-Loss: 2.3355	Time: 72.73s
+cuda
+IT IS S                                                                                                                                                                                             E    E EEERREDDOD
+AS ONE BREASTS THE CURRENT OF THIS SOMETIMES CREAMY COMMA SOMETIMES AWKWARD SELF HYPHEN REGARDING STYLE LEFT-PARENTHESES IT'S OBVIOUSLY CATCHING RIGHT-PAREN COMMA ONE INEVITABLY THINKS OF DEATH BY DROWNING PERIOD<eos>
+
+THE PROCESS BY WHICH THE LENS FOR EA                                                                                                       
+THE FACILITY WOULD PRODUCE AN ESTIMATED FIFTY THOUSAND METRIC TONS ANNUALLY OF PULP FROM WASTE NEWSPAPERS AND MAGAZINES<eos>
+
+AND IM COMMA A                                                                                       EEEEEE
+IN ANY COMPANY WITH TWENTY FIVE THOUSAND EMPLOYEES IT'S PRETTY EASY FOR SOMEBODY NOT TO KNOW SOMETHING HE SAYS<eos>
+
+NEW ARRE SAI                                                                                                 
+THE ABRASIVE OHIO DEMOCRAT IGNORES THE UNWRITTEN NICETIES THAT FACILITATE SENATE LIFE<eos>
+
+A TANKER IS A SHIP DESIGNED TO CARRY LARGE VOLUMES OF OIL OR OTHER LIQUID CARGO
+A TANKER IS A SHIP DESIGNED TO CARRY LARGE VOLUMES OF OIL OR OTHER LIQUID CARGO<eos>
+
+DOUBLE-QUOTE BUT H                                     EEEEOEEEEOOEEEE
+DOUBLE-QUOTE BUT OPPORTUNITIES ARE QUITE SCARCE PERIOD DOUBLE-QUOTE<eos>
+
+BOTH SILL                                EEE EEEREEDDOD
+BOTH FLATLY DENIED THE RUMOR THEN PERIOD<eos>
+
+Epoch: 45	Batch: 5	Valid-Loss: 2.1406	Valid-Edit_dist: 63.2406	Time: 8.63s
+Current learning_rate:
+1.0000000000000002e-07
+cuda
+Epoch: 46	Batch: 50	Train-Loss: 2.3311	Time: 69.92s
+Epoch: 46	Batch: 100	Train-Loss: 2.3381	Time: 68.02s
+Epoch: 46	Batch: 150	Train-Loss: 2.3361	Time: 68.82s
+cuda
+Epoch: 46	Batch: 5	Valid-Loss: 2.1095	Valid-Edit_dist: 62.1625	Time: 8.67s
+Current learning_rate:
+1.0000000000000002e-07
+cuda
+Epoch: 47	Batch: 50	Train-Loss: 2.3355	Time: 69.29s
+Epoch: 47	Batch: 100	Train-Loss: 2.3357	Time: 68.94s
+Epoch: 47	Batch: 150	Train-Loss: 2.3379	Time: 68.34s
+cuda
+Epoch: 47	Batch: 5	Valid-Loss: 2.1414	Valid-Edit_dist: 64.1078	Time: 9.04s
+Current learning_rate:
+1.0000000000000002e-07
+cuda
+Epoch: 48	Batch: 50	Train-Loss: 2.3294	Time: 71.18s
+Epoch: 48	Batch: 100	Train-Loss: 2.3356	Time: 68.46s
+Epoch: 48	Batch: 150	Train-Loss: 2.3393	Time: 68.83s
+cuda
+BY THER RRR                                                                                                                                          EEEEERIOOROODODD
+BY THE TRUCKING GROUP'S COUNT COMMA ARKANSAS COMMA INDIANA COMMA KENTUCKY COMMA MARYLAND COMMA NEW JERSEY AND VERMONT HAD ALSO COLLECTED FLAT HYPHEN RATE TAXES ON TRUCKERS PERIOD<eos>
+
+IT'S OF THE                                                                                                 
+IF SEARLE HAD LEARNED OF PROBLEMS CAUSED BY FRAYING IT WOULD HAVE NOTIFIED THE F. D. A. COMMA THE ATTORNEY SAID PERIOD<eos>
+
+BUT THE LAN  SS                                                                                                                          
+BUT WITH MR. CHIANG'S PASSING LEE HUAN MUST SHARE POWER WITH THE THIRTY ONE MEMBERS OF THE KUOMINTANG'S CENTRAL STANDING COMMITTEE THE PARTY'S DECISION MAKING BODY<eos>
+
+NEALY HAE                                                                    EEEE
+THE AMOUNT OF OFFICIAL MARGIN TRADING IS WITHIN GENERALLY ACCEPTED BOUNDS ANALYSTS SAY<eos>
+
+THEIR SOLUTION REQUIRES DEVELOPMENT OF THE HUMAN CAPACITY FOR SOCIAL INTEREST
+THEIR SOLUTION REQUIRES DEVELOPMENT OF THE HUMAN CAPACITY FOR SOCIAL INTEREST<eos>
+
+ALL THE                                                                          
+ALTHOUGH ACCREDITATION IS VOLUNTARY MANY HOSPITALS COULDN'T SURVIVE WITHOUT IT<eos>
+
+HOW I S    E
+HELL YES<eos>
+
+Epoch: 48	Batch: 5	Valid-Loss: 2.1450	Valid-Edit_dist: 66.0672	Time: 9.07s
+Current learning_rate:
+1.0000000000000002e-07
+cuda
+Epoch: 49	Batch: 50	Train-Loss: 2.3317	Time: 69.31s
+Epoch: 49	Batch: 100	Train-Loss: 2.3283	Time: 68.72s
+Epoch: 49	Batch: 150	Train-Loss: 2.3304	Time: 69.65s
+cuda
+Epoch: 49	Batch: 5	Valid-Loss: 2.1366	Valid-Edit_dist: 64.6188	Time: 8.82s
+Current learning_rate:
+1.0000000000000002e-07
+cuda
+Epoch: 50	Batch: 50	Train-Loss: 2.3175	Time: 69.43s
+Epoch: 50	Batch: 100	Train-Loss: 2.3349	Time: 69.13s
+Epoch: 50	Batch: 150	Train-Loss: 2.3367	Time: 68.52s
+cuda
+Epoch: 50	Batch: 5	Valid-Loss: 2.1299	Valid-Edit_dist: 63.8188	Time: 8.72s
+Current learning_rate:
+1.0000000000000002e-07
+cuda
+Epoch: 51	Batch: 50	Train-Loss: 2.3244	Time: 70.73s
+Epoch: 51	Batch: 100	Train-Loss: 2.3345	Time: 68.11s
+Epoch: 51	Batch: 150	Train-Loss: 2.3359	Time: 68.72s
+cuda
+BISIDES CORE                                                                                                                                                                                                     E EEIEEIIOD
+THIS PARADOXICAL NOTION SIMPLY ASSUMES THAT HIGHER TAX RATES WOULD NOT REDUCE INVESTMENT COMMA OUTPUT COMMA EMPLOYMENT COMMA PROFITS COMMA EQUITY VALUES COMMA OR RELATED SOURCES OF PRIVATE SAVINGS PERIOD<eos>
+
+THE STATUE OF LIBERTY AND ELLI                                                                                                                               
+THE STATE GOVERNMENT WILL INVEST FIVE MILLION DOLLARS TO LAUNCH THE CONNECTICUT SEED VENTURE FUND AND IS ASKING PRIVATE INDUSTRY TO INVEST ABOUT AN EQUAL AMOUNT<eos>
+
+MR. REAAA                                                                                                              EEEEEE
+MR. ABRAMSON SAID THE COMPANY EXPECTS A TWENTY FIVE PERCENT GAIN IN SALES AND EARNINGS IN FISCAL NINETEEN EIGHTY EIGHT<eos>
+
+PRIVATE FREE SCHOOLS WERE FORMED BOTH IN POOR NEIGHBORHOODS AND IN MIDDLE-CLASS COMMUNITIES
+PRIVATE FREE SCHOOLS WERE FORMED BOTH IN POOR NEIGHBORHOODS AND IN MIDDLE CLASS COMMUNITIES<eos>
+
+A ONE TA                                                            E   ERIOO
+ANOTHER CONDENSED THE NARRATIVE AS WELL COMMA BUT KEPT ALL THE SAME SECTIONS PERIOD<eos>
+
+NERTHER                                                         EEEE
+GURIT HAS LONG BEEN A JOINT VENTURE PARTNER OF ESSEX PERIOD<eos>
+
+OVER THN                         
+AHA I CAN HEAR YOU SAY<eos>
+
+Epoch: 51	Batch: 5	Valid-Loss: 2.2193	Valid-Edit_dist: 67.7812	Time: 8.75s
+Current learning_rate:
+1.0000000000000002e-07
+cuda
+Epoch: 52	Batch: 50	Train-Loss: 2.3419	Time: 70.25s
+Epoch: 52	Batch: 100	Train-Loss: 2.3465	Time: 69.55s
+Epoch: 52	Batch: 150	Train-Loss: 2.3361	Time: 69.06s
+cuda
+Epoch: 52	Batch: 5	Valid-Loss: 2.1492	Valid-Edit_dist: 64.7109	Time: 8.76s
+Current learning_rate:
+1.0000000000000002e-07
+cuda
+Epoch: 53	Batch: 50	Train-Loss: 2.3135	Time: 69.81s
+Epoch: 53	Batch: 100	Train-Loss: 2.3348	Time: 69.37s
+Epoch: 53	Batch: 150	Train-Loss: 2.3348	Time: 68.61s
+cuda
+Epoch: 53	Batch: 5	Valid-Loss: 2.0821	Valid-Edit_dist: 62.7125	Time: 8.77s
+Current learning_rate:
+1.0000000000000002e-07
+cuda
+Epoch: 54	Batch: 50	Train-Loss: 2.3379	Time: 70.14s
+Epoch: 54	Batch: 100	Train-Loss: 2.3405	Time: 68.81s
+Epoch: 54	Batch: 150	Train-Loss: 2.3356	Time: 68.50s
+cuda
+BY THER RRR                                                                                                                                          EEEEERROOEDDDDDDDDDER
+BY THE TRUCKING GROUP'S COUNT COMMA ARKANSAS COMMA INDIANA COMMA KENTUCKY COMMA MARYLAND COMMA NEW JERSEY AND VERMONT HAD ALSO COLLECTED FLAT HYPHEN RATE TAXES ON TRUCKERS PERIOD<eos>
+
+BUT IN                                                                                                                                                         
+BUT EVEN THOUGH THE WORST HAS PASSED THE AIRLINE'S REPUTATION FOR SHODDY SERVICE CONTINUES TO HAUNT IT AND MANY SERVICE PROBLEMS REMAIN INTRACTABLE<eos>
+
+THE UNITED STATES UNDERTOOK TO DEFEND WESTERN EUROPE AGAINST SOVIET ATTACK
+DENYING THEY ARE DISCOUNTING THE SAUDIS POINT TO SOME OTHERS IN OPEC INSTEAD CHIEFLY IRAN<eos>
+
+THERE IRE SOREE                                                                    
+THEREFORE THERE IS A TRADE OFF OF CORPORATE AND PERSONAL TAXES WHENEVER THEIR RESPECTIVE TAX RATES DIFFER<eos>
+
+THE U. S. A. RR SS                                                         
+THE U. S. HAS TAKEN ABOUT SIXTY PERCENT OF THE BOAT PEOPLE FROM HONG KONG<eos>
+
+MICROBIOLOGY IS THE STUDY OF ORGANISMS THAT CANNOT BE SEEN BY THE NAKED EYE
+MICROBIOLOGY IS THE STUDY OF ORGANISMS THAT CANNOT BE SEEN BY THE NAKED EYE<eos>
+
+THAT WAS                 EEEEEEEE
+THAT WASN'T HAPPENING PERIOD<eos>
+
+Epoch: 54	Batch: 5	Valid-Loss: 2.0762	Valid-Edit_dist: 62.6141	Time: 8.62s
+Current learning_rate:
+1.0000000000000002e-07
+cuda
+Epoch: 55	Batch: 50	Train-Loss: 2.3278	Time: 70.50s
+Epoch: 55	Batch: 100	Train-Loss: 2.3324	Time: 68.82s
+Epoch: 55	Batch: 150	Train-Loss: 2.3332	Time: 69.61s
+cuda
+Epoch: 55	Batch: 5	Valid-Loss: 2.1486	Valid-Edit_dist: 65.1156	Time: 8.67s
+Current learning_rate:
+1.0000000000000004e-08
+cuda
+Epoch: 56	Batch: 50	Train-Loss: 2.3293	Time: 70.48s
+Epoch: 56	Batch: 100	Train-Loss: 2.3318	Time: 68.97s
+Epoch: 56	Batch: 150	Train-Loss: 2.3386	Time: 68.54s
+cuda
+Epoch: 56	Batch: 5	Valid-Loss: 2.1152	Valid-Edit_dist: 62.9531	Time: 10.00s
+Current learning_rate:
+1.0000000000000004e-08
+cuda
+Epoch: 57	Batch: 50	Train-Loss: 2.3443	Time: 70.31s
+Epoch: 57	Batch: 100	Train-Loss: 2.3359	Time: 68.40s
+Epoch: 57	Batch: 150	Train-Loss: 2.3397	Time: 69.13s
+cuda
+WE AN TE                                                                                                                                                                                               EEEEIORIEI
+THE INDEPENDENT COMPUTER SPECIALISTS OFTEN FIND WORK THROUGH BROKERS COMMA WHO SUPPLY BANKS COMMA INSURANCE COMPANIES COMMA AEROSPACE MANUFACTURERS AND THE GOVERNMENT WITH DATA HYPHEN PROCESSING PERSONNEL PERIOD<eos>
+
+BUT THE CAMPRRSS                                                                                                          EEEEEORDD
+BUT THE COMMISSION NEVER SOUGHT A REGULATORY ROLE COMMA SAYS PAUL MULLEN COMMA ITS DIRECTOR OF GOVERNMENT AFFAIRS PERIOD<eos>
+
+IF THE TETT                                                                                                                 
+IF THE DEFICIT TURNS OUT TO BE WORSE THAN EXPECTED THE DOLLAR'S RECENT DOWNWARD DRIFT COULD SPEED INTO A SHARP DECLINE<eos>
+
+CARLIER                                                                                      EEEERORDD
+COLOROLL URGED CROWTHER TO ACCEPT ITS OFFER COMMA WHICH IT SAID IT WOULDN'T SWEETEN PERIOD<eos>
+
+A TANKER IS A SHIP DESIGNED TO CARRY LARGE VOLUMES OF OIL OR OTHER LIQUID CARGO
+A TANKER IS A SHIP DESIGNED TO CARRY LARGE VOLUMES OF OIL OR OTHER LIQUID CARGO<eos>
+
+BOTH PETROLEUM AND NATURAL GAS DEPOSITS ARE SCATTERED THROUGH EASTERN OHIO
+BOTH PETROLEUM AND NATURAL GAS DEPOSITS ARE SCATTERED THROUGH EASTERN OHIO<eos>
+
+THE U. S. AAT                        EEEEE
+THE AMOUNT WASN'T SPECIFIED PERIOD<eos>
+
+Epoch: 57	Batch: 5	Valid-Loss: 2.1872	Valid-Edit_dist: 65.8375	Time: 9.20s
+Current learning_rate:
+1.0000000000000004e-08
+cuda
+Epoch: 58	Batch: 50	Train-Loss: 2.3302	Time: 70.40s
+Epoch: 58	Batch: 100	Train-Loss: 2.3428	Time: 69.01s
+Epoch: 58	Batch: 150	Train-Loss: 2.3359	Time: 67.70s
+cuda
+Epoch: 58	Batch: 5	Valid-Loss: 2.1075	Valid-Edit_dist: 64.1469	Time: 9.70s
+Current learning_rate:
+1.0000000000000004e-08
+cuda
+Epoch: 59	Batch: 50	Train-Loss: 2.3232	Time: 70.94s
+Epoch: 59	Batch: 100	Train-Loss: 2.3292	Time: 68.38s
+Epoch: 59	Batch: 150	Train-Loss: 2.3318	Time: 68.30s
+cuda
+Epoch: 59	Batch: 5	Valid-Loss: 2.0834	Valid-Edit_dist: 61.1328	Time: 8.64s
+cuda
