@@ -25,7 +25,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
         since = time.time()
         print("\n\n=============================")
         print("epoch: {}".format(epochs))
-        print("----------------Train------------------------:")
+        print("----------------Train------------------------")
         for (batch_num, collate_output) in enumerate(train_loader):
             with torch.autograd.set_detect_anomaly(True):
                 speech_input, text_input, speech_len, text_len = collate_output

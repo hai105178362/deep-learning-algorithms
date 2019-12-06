@@ -18,7 +18,7 @@ letter_list = ['PAD', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'
 
 
 def get_data(mode=config.mode):
-    print("Mode:{}".format(config.mode))
+    # print("Mode:{}".format(config.mode))
     if mode == "train":
         speech = np.load(config.path_train_new, allow_pickle=True, encoding='bytes')
         transcript = np.load(config.path_train_transcripts, allow_pickle=True, encoding='bytes')
