@@ -17,7 +17,7 @@ import data_utility as du
 import net
 
 
-def train(model, train_loader, num_epochs, criterion, optimizer):
+def train(model, train_loader,val_loader ,num_epochs, criterion, optimizer):
     best_loss = 0.1
     # model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
     for epochs in range(num_epochs):
@@ -26,21 +26,16 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
         print("epoch: {}".format(epochs))
         for (batch_num, collate_output) in enumerate(train_loader):
             with torch.autograd.set_detect_anomaly(True):
-
                 speech_input, text_input, speech_len, text_len = collate_output
                 speech_input = speech_input.to(device)
                 text_input = text_input.to(device)
                 predictions = model(speech_input, speech_len, text_input, text_len=text_len)
                 mask = torch.zeros(text_input.size()).to(device)
-
                 for length in text_len:
                     mask[:, :length] = 1
-
                 mask = mask.view(-1).to(device)
-
                 predictions = predictions.contiguous().view(-1, predictions.size(-1))
-                # print([sum(predictions[i]) for i in range(len(predictions))])
-                # exit()
+
                 text_input = text_input.contiguous().view(-1)
 
                 loss = criterion(predictions, text_input)
@@ -67,9 +62,22 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
                         torch.save(model.state_dict(), modelpath)
                         print("model saved at: ", "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs)))
                         best_loss = current_loss
+        for (batch_num, collate_output) in enumerate(val_loader):
+            speech_input, text_input, speech_len, text_len = collate_output
+            speech_input = speech_input.to(device)
+            text_input = text_input.to(device)
+            predictions = model(speech_input, speech_len)
+            mask = torch.zeros(text_input.size()).to(device)
+            for length in text_len:
+                mask[:, :length] = 1
+            mask = mask.view(-1).to(device)
+            predictions = predictions.contiguous().view(-1, predictions.size(-1))
+            print("validation:")
+            print(predictions)
 
 
-def eval(model, data_loader):
+
+def test(model, data_loader):
     with torch.no_grad():
         model.eval()
         model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
@@ -90,9 +98,9 @@ def main():
     criterion = nn.CrossEntropyLoss(reduce=None).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
     if par.train_mode:
-        train(model=model, train_loader=du.data_loader, num_epochs=config.num_epochs, criterion=criterion, optimizer=optimizer)
+        train(model=model, train_loader=du.train_loader, num_epochs=config.num_epochs, criterion=criterion, optimizer=optimizer)
     else:
-        eval(model=model, data_loader=du.data_loader)
+        test(model=model, data_loader=du.test_loader)
 
 
 if __name__ == "__main__":

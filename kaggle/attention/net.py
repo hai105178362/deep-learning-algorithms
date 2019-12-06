@@ -157,6 +157,10 @@ class Decoder(nn.Module):
                         pred_word = prediction.argmax(dim=-1)
                     char_embed = self.embedding(pred_word)
             else:
+                if i ==0:
+                    idx =du.letter_list.index('<sos>')
+                    for i in range(len(prediction)):
+                        prediction[i] = idx
                 pred_word = prediction.argmax(dim=-1)
                 char_embed = self.embedding(pred_word)
 

@@ -13,7 +13,7 @@ import params as par
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-letter_list = ['PAD','A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', \
+letter_list = ['PAD', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', \
                'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '-', "'", '.', '_', '+', ' ', '<sos>', '<eos>']
 
 
@@ -99,7 +99,7 @@ class Speech2Text_Dataset(Dataset):
 
 def collate_train(batch_data):
     inputs, targets = zip(*batch_data)
-    targets = [i+1 for i in targets]
+    targets = [i + 1 for i in targets]
 
     inputs_len = torch.IntTensor([len(_) for _ in inputs])
     targets_len = torch.IntTensor([len(_) for _ in targets])
@@ -126,8 +126,8 @@ def collate_test(batch_data):
     return inputs, inputs_len
 
 
-def generate_data(x, y=None):
-    if par.train_mode:
+def generate_data(x, y=None, train=par.train_mode):
+    if train:
         tx = [torch.FloatTensor(_) for _ in x]
         ty = [torch.LongTensor(_) for _ in y]
         return tx, ty
@@ -136,23 +136,30 @@ def generate_data(x, y=None):
 
 
 vocab = letter_list
-if par.train_mode:
-    utterance, transcript = get_data()
-    # vocab = build_vocab(transcript)
-    letter_to_index_list = transform_letter_to_index(transcript)
-    # word_to_index_list = transform_word_to_index(transcripts=transcript, vocab=vocab)
-    tx, ty = generate_data(x=utterance, y=letter_to_index_list)
-    train_dataset = Speech2Text_Dataset(speech=tx, text=ty)
-    # data_loader = DataLoader(train_dataset, shuffle=par.train_mode, batch_size=config.train_batch_size, collate_fn=collate_train)
-    data_loader = DataLoader(train_dataset, shuffle=par.train_mode, batch_size=config.train_batch_size, collate_fn=collate_train)
-else:
-    utterance, _ = get_data()
-    x = generate_data(x=utterance)
-    test_dataset = Speech2Text_Dataset(speech=x)
-    data_loader = DataLoader(test_dataset, shuffle=par.train_mode, batch_size=config.test_batch_size, collate_fn=collate_test)
+#### Training Set
+utterance, transcript = get_data(mode='dev')
+# vocab = build_vocab(transcript)
+letter_to_index_list = transform_letter_to_index(transcript)
+# word_to_index_list = transform_word_to_index(transcripts=transcript, vocab=vocab)
+tx, ty = generate_data(x=utterance, y=letter_to_index_list)
+train_dataset = Speech2Text_Dataset(speech=tx, text=ty)
+# data_loader = DataLoader(train_dataset, shuffle=par.train_mode, batch_size=config.train_batch_size, collate_fn=collate_train)
+train_loader = DataLoader(train_dataset, shuffle=par.train_mode, batch_size=config.train_batch_size, collate_fn=collate_train)
+
+#### Validation Set
+utterance, _ = get_data()
+x = generate_data(x=utterance)
+val_dataset = Speech2Text_Dataset(speech=x)
+val_loader = DataLoader(val_dataset, shuffle=par.train_mode, batch_size=config.test_batch_size, collate_fn=collate_test)
+
+### Test Set
+utterance, _ = get_data(mode='test')
+x = generate_data(x=utterance, train=False)
+test_dataset = Speech2Text_Dataset(speech=x)
+test_loader = DataLoader(test_dataset, shuffle=par.train_mode, batch_size=config.test_batch_size, collate_fn=collate_test)
 
 if __name__ == "__main__":
-    for batch_num, (inputs, targets, inputs_len, targets_len) in enumerate(data_loader):
+    for batch_num, (inputs, targets, inputs_len, targets_len) in enumerate(train_loader):
         # print(inputs)
         # print(inputs.shape)
         print(targets)
