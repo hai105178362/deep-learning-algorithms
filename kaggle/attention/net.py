@@ -198,7 +198,7 @@ class Seq2Seq(nn.Module):
         if train:
             predictions = self.decoder(key, value, text_input, speech_len=speech_len)
         else:
-            predictions = self.decoder(key, value, text=None, train=False)
+            predictions = self.decoder(key, value, text=None, train=False, speech_len=speech_len)
             predictions = (predictions[:, :, 1:])
             # print(predictions[0][0])
             # exit()
