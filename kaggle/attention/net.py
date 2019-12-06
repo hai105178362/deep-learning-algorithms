@@ -116,7 +116,7 @@ class Decoder(nn.Module):
 
     def forward(self, key, values, text=None, speech_len=None, train=par.train_mode, teacher_forcing_rate=0.9):
         '''
-        :param text_lens:
+        :param speech_len:
         :param key :(T,N,key_size) Output of the Encoder Key projection layer
         :param values: (T,N,value_size) Output of the Encoder Value projection layer
         :param text: (N,text_len) Batch input of text with text_length
