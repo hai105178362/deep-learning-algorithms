@@ -75,6 +75,8 @@ def eval(model, data_loader):
         model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
         for (batch_num, collate_output) in enumerate(data_loader):
             speech_input, speech_len = collate_output
+            speech_input =speech_input.to(device)
+            speech_len = speech_len.to(device)
             predictions = model(speech_input, speech_len)
             pred2words_per_batch = torch.argmax(predictions, dim=2).data
             for pred2words in pred2words_per_batch:

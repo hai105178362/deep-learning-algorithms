@@ -75,7 +75,7 @@ class Attention(nn.Module):
 
     def forward(self, query, key, value, speech_len):
         '''
-        :param text_lens:
+        :param speech_len:
         :param query :(N,context_size) Query is the output of LSTMCell from Decoder
         :param key: (T,N,key_size) Key Projection from Encoder per time step
         :param value: (T,N,value_size) Value Projection from Encoder per time step
