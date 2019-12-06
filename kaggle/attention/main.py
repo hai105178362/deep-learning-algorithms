@@ -23,6 +23,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
     for epochs in range(num_epochs):
         loss_sum = 0
         since = time.time()
+        print("=============================")
         print("epoch: {}".format(epochs))
         for (batch_num, collate_output) in enumerate(train_loader):
             with torch.autograd.set_detect_anomaly(True):
@@ -37,6 +38,8 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                 predictions = predictions.contiguous().view(-1, predictions.size(-1))
 
                 text_input = text_input.contiguous().view(-1)
+                print(predictions.shape, text_input.shape)
+                exit()
 
                 loss = criterion(predictions, text_input)
                 masked_loss = torch.sum(loss * mask)
@@ -54,7 +57,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                     pred2words = [x for x in pred2words if x != 0]
                     print(''.join([du.letter_list[i - 1] for i in text_input[:min(50, len(text_input) - 1)]]))
                     print(''.join([du.letter_list[i - 1] for i in pred2words[:min(50, len(pred2words) - 1)]]))
-                    print("current_loss: {}".format(current_loss))
+                    print("Batch {} Loss: {}".format(batch_num, current_loss))
                     # if current_loss < best_loss:
                     #     now = datetime.datetime.now()
                     #     jobtime = str(now.hour) + str(now.minute)
@@ -62,6 +65,8 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                     #     torch.save(model.state_dict(), modelpath)
                     #     print("model saved at: ", "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs)))
                     #     best_loss = current_loss
+        print("----------------validation------------------------:")
+        val_loss = 0
         for (batch_num, collate_output) in enumerate(val_loader):
             speech_input, text_input, speech_len, text_len = collate_output
             speech_input = speech_input.to(device)
@@ -71,21 +76,24 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
             for length in text_len:
                 mask[:, :length] = 1
             mask = mask.view(-1).to(device)
+            # print(predictions.shape)
+            predictions = predictions[:, :text_input.shape[1], :]
             predictions = predictions.contiguous().view(-1, predictions.size(-1))
-            print("----------------validation------------------------:")
             text_input = text_input.contiguous().view(-1)
             loss = criterion(predictions, text_input)
             masked_loss = torch.sum(loss * mask)
-            current_loss = float(masked_loss.item()) / int(torch.sum(mask).item())
+            val_loss += float(masked_loss.item()) / int(torch.sum(mask).item())
             if batch_num % 20 == 0:
+                print("Batch: {}".format(batch_num))
                 pred2words = torch.argmax(predictions, dim=1)
                 print(text_input[:].detach().cpu().numpy())
                 print(pred2words[:].data.detach().cpu().numpy())
-                text_input = [x for x in text_input if x != 0]
-                pred2words = [x for x in pred2words if x != 0]
-                print(''.join([du.letter_list[i - 1] for i in text_input[:min(50, len(text_input) - 1)]]))
-                print(''.join([du.letter_list[i - 1] for i in pred2words[:min(50, len(pred2words) - 1)]]))
-                print("current_loss: {}".format(current_loss))
+                # text_input = [x for x in text_input if x != 0]
+                # pred2words = [x for x in pred2words if x != 0]
+                # print(''.join([du.letter_list[i - 1] for i in text_input[:min(50, len(text_input) - 1)]]))
+                # print(''.join([du.letter_list[i - 1] for i in pred2words[:min(50, len(pred2words) - 1)]]))
+                # print("current_loss: {}".format(current_loss))
+        print("Validation Loss: {}".format(val_loss / len(val_loader)))
 
 
 def test(model, data_loader):

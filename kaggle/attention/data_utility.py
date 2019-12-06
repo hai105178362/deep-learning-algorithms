@@ -144,10 +144,10 @@ letter_to_index_list = transform_letter_to_index(transcript)
 tx, ty = generate_data(x=utterance, y=letter_to_index_list)
 train_dataset = Speech2Text_Dataset(speech=tx, text=ty)
 # data_loader = DataLoader(train_dataset, shuffle=par.train_mode, batch_size=config.train_batch_size, collate_fn=collate_train)
-train_loader = DataLoader(train_dataset, shuffle=par.train_mode, batch_size=config.train_batch_size, collate_fn=collate_train)
+train_loader = DataLoader(train_dataset, shuffle=True, batch_size=config.train_batch_size, collate_fn=collate_train)
 
 #### Validation Set
-utterance, transcript = get_data()
+utterance, transcript = get_data(mode='dev')
 letter_to_index_list = transform_letter_to_index(transcript)
 tx, ty = generate_data(x=utterance, y=letter_to_index_list)
 val_dataset = Speech2Text_Dataset(speech=tx, text=ty)
