@@ -23,8 +23,9 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
     for epochs in range(num_epochs):
         loss_sum = 0
         since = time.time()
-        print("=============================")
+        print("\n\n=============================")
         print("epoch: {}".format(epochs))
+        print("----------------Train------------------------:")
         for (batch_num, collate_output) in enumerate(train_loader):
             with torch.autograd.set_detect_anomaly(True):
                 speech_input, text_input, speech_len, text_len = collate_output
@@ -48,13 +49,13 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
 
                 current_loss = float(masked_loss.item()) / int(torch.sum(mask).item())
                 if batch_num % 20 == 0:
-                    pred2words = torch.argmax(predictions, dim=1)
-                    print(text_input[:].detach().cpu().numpy())
-                    print(pred2words[:].data.detach().cpu().numpy())
-                    text_input = [x for x in text_input if x != 0]
-                    pred2words = [x for x in pred2words if x != 0]
-                    print(''.join([du.letter_list[i - 1] for i in text_input[:min(50, len(text_input) - 1)]]))
-                    print(''.join([du.letter_list[i - 1] for i in pred2words[:min(50, len(pred2words) - 1)]]))
+                    # pred2words = torch.argmax(predictions, dim=1)
+                    # print(text_input[:].detach().cpu().numpy())
+                    # print(pred2words[:].data.detach().cpu().numpy())
+                    # text_input = [x for x in text_input if x != 0]
+                    # pred2words = [x for x in pred2words if x != 0]
+                    # print(''.join([du.letter_list[i - 1] for i in text_input[:min(50, len(text_input) - 1)]]))
+                    # print(''.join([du.letter_list[i - 1] for i in pred2words[:min(50, len(pred2words) - 1)]]))
                     print("Batch {} Loss: {}".format(batch_num, current_loss))
                     # if current_loss < best_loss:
                     #     now = datetime.datetime.now()
@@ -63,7 +64,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                     #     torch.save(model.state_dict(), modelpath)
                     #     print("model saved at: ", "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs)))
                     #     best_loss = current_loss
-        print("----------------validation------------------------:")
+        print("----------------Validation------------------------:")
         val_loss = 0
         for (batch_num, collate_output) in enumerate(val_loader):
             speech_input, text_input, speech_len, text_len = collate_output
