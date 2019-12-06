@@ -38,8 +38,6 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                 predictions = predictions.contiguous().view(-1, predictions.size(-1))
 
                 text_input = text_input.contiguous().view(-1)
-                print(predictions.shape, text_input.shape)
-                exit()
 
                 loss = criterion(predictions, text_input)
                 masked_loss = torch.sum(loss * mask)
