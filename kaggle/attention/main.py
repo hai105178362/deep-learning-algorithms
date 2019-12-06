@@ -66,7 +66,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
             speech_input, text_input, speech_len, text_len = collate_output
             speech_input = speech_input.to(device)
             text_input = text_input.to(device)
-            predictions = model(speech_input, speech_len)
+            predictions = model(speech_input, speech_len, train=False)
             mask = torch.zeros(text_input.size()).to(device)
             for length in text_len:
                 mask[:, :length] = 1
