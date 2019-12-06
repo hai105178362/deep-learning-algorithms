@@ -45,7 +45,6 @@ def train(model, train_loader, num_epochs, criterion, optimizer):
 
                 loss = criterion(predictions, text_input)
                 masked_loss = torch.sum(loss * mask)
-                # masked_loss = torch.logsumexp(loss * mask,0)
 
                 masked_loss.backward()
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 2)
@@ -77,16 +76,16 @@ def eval(model, data_loader):
         for (batch_num, collate_output) in enumerate(data_loader):
             speech_input, speech_len = collate_output
             predictions = model(speech_input, speech_len)
-            print(predictions.shape)
-            predictions = predictions[:, :, 1:]
-            # decoded = greedy_decode(F.softmax(predictions,dim=2).data.cpu())
+            # predictions = predictions.contiguous().view(-1, predictions.size(-1))
+            # pred2words = torch.argmax(predictions, dim=1)
+            # print(pred2words)
+            # print(predictions.shape)
+            # exit()
             pred2words_per_batch = torch.argmax(predictions, dim=2).data
             for pred2words in pred2words_per_batch:
-                print(pred2words)
-                # pred2words = [x for x in pred2words if (x != 0)]
-                print(pred2words)
-                #     print(''.join([du.letter_list[i] for i in pred2words[:min(150, len(pred2words) - 1)]]))
-                exit()
+                pred2words = [x for x in pred2words if (x != 0)]
+                print(''.join([du.letter_list[i] for i in pred2words[:min(50, len(pred2words) - 1)]]))
+                # exit()
 
 
 def greedy_decode(probs):

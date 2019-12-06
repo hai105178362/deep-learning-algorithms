@@ -73,7 +73,7 @@ class Attention(nn.Module):
         super(Attention, self).__init__()
         self.softmax = nn.Softmax(dim=1).to(device)
 
-    def forward(self, query, key, value, text_lens):
+    def forward(self, query, key, value, speech_len):
         '''
         :param text_lens:
         :param query :(N,context_size) Query is the output of LSTMCell from Decoder
@@ -87,14 +87,8 @@ class Attention(nn.Module):
         value = value.transpose(1, 0)
         energy = torch.bmm(key, query).squeeze(2)
         mask = Variable(energy.data.new(energy.size(0), energy.size(1)).zero_(), requires_grad=False)
-        # print(query.shape,key.shape,value.shape,energy.shape,mask.shape)
-        if par.train_mode:
-            for i, size in enumerate(text_lens):
-                mask[i, :size] = 1
-        else:
-            # print("test mode",key.shape,mask.shape)
-            for i in range(key.shape[0]):
-                mask[i, :250] = 1
+        for i, size in enumerate(speech_len):  # It should be speech len
+            mask[i, :size] = 1
         attention_score = self.softmax(energy)
         attention_score = mask * attention_score
         attention_score = attention_score / torch.sum(attention_score, dim=1).unsqueeze(1).expand_as(attention_score)
@@ -120,7 +114,7 @@ class Decoder(nn.Module):
             self.rnn_inith.append(torch.nn.Parameter(torch.rand(1, hidden_dim)))
             self.rnn_initc.append(torch.nn.Parameter(torch.rand(1, hidden_dim)))
 
-    def forward(self, key, values, text=None, text_lens=None, train=par.train_mode, teacher_forcing_rate=0.9):
+    def forward(self, key, values, text=None, speech_len=None, train=par.train_mode, teacher_forcing_rate=0.9):
         '''
         :param text_lens:
         :param key :(T,N,key_size) Output of the Encoder Key projection layer
@@ -144,7 +138,8 @@ class Decoder(nn.Module):
         predictions = []
         hidden_states = [None, None]
         prediction = torch.zeros(batch_size, 1).to(device)
-        state, pred_word = self.get_initial_state(batch_size)
+        state, pred_word = self.init_state(batch_size)
+        context = values[0, :, :]
 
         for i in range(max_len):
             '''
@@ -162,30 +157,28 @@ class Decoder(nn.Module):
                         pred_word = prediction.argmax(dim=-1)
                     char_embed = self.embedding(pred_word)
             else:
-                if i == 0:
-                    pred_word = (torch.ones(batch_size, 1).to(device) * du.letter_list.index('<sos>')).flatten().type(torch.LongTensor)
-                else:
-                    pred_word = prediction.argmax(dim=-1)
+                pred_word = prediction.argmax(dim=-1)
                 char_embed = self.embedding(pred_word)
 
-            if self.isAttended:
-                context, mask = self.attention(char_embed, key, values, text_lens)
-                inp = torch.cat([char_embed, context], dim=1)
-            # When attention is True you should replace the values[i,:,:] with the context you get from attention
-            else:
-                inp = torch.cat([char_embed, values[i, :, :]], dim=1)
+            inp = torch.cat([char_embed, context], dim=1)
             hidden_states[0] = self.lstm1(inp, hidden_states[0])
 
             inp_2 = hidden_states[0][0]
             hidden_states[1] = self.lstm2(inp_2, hidden_states[1])
 
             output = hidden_states[1][0]
-            prediction = self.character_prob(torch.cat([output, context], dim=1))
 
+            if self.isAttended:
+                context, mask = self.attention(output, key, values, speech_len=speech_len)
+                prediction = self.character_prob(torch.cat([output, context], dim=1))
+            # When attention is True you should replace the values[i,:,:] with the context you get from attention
+            else:
+                inp = torch.cat([char_embed, values[i, :, :]], dim=1)
+                prediction = self.character_prob(torch.cat([output, values[i, :, :]], dim=1))
             predictions.append(prediction.unsqueeze(1))
         return torch.cat(predictions, dim=1)
 
-    def get_initial_state(self, batch_size=32):
+    def init_state(self, batch_size=config.train_batch_size):
         hidden = [h.repeat(batch_size, 1) for h in self.rnn_inith]
         cell = [c.repeat(batch_size, 1) for c in self.rnn_initc]
         # <sos> (same vocab as <eos>)
@@ -203,9 +196,10 @@ class Seq2Seq(nn.Module):
     def forward(self, speech_input, speech_len, text_input=None, text_len=None, train=par.train_mode):
         key, value, seq_len = self.encoder(speech_input, speech_len)
         if train:
-            predictions = self.decoder(key, value, text_input, text_lens=seq_len)
+            predictions = self.decoder(key, value, text_input, speech_len=speech_len)
         else:
             predictions = self.decoder(key, value, text=None, train=False)
-            # predictions=(predictions[:,:,2:])
+            predictions = (predictions[:, :, 1:])
+            # print(predictions[0][0])
             # exit()
         return predictions
