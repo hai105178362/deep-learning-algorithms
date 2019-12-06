@@ -151,7 +151,7 @@ utterance, transcript = get_data()
 letter_to_index_list = transform_letter_to_index(transcript)
 tx, ty = generate_data(x=utterance, y=letter_to_index_list)
 val_dataset = Speech2Text_Dataset(speech=tx, text=ty)
-val_loader = DataLoader(val_dataset, shuffle=par.train_mode, batch_size=config.test_batch_size, collate_fn=collate_test)
+val_loader = DataLoader(val_dataset, shuffle=False, batch_size=config.train_batch_size, collate_fn=collate_train)
 
 ### Test Set
 utterance, _ = get_data(mode='test')

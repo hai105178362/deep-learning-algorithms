@@ -55,13 +55,13 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                     print(''.join([du.letter_list[i - 1] for i in text_input[:min(50, len(text_input) - 1)]]))
                     print(''.join([du.letter_list[i - 1] for i in pred2words[:min(50, len(pred2words) - 1)]]))
                     print("current_loss: {}".format(current_loss))
-                    if current_loss < best_loss:
-                        now = datetime.datetime.now()
-                        jobtime = str(now.hour) + str(now.minute)
-                        modelpath = "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs))
-                        torch.save(model.state_dict(), modelpath)
-                        print("model saved at: ", "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs)))
-                        best_loss = current_loss
+                    # if current_loss < best_loss:
+                    #     now = datetime.datetime.now()
+                    #     jobtime = str(now.hour) + str(now.minute)
+                    #     modelpath = "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs))
+                    #     torch.save(model.state_dict(), modelpath)
+                    #     print("model saved at: ", "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs)))
+                    #     best_loss = current_loss
         for (batch_num, collate_output) in enumerate(val_loader):
             speech_input, text_input, speech_len, text_len = collate_output
             speech_input = speech_input.to(device)
