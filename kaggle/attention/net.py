@@ -31,7 +31,7 @@ class pBLSTM(nn.Module):
         inp = torch.transpose(x, 0, 1)
         inp_shape = (inp.shape)
         i, j, k = inp_shape[0], inp_shape[1], inp_shape[2]
-        if j ==1:
+        if j == 1:
             pass
         elif j % 2 != 0:
             inp = inp[:, :j - 1, :]
@@ -92,6 +92,7 @@ class Attention(nn.Module):
             for i, size in enumerate(text_lens):
                 mask[i, :size] = 1
         else:
+            # print("test mode",key.shape,mask.shape)
             for i in range(key.shape[0]):
                 mask[i, :250] = 1
         attention_score = self.softmax(energy)
@@ -113,7 +114,13 @@ class Decoder(nn.Module):
             self.attention = Attention()
         self.character_prob = nn.Linear(key_size + value_size, vocab_size).to(device)
 
-    def forward(self, key, values, text=None, text_lens=None, train=par.train_mode):
+        self.rnn_inith = torch.nn.ParameterList()
+        self.rnn_initc = torch.nn.ParameterList()
+        for i in range(2):
+            self.rnn_inith.append(torch.nn.Parameter(torch.rand(1, hidden_dim)))
+            self.rnn_initc.append(torch.nn.Parameter(torch.rand(1, hidden_dim)))
+
+    def forward(self, key, values, text=None, text_lens=None, train=par.train_mode, teacher_forcing_rate=0.9):
         '''
         :param text_lens:
         :param key :(T,N,key_size) Output of the Encoder Key projection layer
@@ -122,6 +129,9 @@ class Decoder(nn.Module):
         :param train: Train or eval mode
         :return predictions: Returns the character perdiction probability
         '''
+        if text is None:
+            teacher_forcing_rate = 0
+        teacher_force = True if np.random.random_sample() < teacher_forcing_rate else False
 
         batch_size = key.shape[1]
 
@@ -134,15 +144,29 @@ class Decoder(nn.Module):
         predictions = []
         hidden_states = [None, None]
         prediction = torch.zeros(batch_size, 1).to(device)
+        state, pred_word = self.get_initial_state(batch_size)
+
         for i in range(max_len):
             '''
             Here you should implement Gumble noise and teacher forcing techniques
             '''
             if (train):
-                char_embed = embeddings[:, i, :]
+                if teacher_force:
+                    pred_word = text[:, i]
+                    # char_embed = embeddings[:, i, :]
+                    char_embed = self.embedding(pred_word)
+                else:
+                    if i == 0:
+                        pred_word = text[:, i]
+                    else:
+                        pred_word = prediction.argmax(dim=-1)
+                    char_embed = self.embedding(pred_word)
             else:
-                pred = prediction.argmax(dim=-1)
-                char_embed = self.embedding(pred)
+                if i == 0:
+                    pred_word = (torch.ones(batch_size, 1).to(device) * du.letter_list.index('<sos>')).flatten().type(torch.LongTensor)
+                else:
+                    pred_word = prediction.argmax(dim=-1)
+                char_embed = self.embedding(pred_word)
 
             if self.isAttended:
                 context, mask = self.attention(char_embed, key, values, text_lens)
@@ -157,8 +181,16 @@ class Decoder(nn.Module):
 
             output = hidden_states[1][0]
             prediction = self.character_prob(torch.cat([output, context], dim=1))
+
             predictions.append(prediction.unsqueeze(1))
         return torch.cat(predictions, dim=1)
+
+    def get_initial_state(self, batch_size=32):
+        hidden = [h.repeat(batch_size, 1) for h in self.rnn_inith]
+        cell = [c.repeat(batch_size, 1) for c in self.rnn_initc]
+        # <sos> (same vocab as <eos>)
+        output_word = Variable(hidden[0].data.new(batch_size).long().fill_(du.letter_list.index('<sos>')))
+        return [hidden, cell], output_word
 
 
 class Seq2Seq(nn.Module):

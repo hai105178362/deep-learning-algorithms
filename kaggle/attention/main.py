@@ -77,13 +77,42 @@ def eval(model, data_loader):
         for (batch_num, collate_output) in enumerate(data_loader):
             speech_input, speech_len = collate_output
             predictions = model(speech_input, speech_len)
+            print(predictions.shape)
+            predictions = predictions[:, :, 1:]
+            # decoded = greedy_decode(F.softmax(predictions,dim=2).data.cpu())
             pred2words_per_batch = torch.argmax(predictions, dim=2).data
             for pred2words in pred2words_per_batch:
                 print(pred2words)
                 # pred2words = [x for x in pred2words if (x != 0)]
                 print(pred2words)
-                print(''.join([du.letter_list[i] for i in pred2words[:min(150, len(pred2words) - 1)]]))
+                #     print(''.join([du.letter_list[i] for i in pred2words[:min(150, len(pred2words) - 1)]]))
                 exit()
+
+
+def greedy_decode(probs):
+    # probs: FloatTensor (B, L, C)
+    out = []
+    for prob in probs:
+        prob = prob[:, 1:]
+        s = []
+        print(torch.argmax(prob[0]))
+        print(torch.argmax(prob[1]))
+        print(prob[1])
+        print(prob.shape)
+        exit()
+        for step in prob:
+            print(step)
+            # exit()
+            idx = step[1:].max(0)[1]
+            # print(idx)
+            # c = idx2chr[idx]
+            # # s.append(c)
+            # if c == '<eos>':
+            #     break
+            # exit()
+        out.append("".join(s))
+    exit()
+    return out
 
 
 def main():
