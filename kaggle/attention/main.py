@@ -17,7 +17,7 @@ import data_utility as du
 import net
 
 
-def train(model, train_loader,val_loader ,num_epochs, criterion, optimizer):
+def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
     best_loss = 0.1
     # model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
     for epochs in range(num_epochs):
@@ -76,7 +76,6 @@ def train(model, train_loader,val_loader ,num_epochs, criterion, optimizer):
             print(predictions)
 
 
-
 def test(model, data_loader):
     with torch.no_grad():
         model.eval()
@@ -98,7 +97,7 @@ def main():
     criterion = nn.CrossEntropyLoss(reduce=None).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
     if par.train_mode:
-        train(model=model, train_loader=du.train_loader, num_epochs=config.num_epochs, criterion=criterion, optimizer=optimizer)
+        train(model=model, train_loader=du.train_loader, val_loader=du.val_loader, num_epochs=config.num_epochs, criterion=criterion, optimizer=optimizer)
     else:
         test(model=model, data_loader=du.test_loader)
 
