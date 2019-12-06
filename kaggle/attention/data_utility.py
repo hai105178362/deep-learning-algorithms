@@ -147,8 +147,9 @@ train_dataset = Speech2Text_Dataset(speech=tx, text=ty)
 train_loader = DataLoader(train_dataset, shuffle=par.train_mode, batch_size=config.train_batch_size, collate_fn=collate_train)
 
 #### Validation Set
-utterance, _ = get_data()
-x = generate_data(x=utterance)
+utterance, transcript = get_data()
+letter_to_index_list = transform_letter_to_index(transcript)
+x = generate_data(x=utterance,y=letter_to_index_list)
 val_dataset = Speech2Text_Dataset(speech=x)
 val_loader = DataLoader(val_dataset, shuffle=par.train_mode, batch_size=config.test_batch_size, collate_fn=collate_test)
 
