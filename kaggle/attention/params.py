@@ -11,7 +11,7 @@ def init_parser():
     parser.add_argument('--path_train_transcripts', type=str, default="dataset.nosync/train_transcripts.npy")
     parser.add_argument('--path_train_new', type=str, default="dataset.nosync/train_new.npy")
     parser.add_argument('--lr', type=float, default=0.001)
-    parser.add_argument('--weight_decay', type=float, default=1e-7)
+    parser.add_argument('--weight_decay', type=float, default=1e-5)
     parser.add_argument('--num_epochs', type=int, default=1500)
     parser.add_argument('--train_batch_size', type=int, default=64)
     parser.add_argument('--test_batch_size', type=int, default=64)
