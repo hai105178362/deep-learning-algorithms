@@ -96,8 +96,10 @@ class Attention(nn.Module):
         mask = Variable(energy.data.new(energy.size(0), energy.size(1)).zero_(), requires_grad=False)
         for i, size in enumerate(speech_len):  # It should be speech len
             mask[i, :size] = 1
-        attention_score = self.softmax(energy)
-        attention_score = mask * attention_score
+        # attention_score = self.softmax(energy)
+        # attention_score = mask * attention_score
+        attention_score = mask * energy
+        attention_score = self.softmax(attention_score)
         attention_score = attention_score / torch.sum(attention_score, dim=1).unsqueeze(1).expand_as(attention_score)
         context = torch.bmm(attention_score.unsqueeze(1), value).squeeze(dim=1)
         return context, mask
@@ -141,7 +143,8 @@ class Decoder(nn.Module):
             max_len = text.shape[1]
             # embeddings = self.embedding(text)
         else:
-            max_len = 250
+            mu, beta = 250, 30  # location and scale
+            s = np.random.gumbel(mu, beta)
 
         predictions = []
         hidden_states = [None, None]
@@ -160,17 +163,14 @@ class Decoder(nn.Module):
                     # char_embed = embeddings[:, i, :]
                     char_embed = self.embedding(pred_word)
                 else:
-                    if i == 0:
-                        char_embed = self.embedding(pred_word)
-                    else:
-                        pred_word = prediction.argmax(dim=-1)
-                        char_embed = self.embedding(pred_word)
+                    pred_word = prediction.argmax(dim=-1)
+                    char_embed = self.embedding(pred_word)
             else:
                 if i > 0:
                     pred_word = prediction.argmax(dim=-1)
                     char_embed = self.embedding(pred_word)
-            char_embed = self.dropout(char_embed)
-            context = self.dropout(context)
+            # char_embed = self.dropout(char_embed)
+            # context = self.dropout(context)
             inp = torch.cat([char_embed, context], dim=1)
             hidden_states[0] = self.lstm1(inp, hidden_states[0])
 

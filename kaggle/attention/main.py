@@ -19,11 +19,11 @@ import net
 
 
 def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
-    best_loss = 1.5
+    best_loss = 2
     # model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
     for epochs in range(num_epochs):
         start_time = time.time()
-        par.tf_rate *= 0.95
+        par.tf_rate *= 0.85
         loss_sum = 0
         since = time.time()
         print("\n\n")
@@ -85,13 +85,15 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
             val_loss += float(masked_loss.item()) / int(torch.sum(mask).item())
             if batch_num % 5 == 0:
                 pred2words = torch.argmax(predictions, dim=1)
-                print(text_input[:].detach().cpu().numpy())
-                print(pred2words[:].data.detach().cpu().numpy())
-                new_text = [i for i in text_input if i != 0]
-                new_gen = [i for i in pred2words if i != 0]
-                ref = ''.join([du.letter_list[i - 1] for i in new_text[:min(250, len(text_input) - 1)]])
-                gen = ''.join([du.letter_list[i - 1] for i in new_gen[:min(250, len(pred2words) - 1)]])
-                print("Batch: {} Levenshtein: {} ".format(batch_num, Levenshtein.distance(ref, gen)))
+                text_input_view = text_input[:].detach().cpu().numpy()
+                pred2words_view = pred2words[:].data.detach().cpu().numpy()
+                print(text_input_view[:20],text_input_view[:-20])
+                print(pred2words_view[:20],pred2words_view[:-20])
+                # new_text = [i for i in text_input if i != 0]
+                # new_gen = [i for i in pred2words if i != 0]
+                # ref = ''.join([du.letter_list[i - 1] for i in new_text[:min(250, len(text_input) - 1)]])
+                # gen = ''.join([du.letter_list[i - 1] for i in new_gen[:min(250, len(pred2words) - 1)]])
+                # print("Batch: {} Levenshtein: {} ".format(batch_num, Levenshtein.distance(ref, gen)))
                 # print("current_loss: {}".format(current_loss))
         if val_loss < best_loss * 0.8:
             now = datetime.datetime.now()
