@@ -22,7 +22,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
     best_loss = 0.1
     # model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
     for epochs in range(num_epochs):
-        par.tf_rate -= 0.1
+        par.tf_rate *= 0.8
         loss_sum = 0
         since = time.time()
         print("\n\n")
@@ -89,29 +89,32 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                 pred2words = torch.argmax(predictions, dim=1)
                 print(text_input[:].detach().cpu().numpy())
                 print(pred2words[:].data.detach().cpu().numpy())
-                text_input = [x for x in text_input if x != 0]
-                pred2words = [x for x in pred2words if x != 0]
-                ref = ''.join([du.letter_list[i - 1] for i in text_input[:min(50, len(text_input) - 1)]])
-                gen = ''.join([du.letter_list[i - 1] for i in pred2words[:min(50, len(pred2words) - 1)]])
+                ref = ''.join([du.letter_list[i] for i in text_input[:min(50, len(text_input) - 1)]])
+                gen = ''.join([du.letter_list[i] for i in pred2words[:min(50, len(pred2words) - 1)]])
                 print("Levenshtein: ",Levenshtein.distance(ref,gen))
                 # print("current_loss: {}".format(current_loss))
         print("Validation Loss: {}".format(val_loss / len(val_loader)))
 
 
-def test(model, data_loader):
+def test(model, test_loader):
     with torch.no_grad():
         model.eval()
-        model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
-        for (batch_num, collate_output) in enumerate(data_loader):
-            speech_input, speech_len = collate_output
+        for (batch_num, collate_output) in enumerate(test_loader):
+            speech_input, speech_len= collate_output
             speech_input = speech_input.to(device)
-            speech_len = speech_len.to(device)
-            predictions = model(speech_input, speech_len)
-            pred2words_per_batch = torch.argmax(predictions, dim=2).data
-            for pred2words in pred2words_per_batch:
-                pred2words = [x for x in pred2words if (x != 0)]
-                print(''.join([du.letter_list[i] for i in pred2words[:min(50, len(pred2words) - 1)]]))
-                # exit()
+            predictions = model(speech_input, speech_len, train=False)
+            mask = torch.zeros(text_input.size()).to(device)
+            # for length in text_len:
+            mask[:, :250] = 1
+            mask = mask.view(-1).to(device)
+            # print(predictions.shape)
+            predictions = predictions[:, :text_input.shape[1], :]
+            predictions = predictions.contiguous().view(-1, predictions.size(-1))
+            pred2words = torch.argmax(predictions, dim=1)
+            print(pred2words[:].data.detach().cpu().numpy())
+            text_input = [x for x in text_input if x != 0]
+            pred2words = [x for x in pred2words if x != 0]
+            gen = ''.join([du.letter_list[i - 1] for i in pred2words[:min(251, len(pred2words) - 1)]])
 
 
 def main():
