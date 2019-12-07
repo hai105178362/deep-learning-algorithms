@@ -190,10 +190,10 @@ class Decoder(nn.Module):
 
 
 class Seq2Seq(nn.Module):
-    def __init__(self, input_dim, vocab_size, hidden_dim, value_size=128, key_size=128):
+    def __init__(self, input_dim, vocab_size, encode_hidden,decode_hidden, value_size=128, key_size=128):
         super(Seq2Seq, self).__init__()
-        self.encoder = Encoder(input_dim, hidden_dim)
-        self.decoder = Decoder(vocab_size + 1, hidden_dim)
+        self.encoder = Encoder(input_dim, encode_hidden)
+        self.decoder = Decoder(vocab_size + 1, decode_hidden)
 
     def forward(self, speech_input, speech_len, text_input=None, text_len=None, train=par.train_mode):
         key, value, seq_len = self.encoder(speech_input, speech_len)

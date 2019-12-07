@@ -114,7 +114,7 @@ def test(model, data_loader):
 
 
 def main():
-    model = net.Seq2Seq(input_dim=40, vocab_size=len(du.vocab), hidden_dim=config.hidden_dim)
+    model = net.Seq2Seq(input_dim=40, vocab_size=len(du.vocab), decode_hidden=config.decode_hidden, encode_hidden=config.encode_hidden)
     criterion = nn.CrossEntropyLoss(reduce=None).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
     if par.train_mode:

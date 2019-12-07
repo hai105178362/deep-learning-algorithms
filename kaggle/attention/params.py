@@ -16,7 +16,10 @@ def init_parser():
     parser.add_argument('--train_batch_size', type=int, default=64)
     parser.add_argument('--test_batch_size', type=int, default=64)
     parser.add_argument('--num_workers', type=int, default=1)
-    parser.add_argument('--hidden_dim', type=int, default=128)
+    ### Hidden Size
+    parser.add_argument('--encode_hidden', type=int, default=128)
+    parser.add_argument('--decode_hidden', type=int, default=128)
+    parser.add_argument('--attention_hidden', type=int, default=128)
     ### Setting Mode
     parser.add_argument('--mode', type=str, default="dev")
     parser.add_argument('--model', type=str, default=None)
