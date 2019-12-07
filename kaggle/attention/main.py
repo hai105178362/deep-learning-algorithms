@@ -94,12 +94,12 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
             val_loss += float(masked_loss.item()) / int(torch.sum(mask).item())
             if batch_num % 5 == 0:
                 pred2words = torch.argmax(predictions, dim=1)
+
                 text_input_view = text_input[:].detach().cpu().numpy()
                 pred2words_view = pred2words[:].data.detach().cpu().numpy()
-                new_text = [i for i in text_input if i != 0]
-                new_gen = [i for i in pred2words if i != 0]
-                ref = ''.join([du.letter_list[i - 1] for i in new_text])
-                gen = ''.join([du.letter_list[i - 1] for i in new_gen])
+
+                ref = ''.join([du.letter_list[i - 1] for i in text_input_view])
+                gen = ''.join([du.letter_list[i - 1] for i in pred2words_view])
                 print(text_input_view[:10], text_input_view[:-10])
                 print(pred2words_view[:10], pred2words_view[:-10])
                 print(ref[:20], '|', gen[:20])
