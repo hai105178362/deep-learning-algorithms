@@ -84,7 +84,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
             print(predictions.shape, text_input.shape)
             if predictions.shape[0] > text_input.shape[0]:
                 predictions = predictions[:text_input.shape[0], :]
-            elif predictions[0] < text_input.shape[0]:
+            elif predictions.shape[0] < text_input.shape[0]:
                 text_input = predictions[:predictions.shape[0], :]
             print(predictions.shape, text_input.shape)
 
