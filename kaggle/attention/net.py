@@ -20,7 +20,7 @@ class pBLSTM(nn.Module):
     def __init__(self, input_dim, hidden_dim, factor=2):
         super(pBLSTM, self).__init__()
         self.factor = factor
-        self.blstm = nn.LSTM(input_size=input_dim * factor, hidden_size=hidden_dim, num_layers=1, bidirectional=True, batch_first=False).to(device)
+        self.blstm = nn.LSTM(input_size=input_dim * factor, hidden_size=hidden_dim, num_layers=1, bidirectional=True, batch_first=False, dropout=0.5).to(device)
 
     def forward(self, x):
         '''
@@ -97,7 +97,7 @@ class Attention(nn.Module):
 
 
 class Decoder(nn.Module):
-    def __init__(self, vocab_size, hidden_dim, value_size=128, key_size=128, isAttended=True,embed_dim=config.embed_dim):
+    def __init__(self, vocab_size, hidden_dim, value_size=128, key_size=128, isAttended=True, embed_dim=config.embed_dim):
         super(Decoder, self).__init__()
         self.embedding = nn.Embedding(vocab_size, embed_dim).to(device)
 
@@ -190,7 +190,7 @@ class Decoder(nn.Module):
 
 
 class Seq2Seq(nn.Module):
-    def __init__(self, input_dim, vocab_size, encode_hidden,decode_hidden, value_size=128, key_size=128):
+    def __init__(self, input_dim, vocab_size, encode_hidden, decode_hidden, value_size=128, key_size=128):
         super(Seq2Seq, self).__init__()
         self.encoder = Encoder(input_dim, encode_hidden)
         self.decoder = Decoder(vocab_size + 1, decode_hidden)
