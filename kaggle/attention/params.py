@@ -11,7 +11,7 @@ def init_parser():
     parser.add_argument('--path_train_transcripts', type=str, default="dataset.nosync/train_transcripts.npy")
     parser.add_argument('--path_train_new', type=str, default="dataset.nosync/train_new.npy")
     parser.add_argument('--lr', type=float, default=0.001)
-    parser.add_argument('--weight_decay', type=float, default=1e-6)
+    parser.add_argument('--weight_decay', type=float, default=1e-7)
     parser.add_argument('--num_epochs', type=int, default=1500)
     parser.add_argument('--train_batch_size', type=int, default=64)
     parser.add_argument('--test_batch_size', type=int, default=64)
@@ -23,14 +23,13 @@ def init_parser():
     parser.add_argument('--embed_dim', type=int, default=256)
 
     ### Setting Mode
-    parser.add_argument('--mode', type=str, default="dev")
+    parser.add_argument('--mode', type=str, default="train")
     parser.add_argument('--model', type=str, default=None)
     config = parser.parse_args()
     return config
 
 config = init_parser()
 train_mode = True
-batch_size = 32
-tf_rate = 0.9
+tf_rate = 1.5
 if config.mode == "test":
     train_mode = False
