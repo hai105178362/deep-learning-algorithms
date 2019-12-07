@@ -83,13 +83,12 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
             masked_loss = torch.sum(loss * mask)
             val_loss += float(masked_loss.item()) / int(torch.sum(mask).item())
             if batch_num % 20 == 0:
-                print("Batch: {}".format(batch_num))
                 pred2words = torch.argmax(predictions, dim=1)
                 print(text_input[:].detach().cpu().numpy())
                 print(pred2words[:].data.detach().cpu().numpy())
                 ref = ''.join([du.letter_list[i] for i in text_input[:min(250, len(text_input) - 1)]])
                 gen = ''.join([du.letter_list[i] for i in pred2words[:min(250, len(pred2words) - 1)]])
-                print("Levenshtein: ", Levenshtein.distance(ref, gen))
+                print("Batch: {} Levenshtein: {} ".format(batch_num, Levenshtein.distance(ref, gen)))
                 # print("current_loss: {}".format(current_loss))
         print("Validation Loss: {}".format(val_loss / len(val_loader)))
 
