@@ -56,7 +56,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                     print(pred2words[:].data.detach().cpu().numpy())
                     ref = ''.join([du.letter_list[i] for i in text_input[:min(50, len(text_input) - 1)]])
                     gen = ''.join([du.letter_list[i] for i in pred2words[:min(50, len(pred2words) - 1)]])
-                    print("Batch {} Loss: {}    Levenshtein:".format(batch_num, current_loss, Levenshtein.distance(ref, gen)))
+                    print("Batch {} Loss: {}    Levenshtein:{}".format(batch_num, current_loss, Levenshtein.distance(ref, gen)))
                     # if current_loss < best_loss:
                     #     now = datetime.datetime.now()
                     #     jobtime = str(now.hour) + str(now.minute)
