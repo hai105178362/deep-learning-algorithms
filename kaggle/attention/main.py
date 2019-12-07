@@ -51,6 +51,8 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
 
                 current_loss = float(masked_loss.item()) / int(torch.sum(mask).item())
                 if batch_num % 20 == 0:
+                    print(predictions.shape)
+                    exit()
                     pred2words = torch.argmax(predictions, dim=1)
                     print(text_input[:].detach().cpu().numpy())
                     print(pred2words[:].data.detach().cpu().numpy())
