@@ -185,7 +185,7 @@ class Decoder(nn.Module):
         hidden = [h.repeat(batch_size, 1) for h in self.rnn_inith]
         cell = [c.repeat(batch_size, 1) for c in self.rnn_initc]
         # <sos> (same vocab as <eos>)
-        output_word = Variable(hidden[0].data.new(batch_size).long().fill_(du.letter_list.index('<sos>')))
+        output_word = Variable(hidden[0].data.new(batch_size).long().fill_(du.letter_list.index('<sos>'))).to(device)
         return [hidden, cell], output_word
 
 
