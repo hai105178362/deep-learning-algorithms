@@ -143,7 +143,7 @@ class Decoder(nn.Module):
 
         if (train):
             max_len = text.shape[1]
-            # embeddings = self.embedding(text)
+            embeddings = self.embedding(text)
         else:
             mu, beta = 250, 30  # location and scale
             max_len = int(np.random.gumbel(mu, beta))
