@@ -8,6 +8,7 @@ import pickle as pk
 from torch.utils.data import DataLoader, Dataset
 import time
 import datetime
+import Levenshtein
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 #########################
@@ -89,10 +90,11 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                 pred2words = torch.argmax(predictions, dim=1)
                 print(text_input[:].detach().cpu().numpy())
                 print(pred2words[:].data.detach().cpu().numpy())
-                # text_input = [x for x in text_input if x != 0]
-                # pred2words = [x for x in pred2words if x != 0]
-                # print(''.join([du.letter_list[i - 1] for i in text_input[:min(50, len(text_input) - 1)]]))
-                # print(''.join([du.letter_list[i - 1] for i in pred2words[:min(50, len(pred2words) - 1)]]))
+                text_input = [x for x in text_input if x != 0]
+                pred2words = [x for x in pred2words if x != 0]
+                ref = ''.join([du.letter_list[i - 1] for i in text_input[:min(50, len(text_input) - 1)]])
+                gen = ''.join([du.letter_list[i - 1] for i in pred2words[:min(50, len(pred2words) - 1)]])
+                print("Levenshtein: ",Levenshtein.distance(ref,gen))
                 # print("current_loss: {}".format(current_loss))
         print("Validation Loss: {}".format(val_loss / len(val_loader)))
 
