@@ -140,7 +140,7 @@ class Decoder(nn.Module):
         prediction = torch.zeros(batch_size, 1).to(device)
         state, pred_word = self.init_state(batch_size)
         context = values[0, :, :]
-
+        char_embed = self.embedding(pred_word)
 
         for i in range(max_len):
             '''
@@ -158,11 +158,9 @@ class Decoder(nn.Module):
                         pred_word = prediction.argmax(dim=-1)
                     char_embed = self.embedding(pred_word)
             else:
-                # if i == 0:
-                #     char_embed = self.embedding(pred_word)
-                # else:
-                pred_word = prediction.argmax(dim=-1)
-                char_embed = self.embedding(pred_word)
+                if i > 0:
+                    pred_word = prediction.argmax(dim=-1)
+                    char_embed = self.embedding(pred_word)
 
             inp = torch.cat([char_embed, context], dim=1)
             hidden_states[0] = self.lstm1(inp, hidden_states[0])
@@ -187,7 +185,7 @@ class Decoder(nn.Module):
         cell = [c.repeat(batch_size, 1) for c in self.rnn_initc]
         # <sos> (same vocab as <eos>)
         # print(du.letter_list.index('<sos>'))
-        output_word = Variable(hidden[0].data.new(batch_size).long().fill_(du.letter_list.index('<sos>')+1)).to(device)
+        output_word = Variable(hidden[0].data.new(batch_size).long().fill_(du.letter_list.index('<sos>') + 1)).to(device)
         return [hidden, cell], output_word
 
 
