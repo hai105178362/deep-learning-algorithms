@@ -52,7 +52,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                 optimizer.zero_grad()
 
                 current_loss = float(masked_loss.item()) / int(torch.sum(mask).item())
-                loss_sum +=current_loss
+                loss_sum += current_loss
 
                 if batch_num % 100 == 0:
                     pred2words = torch.argmax(predictions, dim=1)
@@ -63,7 +63,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                     print("Batch {} Loss: {}    Levenshtein:{}".format(batch_num, current_loss, Levenshtein.distance(ref, gen)))
 
         end_time = time.time()
-        print("Average Training Loss: {}".format(loss_sum/len(train_loader)))
+        print("Average Training Loss: {}".format(loss_sum / len(train_loader)))
         print("Training time: {}".format(end_time - start_time))
         start_time = end_time
         print("----------------Validation------------------------")
@@ -81,6 +81,8 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
             predictions = predictions[:, :text_input.shape[1], :]
             predictions = predictions.contiguous().view(-1, predictions.size(-1))
             text_input = text_input.contiguous().view(-1)
+            print(predictions.shape,text_input.shape)
+            exit()
             loss = criterion(predictions, text_input)
             masked_loss = torch.sum(loss * mask)
             val_loss += float(masked_loss.item()) / int(torch.sum(mask).item())
@@ -88,8 +90,9 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                 pred2words = torch.argmax(predictions, dim=1)
                 text_input_view = text_input[:].detach().cpu().numpy()
                 pred2words_view = pred2words[:].data.detach().cpu().numpy()
-                print(text_input_view[:20],text_input_view[:-20])
-                print(pred2words_view[:20],pred2words_view[:-20])
+                print(text_input_view[:10], text_input_view[:-10])
+                print(pred2words_view[:10], pred2words_view[:-10])
+                print(" ")
                 # new_text = [i for i in text_input if i != 0]
                 # new_gen = [i for i in pred2words if i != 0]
                 # ref = ''.join([du.letter_list[i - 1] for i in new_text[:min(250, len(text_input) - 1)]])

@@ -191,11 +191,9 @@ class Decoder(nn.Module):
             predictions.append(prediction.unsqueeze(1))
         return torch.cat(predictions, dim=1)
 
-    def init_state(self, batch_size=config.train_batch_size):
+    def init_state(self, batch_size=config.batch_size):
         hidden = [h.repeat(batch_size, 1) for h in self.hidden_init]
         cell = [c.repeat(batch_size, 1) for c in self.char_init]
-        # <sos> (same vocab as <eos>)
-        # print(du.letter_list.index('<sos>'))
         output_word = Variable(hidden[0].data.new(batch_size).long().fill_(du.letter_list.index('<sos>') + 1)).to(device)
         return [hidden, cell], output_word
 
