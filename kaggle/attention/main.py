@@ -103,14 +103,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                 print(text_input_view[:10], text_input_view[:-10])
                 print(pred2words_view[:10], pred2words_view[:-10])
                 print(ref[:20], '|', gen[:20])
-
                 print(" ")
-                # new_text = [i for i in text_input if i != 0]
-                # new_gen = [i for i in pred2words if i != 0]
-                # ref = ''.join([du.letter_list[i - 1] for i in new_text[:min(250, len(text_input) - 1)]])
-                # gen = ''.join([du.letter_list[i - 1] for i in new_gen[:min(250, len(pred2words) - 1)]])
-                # print("Batch: {} Levenshtein: {} ".format(batch_num, Levenshtein.distance(ref, gen)))
-                # print("current_loss: {}".format(current_loss))
         if val_loss < best_loss * 0.8:
             now = datetime.datetime.now()
             jobtime = str(now.hour) + str(now.minute)
