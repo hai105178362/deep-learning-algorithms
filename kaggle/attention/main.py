@@ -60,6 +60,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                     new_gen = [i for i in pred2words if i != 0]
                     ref = ''.join([du.letter_list[i - 1] for i in new_text])
                     gen = ''.join([du.letter_list[i - 1] for i in new_gen])
+                    print(ref[:20], '|', gen[:20])
                     print("Batch {} Loss: {}    Levenshtein:{}".format(batch_num, current_loss, Levenshtein.distance(ref, gen)))
 
         end_time = time.time()
@@ -95,8 +96,14 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                 pred2words = torch.argmax(predictions, dim=1)
                 text_input_view = text_input[:].detach().cpu().numpy()
                 pred2words_view = pred2words[:].data.detach().cpu().numpy()
+                new_text = [i for i in text_input if i != 0]
+                new_gen = [i for i in pred2words if i != 0]
+                ref = ''.join([du.letter_list[i - 1] for i in new_text])
+                gen = ''.join([du.letter_list[i - 1] for i in new_gen])
                 print(text_input_view[:10], text_input_view[:-10])
                 print(pred2words_view[:10], pred2words_view[:-10])
+                print(ref[:20], '|', gen[:20])
+
                 print(" ")
                 # new_text = [i for i in text_input if i != 0]
                 # new_gen = [i for i in pred2words if i != 0]
