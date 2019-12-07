@@ -81,8 +81,13 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
             predictions = predictions[:, :text_input.shape[1], :]
             predictions = predictions.contiguous().view(-1, predictions.size(-1))
             text_input = text_input.contiguous().view(-1)
-            print(predictions.shape,text_input.shape)
-            exit()
+            print(predictions.shape, text_input.shape)
+            if predictions.shape[0] > text_input.shape[0]:
+                predictions = predictions[:text_input.shape[0], :]
+            elif predictions[0] < text_input.shape[0]:
+                text_input = predictions[:predictions.shape[0], :]
+            print(predictions.shape, text_input.shape)
+
             loss = criterion(predictions, text_input)
             masked_loss = torch.sum(loss * mask)
             val_loss += float(masked_loss.item()) / int(torch.sum(mask).item())
