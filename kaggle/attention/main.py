@@ -22,6 +22,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
     best_loss = 0.1
     # model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
     for epochs in range(num_epochs):
+        start_time = time.time()
         par.tf_rate *= 0.8
         loss_sum = 0
         since = time.time()
@@ -64,6 +65,9 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                     #     torch.save(model.state_dict(), modelpath)
                     #     print("model saved at: ", "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs)))
                     #     best_loss = current_loss
+        end_time = time.time()
+        print("Training time: {}".format(end_time - start_time))
+        start_time = end_time
         print("----------------Validation------------------------")
         val_loss = 0
         for (batch_num, collate_output) in enumerate(val_loader):
