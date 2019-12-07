@@ -17,15 +17,16 @@ letter_list = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 
                'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '-', "'", '.', '_', '+', ' ', '<sos>', '<eos>']
 
 
-def get_data(mode=config.mode):
+def get_data(mode):
     # print("Mode:{}".format(config.mode))
     if mode == "train":
+        print("training...")
         speech = np.load(config.path_train_new, allow_pickle=True, encoding='bytes')
         transcript = np.load(config.path_train_transcripts, allow_pickle=True, encoding='bytes')
     if mode == "dev":
         speech = np.load(config.path_dev_new, allow_pickle=True, encoding='bytes')
         transcript = np.load(config.path_dev_transcripts, allow_pickle=True, encoding='bytes')
-    else:
+    if mode == "test":
         speech = np.load(config.path_test_new, allow_pickle=True, encoding='bytes')
         transcript = None
     print("Data Loading Sucessful.....")
@@ -137,7 +138,7 @@ def generate_data(x, y=None, train=par.train_mode):
 
 vocab = letter_list
 #### Training Set
-utterance, transcript = get_data(mode='dev')
+utterance, transcript = get_data(mode=config.mode)
 # vocab = build_vocab(transcript)
 letter_to_index_list = transform_letter_to_index(transcript)
 # word_to_index_list = transform_word_to_index(transcripts=transcript, vocab=vocab)
