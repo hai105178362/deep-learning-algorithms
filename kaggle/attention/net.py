@@ -114,7 +114,7 @@ class Decoder(nn.Module):
             self.rnn_inith.append(torch.nn.Parameter(torch.rand(1, hidden_dim)))
             self.rnn_initc.append(torch.nn.Parameter(torch.rand(1, hidden_dim)))
 
-    def forward(self, key, values, text=None, speech_len=None, train=par.train_mode, teacher_forcing_rate=0.9):
+    def forward(self, key, values, speech_len, text=None, train=par.train_mode, teacher_forcing_rate=0.9):
         '''
         :param speech_len:
         :param key :(T,N,key_size) Output of the Encoder Key projection layer
@@ -131,7 +131,7 @@ class Decoder(nn.Module):
 
         if (train):
             max_len = text.shape[1]
-            embeddings = self.embedding(text)
+            # embeddings = self.embedding(text)
         else:
             max_len = 250
 
@@ -140,6 +140,7 @@ class Decoder(nn.Module):
         prediction = torch.zeros(batch_size, 1).to(device)
         state, pred_word = self.init_state(batch_size)
         context = values[0, :, :]
+
 
         for i in range(max_len):
             '''
@@ -185,6 +186,7 @@ class Decoder(nn.Module):
         hidden = [h.repeat(batch_size, 1) for h in self.rnn_inith]
         cell = [c.repeat(batch_size, 1) for c in self.rnn_initc]
         # <sos> (same vocab as <eos>)
+        print(du.letter_list.index('<sos>'))
         output_word = Variable(hidden[0].data.new(batch_size).long().fill_(du.letter_list.index('<sos>'))).to(device)
         return [hidden, cell], output_word
 
@@ -199,7 +201,7 @@ class Seq2Seq(nn.Module):
     def forward(self, speech_input, speech_len, text_input=None, text_len=None, train=par.train_mode):
         key, value, seq_len = self.encoder(speech_input, speech_len)
         if train:
-            predictions = self.decoder(key, value, text_input, speech_len=speech_len)
+            predictions = self.decoder(key, value, speech_len=speech_len, text=text_input)
         else:
             predictions = self.decoder(key, value, text=None, train=False, speech_len=speech_len)
             # predictions = (predictions[:, :, 1:])

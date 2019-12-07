@@ -99,7 +99,7 @@ class Speech2Text_Dataset(Dataset):
 
 def collate_train(batch_data):
     inputs, targets = zip(*batch_data)
-    targets = [i + 1 for i in targets]
+    # targets = [i + 1 for i in targets]
 
     inputs_len = torch.IntTensor([len(_) for _ in inputs])
     targets_len = torch.IntTensor([len(_) for _ in targets])

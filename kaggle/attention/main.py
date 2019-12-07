@@ -23,9 +23,9 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
     for epochs in range(num_epochs):
         loss_sum = 0
         since = time.time()
-        print("\n\n=============================")
+        print("\n\n")
         print("epoch: {}".format(epochs))
-        print("----------------Train------------------------")
+        print("----------------Train----------------------------")
         for (batch_num, collate_output) in enumerate(train_loader):
             with torch.autograd.set_detect_anomaly(True):
                 speech_input, text_input, speech_len, text_len = collate_output
@@ -64,7 +64,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                     #     torch.save(model.state_dict(), modelpath)
                     #     print("model saved at: ", "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs)))
                     #     best_loss = current_loss
-        print("----------------Validation------------------------:")
+        print("----------------Validation------------------------")
         val_loss = 0
         for (batch_num, collate_output) in enumerate(val_loader):
             speech_input, text_input, speech_len, text_len = collate_output
