@@ -51,14 +51,12 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
 
                 current_loss = float(masked_loss.item()) / int(torch.sum(mask).item())
                 if batch_num % 20 == 0:
-                    # pred2words = torch.argmax(predictions, dim=1)
-                    # print(text_input[:].detach().cpu().numpy())
-                    # print(pred2words[:].data.detach().cpu().numpy())
-                    # text_input = [x for x in text_input if x != 0]
-                    # pred2words = [x for x in pred2words if x != 0]
-                    # print(''.join([du.letter_list[i - 1] for i in text_input[:min(50, len(text_input) - 1)]]))
-                    # print(''.join([du.letter_list[i - 1] for i in pred2words[:min(50, len(pred2words) - 1)]]))
-                    print("Batch {} Loss: {}".format(batch_num, current_loss))
+                    pred2words = torch.argmax(predictions, dim=1)
+                    print(text_input[:].detach().cpu().numpy())
+                    print(pred2words[:].data.detach().cpu().numpy())
+                    ref = ''.join([du.letter_list[i] for i in text_input[:min(50, len(text_input) - 1)]])
+                    gen = ''.join([du.letter_list[i] for i in pred2words[:min(50, len(pred2words) - 1)]])
+                    print("Batch {} Loss: {}    Levenshtein:".format(batch_num, current_loss, Levenshtein.distance(ref, gen)))
                     # if current_loss < best_loss:
                     #     now = datetime.datetime.now()
                     #     jobtime = str(now.hour) + str(now.minute)
@@ -91,7 +89,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                 print(pred2words[:].data.detach().cpu().numpy())
                 ref = ''.join([du.letter_list[i] for i in text_input[:min(50, len(text_input) - 1)]])
                 gen = ''.join([du.letter_list[i] for i in pred2words[:min(50, len(pred2words) - 1)]])
-                print("Levenshtein: ",Levenshtein.distance(ref,gen))
+                print("Levenshtein: ", Levenshtein.distance(ref, gen))
                 # print("current_loss: {}".format(current_loss))
         print("Validation Loss: {}".format(val_loss / len(val_loader)))
 
@@ -100,7 +98,7 @@ def test(model, test_loader):
     with torch.no_grad():
         model.eval()
         for (batch_num, collate_output) in enumerate(test_loader):
-            speech_input, speech_len= collate_output
+            speech_input, speech_len = collate_output
             speech_input = speech_input.to(device)
             predictions = model(speech_input, speech_len, train=False)
             mask = torch.zeros(text_input.size()).to(device)

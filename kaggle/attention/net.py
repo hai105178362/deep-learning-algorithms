@@ -97,11 +97,11 @@ class Attention(nn.Module):
 
 
 class Decoder(nn.Module):
-    def __init__(self, vocab_size, hidden_dim, value_size=128, key_size=128, isAttended=True):
+    def __init__(self, vocab_size, hidden_dim, value_size=128, key_size=128, isAttended=True,embed_dim=config.embed_dim):
         super(Decoder, self).__init__()
-        self.embedding = nn.Embedding(vocab_size, hidden_dim).to(device)
+        self.embedding = nn.Embedding(vocab_size, embed_dim).to(device)
 
-        self.lstm1 = nn.LSTMCell(input_size=hidden_dim + value_size, hidden_size=hidden_dim).to(device)
+        self.lstm1 = nn.LSTMCell(input_size=embed_dim + value_size, hidden_size=hidden_dim).to(device)
         self.lstm2 = nn.LSTMCell(input_size=hidden_dim, hidden_size=key_size).to(device)
         self.isAttended = isAttended
         if (isAttended):
@@ -153,10 +153,10 @@ class Decoder(nn.Module):
                     char_embed = self.embedding(pred_word)
                 else:
                     if i == 0:
-                        pred_word = text[:, i]
+                        char_embed = self.embedding(pred_word)
                     else:
                         pred_word = prediction.argmax(dim=-1)
-                    char_embed = self.embedding(pred_word)
+                        char_embed = self.embedding(pred_word)
             else:
                 if i > 0:
                     pred_word = prediction.argmax(dim=-1)
