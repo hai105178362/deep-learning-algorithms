@@ -168,8 +168,8 @@ class Decoder(nn.Module):
                     pred_word = prediction.argmax(dim=-1)
                     char_embed = self.embedding(pred_word)
             else:
-                    pred_word = prediction.argmax(dim=-1)
-                    char_embed = self.embedding(pred_word)
+                pred_word = prediction.argmax(dim=-1)
+                char_embed = self.embedding(pred_word)
             char_embed = self.dropout(char_embed)
             context = self.dropout(context)
             inp = torch.cat([char_embed, context], dim=1)
