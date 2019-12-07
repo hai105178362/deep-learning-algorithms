@@ -49,6 +49,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                 masked_loss.backward()
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 2)
                 optimizer.step()
+                optimizer.zero_grad()
 
                 current_loss = float(masked_loss.item()) / int(torch.sum(mask).item())
                 loss_sum +=current_loss
