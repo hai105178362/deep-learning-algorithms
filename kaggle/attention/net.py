@@ -60,13 +60,13 @@ class Encoder(nn.Module):
         outputs = self.dropout(outputs)
         # Use the outputs and pass it through the pBLSTM blocks
         outputs, _ = self.pblstm1(outputs)
-        outputs = self.dropout(outputs)
+        # outputs = self.dropout(outputs)
 
         outputs, _ = self.pblstm2(outputs)
-        outputs = self.dropout(outputs)
+        # outputs = self.dropout(outputs)
 
         linear_input, _ = self.pblstm3(outputs)
-        linear_input = self.dropout(linear_input)
+        # linear_input = self.dropout(linear_input)
 
         keys = self.key_network(linear_input)
         value = self.value_network(linear_input)
@@ -110,6 +110,7 @@ class Decoder(nn.Module):
 
         self.lstm1 = nn.LSTMCell(input_size=embed_dim + value_size, hidden_size=hidden_dim).to(device)
         self.lstm2 = nn.LSTMCell(input_size=hidden_dim, hidden_size=key_size).to(device)
+        self.dropout = nn.Dropout(p=0.3)
         self.isAttended = isAttended
         if (isAttended):
             self.attention = Attention()
@@ -168,7 +169,8 @@ class Decoder(nn.Module):
                 if i > 0:
                     pred_word = prediction.argmax(dim=-1)
                     char_embed = self.embedding(pred_word)
-
+            char_embed = self.dropout(char_embed)
+            context = self.dropout(context)
             inp = torch.cat([char_embed, context], dim=1)
             hidden_states[0] = self.lstm1(inp, hidden_states[0])
 
