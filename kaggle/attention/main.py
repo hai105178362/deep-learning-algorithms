@@ -19,7 +19,7 @@ import net
 
 
 def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
-    best_loss = 2
+    best_loss = 3
     # model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
     for epochs in range(num_epochs):
         start_time = time.time()
@@ -54,7 +54,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                 current_loss = float(masked_loss.item()) / int(torch.sum(mask).item())
                 loss_sum += current_loss
 
-                if batch_num % 100 == 0:
+                if batch_num % 30 == 0:
                     pred2words = torch.argmax(predictions, dim=1)
                     new_text = [i for i in text_input if i != 0]
                     new_gen = [i for i in pred2words if i != 0]
@@ -135,7 +135,7 @@ def test(model, test_loader):
 
 def main():
     model = net.Seq2Seq(input_dim=40, vocab_size=len(du.vocab), decode_hidden=config.decode_hidden, encode_hidden=config.encode_hidden)
-    criterion = nn.CrossEntropyLoss(reduce=None).to(device)
+    criterion = nn.CrossEntropyLoss(reduce=False).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.lr, weight_decay=config.weight_decay)
     if par.train_mode:
         train(model=model, train_loader=du.train_loader, val_loader=du.val_loader, num_epochs=config.num_epochs, criterion=criterion, optimizer=optimizer)

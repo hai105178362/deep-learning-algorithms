@@ -122,7 +122,7 @@ def collate_test(batch_data):
     utterance from this function
     '''
     inputs_len = torch.IntTensor([len(_) for _ in batch_data])
-    inputs = torch.nn.utils.rnn.pad_sequence(batch_data)
+    inputs = torch.nn.utils.rnn.pad_sequence(batch_data).transpose(0,1)
 
     return inputs, inputs_len
 
