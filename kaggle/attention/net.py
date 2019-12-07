@@ -55,8 +55,8 @@ class Encoder(nn.Module):
         self.key_network = nn.Linear(hidden_dim * 2, value_size).to(device)
         self.value_network = nn.Linear(hidden_dim * 2, key_size).to(device)
 
-    def forward(self, x, seqlen):
-        rnn_inp = utils.rnn.pack_padded_sequence(x, lengths=seqlen, batch_first=False, enforce_sorted=False)
+    def forward(self, x, seq_len):
+        rnn_inp = utils.rnn.pack_padded_sequence(x, lengths=seq_len, batch_first=False, enforce_sorted=False)
         outputs, _ = self.lstm(rnn_inp)
         outputs, _ = utils.rnn.pad_packed_sequence(outputs)
         # outputs = self.dropout(outputs)
@@ -72,7 +72,7 @@ class Encoder(nn.Module):
 
         keys = self.key_network(linear_input)
         value = self.value_network(linear_input)
-        out_seq_sizes = [size // 8 for size in seqlen]
+        out_seq_sizes = [size // 8 for size in seq_len]
 
         return keys, value, out_seq_sizes
 
@@ -114,7 +114,7 @@ class Decoder(nn.Module):
 
         self.lstm1 = nn.LSTMCell(input_size=embed_dim + value_size, hidden_size=hidden_dim).to(device)
         self.lstm2 = nn.LSTMCell(input_size=hidden_dim, hidden_size=key_size).to(device)
-        self.dropout = nn.Dropout(p=0.3)
+        self.dropout = nn.Dropout(p=0.1)
         self.isAttended = isAttended
         if (isAttended):
             self.attention = Attention()
@@ -146,7 +146,7 @@ class Decoder(nn.Module):
             # embeddings = self.embedding(text)
         else:
             mu, beta = 250, 30  # location and scale
-            max_len = np.random.gumbel(mu, beta)
+            max_len = int(np.random.gumbel(mu, beta))
 
         predictions = []
         hidden_states = [None, None]
@@ -171,8 +171,8 @@ class Decoder(nn.Module):
                 if i > 0:
                     pred_word = prediction.argmax(dim=-1)
                     char_embed = self.embedding(pred_word)
-            # char_embed = self.dropout(char_embed)
-            # context = self.dropout(context)
+            char_embed = self.dropout(char_embed)
+            context = self.dropout(context)
             inp = torch.cat([char_embed, context], dim=1)
             hidden_states[0] = self.lstm1(inp, hidden_states[0])
 
