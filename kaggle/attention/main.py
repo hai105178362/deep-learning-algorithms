@@ -104,7 +104,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                 print(pred2words_view[:10], ' | ', pred2words_view[:-10])
                 print(ref[:20], ' | ', gen[:20])
                 print(" ")
-        if val_loss < best_loss * 0.8:
+        if (val_loss / len(val_loader)) < best_loss * 0.8:
             now = datetime.datetime.now()
             jobtime = str(now.hour) + str(now.minute)
             modelpath = "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs))
