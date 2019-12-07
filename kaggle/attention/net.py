@@ -114,7 +114,7 @@ class Decoder(nn.Module):
             self.rnn_inith.append(torch.nn.Parameter(torch.rand(1, hidden_dim)))
             self.rnn_initc.append(torch.nn.Parameter(torch.rand(1, hidden_dim)))
 
-    def forward(self, key, values, speech_len, text=None, train=par.train_mode, teacher_forcing_rate=0.9):
+    def forward(self, key, values, speech_len, text=None, train=par.train_mode, teacher_forcing_rate=0.3):
         '''
         :param speech_len:
         :param key :(T,N,key_size) Output of the Encoder Key projection layer
@@ -192,7 +192,6 @@ class Decoder(nn.Module):
 class Seq2Seq(nn.Module):
     def __init__(self, input_dim, vocab_size, hidden_dim, value_size=128, key_size=128):
         super(Seq2Seq, self).__init__()
-
         self.encoder = Encoder(input_dim, hidden_dim)
         self.decoder = Decoder(vocab_size + 1, hidden_dim)
 
