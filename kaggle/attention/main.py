@@ -23,11 +23,10 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
     # model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
     for epochs in range(num_epochs):
         par.tf_rate -= 0.1
-        print(par.tf_rate)
         loss_sum = 0
         since = time.time()
         print("\n\n")
-        print("epoch: {}".format(epochs))
+        print("----------------Epoch {}------------------------".format(epochs))
         print("----------------Train----------------------------")
         for (batch_num, collate_output) in enumerate(train_loader):
             with torch.autograd.set_detect_anomaly(True):
