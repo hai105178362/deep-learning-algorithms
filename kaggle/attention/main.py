@@ -100,9 +100,9 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
 
                 ref = ''.join([du.letter_list[i - 1] for i in text_input_view])
                 gen = ''.join([du.letter_list[i - 1] for i in pred2words_view])
-                print(text_input_view[:10], text_input_view[:-10])
-                print(pred2words_view[:10], pred2words_view[:-10])
-                print(ref[:20], '|', gen[:20])
+                print(text_input_view[:10], ' | ', text_input_view[:-10])
+                print(pred2words_view[:10], ' | ', pred2words_view[:-10])
+                print(ref[:20], ' | ', gen[:20])
                 print(" ")
         if val_loss < best_loss * 0.8:
             now = datetime.datetime.now()
