@@ -158,11 +158,11 @@ class Decoder(nn.Module):
                         pred_word = prediction.argmax(dim=-1)
                     char_embed = self.embedding(pred_word)
             else:
-                if i == 0:
-                    char_embed = self.embedding(pred_word)
-                else:
-                    pred_word = prediction.argmax(dim=-1)
-                    char_embed = self.embedding(pred_word)
+                # if i == 0:
+                #     char_embed = self.embedding(pred_word)
+                # else:
+                pred_word = prediction.argmax(dim=-1)
+                char_embed = self.embedding(pred_word)
 
             inp = torch.cat([char_embed, context], dim=1)
             hidden_states[0] = self.lstm1(inp, hidden_states[0])
