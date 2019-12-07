@@ -108,13 +108,13 @@ class Decoder(nn.Module):
             self.attention = Attention()
         self.character_prob = nn.Linear(key_size + value_size, vocab_size).to(device)
 
-        self.rnn_inith = torch.nn.ParameterList()
-        self.rnn_initc = torch.nn.ParameterList()
+        self.hidden_init = torch.nn.ParameterList()
+        self.char_init = torch.nn.ParameterList()
         for i in range(2):
-            self.rnn_inith.append(torch.nn.Parameter(torch.rand(1, hidden_dim)))
-            self.rnn_initc.append(torch.nn.Parameter(torch.rand(1, hidden_dim)))
+            self.hidden_init.append(torch.nn.Parameter(torch.rand(1, hidden_dim)))
+            self.char_init.append(torch.nn.Parameter(torch.rand(1, hidden_dim)))
 
-    def forward(self, key, values, speech_len, text=None, train=par.train_mode, teacher_forcing_rate=0.3):
+    def forward(self, key, values, speech_len, text=None, train=par.train_mode, teacher_forcing_rate=par.tf_rate):
         '''
         :param speech_len:
         :param key :(T,N,key_size) Output of the Encoder Key projection layer
@@ -181,8 +181,8 @@ class Decoder(nn.Module):
         return torch.cat(predictions, dim=1)
 
     def init_state(self, batch_size=config.train_batch_size):
-        hidden = [h.repeat(batch_size, 1) for h in self.rnn_inith]
-        cell = [c.repeat(batch_size, 1) for c in self.rnn_initc]
+        hidden = [h.repeat(batch_size, 1) for h in self.hidden_init]
+        cell = [c.repeat(batch_size, 1) for c in self.char_init]
         # <sos> (same vocab as <eos>)
         # print(du.letter_list.index('<sos>'))
         output_word = Variable(hidden[0].data.new(batch_size).long().fill_(du.letter_list.index('<sos>') + 1)).to(device)
