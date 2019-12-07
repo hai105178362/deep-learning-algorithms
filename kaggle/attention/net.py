@@ -56,8 +56,10 @@ class Encoder(nn.Module):
         self.value_network = nn.Linear(hidden_dim * 2, key_size).to(device)
 
     def forward(self, x, seqlen):
-        outputs, _ = self.lstm(x)
-        outputs = self.dropout(outputs)
+        rnn_inp = utils.rnn.pack_padded_sequence(x, lengths=seqlen, batch_first=False, enforce_sorted=False)
+        outputs, _ = self.lstm(rnn_inp)
+        outputs, _ = utils.rnn.pad_packed_sequence(outputs)
+        # outputs = self.dropout(outputs)
         # Use the outputs and pass it through the pBLSTM blocks
         outputs, _ = self.pblstm1(outputs)
         # outputs = self.dropout(outputs)
@@ -144,7 +146,7 @@ class Decoder(nn.Module):
             # embeddings = self.embedding(text)
         else:
             mu, beta = 250, 30  # location and scale
-            s = np.random.gumbel(mu, beta)
+            max_len = np.random.gumbel(mu, beta)
 
         predictions = []
         hidden_states = [None, None]
