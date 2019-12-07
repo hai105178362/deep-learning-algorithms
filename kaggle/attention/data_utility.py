@@ -104,9 +104,9 @@ def collate_train(batch_data):
 
     inputs_len = torch.IntTensor([len(_) for _ in inputs])
     targets_len = torch.IntTensor([len(_) for _ in targets])
-    inputs = torch.nn.utils.rnn.pad_sequence(inputs).transpose(0,1)
-    targets = torch.nn.utils.rnn.pad_sequence(targets).transpose(0,1)
-    targets = (targets[:,1:])
+    inputs = torch.nn.utils.rnn.pad_sequence(inputs).transpose(0, 1)
+    targets = torch.nn.utils.rnn.pad_sequence(targets).transpose(0, 1)
+    targets = (targets[:, 1:])
     '''
     Complete this function.
     I usually return padded speech and text data, and length of
@@ -122,7 +122,7 @@ def collate_test(batch_data):
     utterance from this function
     '''
     inputs_len = torch.IntTensor([len(_) for _ in batch_data])
-    inputs = torch.nn.utils.rnn.pad_sequence(batch_data).transpose(0,1)
+    inputs = torch.nn.utils.rnn.pad_sequence(batch_data).transpose(0, 1)
 
     return inputs, inputs_len
 
@@ -157,7 +157,7 @@ val_loader = DataLoader(val_dataset, shuffle=True, batch_size=config.batch_size,
 ### Test Set
 utterance, _ = get_data(mode='test')
 x = generate_data(x=utterance, train=False)
-test_dataset = Speech2Text_Dataset(speech=x)
+test_dataset = Speech2Text_Dataset(speech=x, train=False)
 test_loader = DataLoader(test_dataset, shuffle=par.train_mode, batch_size=config.batch_size, collate_fn=collate_test)
 
 if __name__ == "__main__":

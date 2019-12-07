@@ -19,7 +19,7 @@ import net
 
 
 def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
-    best_loss = 3
+    best_loss = 7
     # model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
     for epochs in range(num_epochs):
         start_time = time.time()
