@@ -19,7 +19,7 @@ import net
 
 
 def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
-    best_loss = 0.1
+    best_loss = 0.01
     # model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
     for epochs in range(num_epochs):
         start_time = time.time()
@@ -58,13 +58,13 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                     ref = ''.join([du.letter_list[i - 1] for i in new_text])
                     gen = ''.join([du.letter_list[i - 1] for i in new_gen])
                     print("Batch {} Loss: {}    Levenshtein:{}".format(batch_num, current_loss, Levenshtein.distance(ref, gen)))
-                    # if current_loss < best_loss:
-                    #     now = datetime.datetime.now()
-                    #     jobtime = str(now.hour) + str(now.minute)
-                    #     modelpath = "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs))
-                    #     torch.save(model.state_dict(), modelpath)
-                    #     print("model saved at: ", "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs)))
-                    #     best_loss = current_loss
+                    if current_loss < best_loss * 0.8:
+                        now = datetime.datetime.now()
+                        jobtime = str(now.hour) + str(now.minute)
+                        modelpath = "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs))
+                        torch.save(model.state_dict(), modelpath)
+                        print("model saved at: ", "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs)))
+                        best_loss = current_loss
         end_time = time.time()
         print("Training time: {}".format(end_time - start_time))
         start_time = end_time
