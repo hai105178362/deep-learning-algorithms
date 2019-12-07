@@ -45,7 +45,7 @@ class Encoder(nn.Module):
     def __init__(self, input_dim, hidden_dim, value_size=128, key_size=128):
         super(Encoder, self).__init__()
         # self.embed = nn.Embedding(input_dim, hidden_dim)
-        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim, num_layers=1, bidirectional=True, batch_first=False).to(device)
+        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim, num_layers=1, bidirectional=True, batch_first=False, dropout=0.3).to(device)
         # Here you need to define the blocks of pBLSTMs
         self.pblstm1 = pBLSTM(input_dim=hidden_dim * 2, hidden_dim=hidden_dim)
         self.pblstm2 = pBLSTM(input_dim=hidden_dim * 2, hidden_dim=hidden_dim)
