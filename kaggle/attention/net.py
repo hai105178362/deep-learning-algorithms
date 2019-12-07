@@ -45,7 +45,7 @@ class Encoder(nn.Module):
     def __init__(self, input_dim, hidden_dim, value_size=128, key_size=128):
         super(Encoder, self).__init__()
         # self.embed = nn.Embedding(input_dim, hidden_dim)
-        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim, num_layers=1, bidirectional=True, batch_first=False).to(device)
+        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim, num_layers=1, bidirectional=True, batch_first=True).to(device)
         self.dropout = nn.Dropout(p=0.3)
         # Here you need to define the blocks of pBLSTMs
         self.pblstm1 = pBLSTM(input_dim=hidden_dim * 2, hidden_dim=hidden_dim)
@@ -56,7 +56,7 @@ class Encoder(nn.Module):
         self.value_network = nn.Linear(hidden_dim * 2, key_size).to(device)
 
     def forward(self, x, seq_len):
-        rnn_inp = utils.rnn.pack_padded_sequence(x, lengths=seq_len, batch_first=False, enforce_sorted=False)
+        rnn_inp = utils.rnn.pack_padded_sequence(x, lengths=seq_len, batch_first=True, enforce_sorted=False)
         outputs, _ = self.lstm(rnn_inp)
         outputs, _ = utils.rnn.pad_packed_sequence(outputs)
         # outputs = self.dropout(outputs)
@@ -143,7 +143,7 @@ class Decoder(nn.Module):
 
         if (train):
             max_len = text.shape[1]
-            embeddings = self.embedding(text)
+            # embeddings = self.embedding(text)
         else:
             mu, beta = 250, 30  # location and scale
             max_len = int(np.random.gumbel(mu, beta))
@@ -160,8 +160,8 @@ class Decoder(nn.Module):
             Here you should implement Gumble noise and teacher forcing techniques
             '''
             if (train):
-                if teacher_force:
-                    pred_word = text[:, i]
+                if teacher_force and i > 0:
+                    pred_word = text[:, i - 1]
                     # char_embed = embeddings[:, i, :]
                     char_embed = self.embedding(pred_word)
                 else:

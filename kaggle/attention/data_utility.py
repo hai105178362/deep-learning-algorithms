@@ -104,9 +104,9 @@ def collate_train(batch_data):
 
     inputs_len = torch.IntTensor([len(_) for _ in inputs])
     targets_len = torch.IntTensor([len(_) for _ in targets])
-    inputs = torch.nn.utils.rnn.pad_sequence(inputs)
-    targets = torch.nn.utils.rnn.pad_sequence(targets)
-    targets = torch.transpose(targets, 0, 1)
+    inputs = torch.nn.utils.rnn.pad_sequence(inputs).transpose(0,1)
+    targets = torch.nn.utils.rnn.pad_sequence(targets).transpose(0,1)
+    targets = (targets[:,1:])
     '''
     Complete this function.
     I usually return padded speech and text data, and length of
