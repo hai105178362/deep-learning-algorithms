@@ -53,7 +53,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                 current_loss = float(masked_loss.item()) / int(torch.sum(mask).item())
                 loss_sum +=current_loss
 
-                if batch_num % 50 == 0:
+                if batch_num % 100 == 0:
                     pred2words = torch.argmax(predictions, dim=1)
                     new_text = [i for i in text_input if i != 0]
                     new_gen = [i for i in pred2words if i != 0]
