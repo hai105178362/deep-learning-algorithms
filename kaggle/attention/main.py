@@ -61,7 +61,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                     new_gen = [i for i in pred2words if i != 0]
                     ref = ''.join([du.letter_list[i - 1] for i in new_text])
                     gen = ''.join([du.letter_list[i - 1] for i in new_gen])
-                    print("Batch {} Loss: {:3f}".format(batch_num, current_loss), "\nREF:", ref, '\nGEN:', gen)
+                    print("Batch {} Loss: {:3f}".format(batch_num, current_loss), ref[:40], gen[:40])
                     print("\n")
 
         end_time = time.time()
