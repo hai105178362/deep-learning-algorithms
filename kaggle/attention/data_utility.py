@@ -159,7 +159,7 @@ else:
     utterance, _ = get_data(mode='test')
     x = generate_data(x=utterance, train=False)
     test_dataset = Speech2Text_Dataset(speech=x, train=False)
-    test_loader = DataLoader(test_dataset, shuffle=par.train_mode, batch_size=1, collate_fn=collate_test)
+    test_loader = DataLoader(test_dataset, shuffle=par.train_mode, batch_size=config.batch_size, collate_fn=collate_test)
 
 if __name__ == "__main__":
     for batch_num, (inputs, targets, inputs_len, targets_len) in enumerate(train_loader):
