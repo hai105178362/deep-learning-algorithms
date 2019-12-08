@@ -136,7 +136,7 @@ def test(model, test_loader):
             for n, i in enumerate(gen):
                 sent.append(i)
                 num += 1
-                if i == "<eos>" or num ==250
+                if i == "<eos>" or num ==250:
                     exit()
             final.append(gen)
         # run_write(final)
