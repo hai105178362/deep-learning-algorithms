@@ -20,7 +20,7 @@ import net
 
 
 def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
-    best_loss = 0.5
+    best_loss = 0.6
     # model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
     for epochs in range(num_epochs):
         start_time = time.time()
@@ -64,7 +64,8 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                     print("Batch {} Loss: {:3f}".format(batch_num, current_loss), " | ", ref[:40], " | ", gen[:40])
 
         end_time = time.time()
-        print("Average Training Loss: {}".format(loss_sum / len(train_loader)))
+        epoch_loss = loss_sum / len(train_loader)
+        print("Average Training Loss: {}".format(epoch_loss))
         print("Training time: {}".format(end_time - start_time))
         start_time = end_time
         print("----------------Validation------------------------")
@@ -97,12 +98,12 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                 print(pred2words_view[:20], ' | ', pred2words_view[:-20])
                 print(ref[:40], ' | ', gen[:40])
                 print(" ")
-        if (loss_sum / len(train_loader)) < best_loss * 0.95 or ((num_epochs - 1) % 5 == 0 and num_epochs != 0):
+        if epoch_loss < best_loss * 0.95 or ((num_epochs + 1) % 2 == 0 and num_epochs != 0):
             now = datetime.datetime.now()
             jobtime = str(now.hour) + str(now.minute)
             modelpath = "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs))
             torch.save(model.state_dict(), modelpath)
-            best_loss = current_loss
+            best_loss = epoch_loss
             print("best loss: {}".format(best_loss))
             print("model saved at: ", "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs)))
 
@@ -114,15 +115,31 @@ def test(model, test_loader):
         model.eval()
         model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
         for (batch_num, collate_output) in enumerate(test_loader):
+            print("batch: ",batch_num)
             speech_input, speech_len = collate_output
             speech_input = speech_input.to(device)
             predictions = model(speech_input, speech_len, train=False)
             predictions = predictions.contiguous().view(-1, predictions.size(-1))
-            pred2words = torch.argmax(predictions, dim=1)
-            sent = []
-            # for i, j in enumerate(pred2words):
-            #     sent.append(j)
-            #     if j == "eos" or np.sum(pred2words[j:j + 3]) == 0:
+            pred2words = torch.argmax(predictions, dim=1).detach().cpu().numpy()
+            sent = ""
+            q = 0
+            for i in range(0, len(pred2words), 250):
+                tmp = pred2words[i:i + 250]
+                if 0 in tmp:
+                    pos = np.where(tmp == 0)[0][0]
+                    tmp = tmp[:pos]
+                    sent = (''.join([du.letter_list[k - 1] for k in tmp]))
+                    if "<eos>" in sent:
+                        final.append(sent[:sent.index("<eos>")])
+                    else:
+                        final.append(sent)
+                else:
+                    sent = (''.join([du.letter_list[k - 1] for k in tmp]))
+                    if "<eos>" in sent:
+                        final.append(sent[:sent.index("<eos>")])
+                    else:
+                        final.append(sent)
+        run_write(final)
 
 
 def main():
