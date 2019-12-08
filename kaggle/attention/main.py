@@ -22,7 +22,7 @@ import net
 def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
     now = datetime.datetime.now()
     job_time = str(now.day) + str(now.hour)
-    best_loss = 0.3
+    best_loss = 0.2
     # model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
     for epochs in range(num_epochs):
         start_time = time.time()
@@ -100,10 +100,11 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                 print(pred2words_view[:20], ' | ', pred2words_view[:-20])
                 print(ref[:40], ' | ', gen[:40])
                 print(" ")
-        if (epoch_loss < best_loss * 0.95) or ((num_epochs + 1) % 3 == 0 and num_epochs != 0):
+        if (epoch_loss < best_loss * 0.95) or ((epochs + 1) % 3 == 0 and epochs != 0):
             model_path = "snapshots/{}.pt".format(str(job_time) + "-" + str(epochs))
             torch.save(model.state_dict(), model_path)
-            best_loss = epoch_loss
+            if epoch_loss < best_loss * 0.95:
+                best_loss = epoch_loss
             print("best loss: {}".format(best_loss))
             print("model saved at: ", "snapshots/{}.pt".format(str(job_time) + "_" + str(epochs)))
 
