@@ -126,20 +126,11 @@ def test(model, test_loader):
             predictions = model(speech_input, speech_len, train=False)
             predictions = predictions.contiguous().view(-1, predictions.size(-1))
             pred2words = torch.argmax(predictions, dim=1)
-            # print(pred2words[:].data.detach().cpu().numpy())
-            pred2words = [x for x in pred2words if x != 0]
-            gen = ''.join([du.letter_list[i - 1] for i in pred2words])
-            print(len(gen))
-            exit()
             sent = []
-            num = 0
-            for n, i in enumerate(gen):
-                sent.append(i)
-                num += 1
-                if i == "<eos>" or num ==250:
-                    exit()
-            final.append(gen)
-        # run_write(final)
+            # for i, j in enumerate(pred2words):
+            #     sent.append(j)
+            #     if j == "eos" or np.sum(pred2words[j:j + 3]) == 0:
+
 
 
 def main():
