@@ -87,12 +87,12 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
             elif predictions.shape[0] < text_input.shape[0]:
                 text_input = text_input[:predictions.shape[0]]
 
-            loss = criterion(predictions, text_input)
-            print(loss)
-            if len(loss) != len(mask):
-                mask = mask[:len(loss)]
-            masked_loss = torch.sum(loss * mask)
-            val_loss += float(masked_loss.item()) / int(torch.sum(mask).item())
+            now_loss = criterion(predictions, text_input)
+            # print(loss)
+            # if len(loss) != len(mask):
+            #     mask = mask[:len(loss)]
+            # masked_loss = torch.sum(loss * mask)
+            val_loss += now_loss
             if batch_num % 5 == 0:
                 pred2words = torch.argmax(predictions, dim=1)
 
