@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader, Dataset
 import time
 from torch.autograd import Variable
 import data_utility as du
-import torchnlp as nlp
+from torchnlp.nn import LockedDropout
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -56,7 +56,7 @@ class Encoder(nn.Module):
         self.key_network = nn.Linear(hidden_dim * 2, value_size).to(device)
         self.value_network = nn.Linear(hidden_dim * 2, key_size).to(device)
 
-        self.locked_dropouts = nlp.nn.LockedDropout(p=0.2)
+        self.locked_dropouts = LockedDropout(p=0.2)
 
     def forward(self, x, seq_len):
         rnn_inp = utils.rnn.pack_padded_sequence(x, lengths=seq_len, batch_first=True, enforce_sorted=False)
