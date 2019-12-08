@@ -102,9 +102,10 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
             jobtime = str(now.hour) + str(now.minute)
             modelpath = "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs))
             torch.save(model.state_dict(), modelpath)
-            print("model saved at: ", "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs)))
             best_loss = current_loss
-        print("Validation Loss: {}".format(val_loss / len(val_loader)))
+            print("best loss: {}".format(best_loss))
+            print("model saved at: ", "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs)))
+
 
 
 def test(model, test_loader):
