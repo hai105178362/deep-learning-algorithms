@@ -128,7 +128,7 @@ def test(model, test_loader):
             pred2words = torch.argmax(predictions, dim=1)
             # print(pred2words[:].data.detach().cpu().numpy())
             pred2words = [x for x in pred2words if x != 0]
-            gen = ''.join([du.letter_list[i - 1] for i in pred2words[:min(251, len(pred2words) - 1)]])
+            gen = ''.join([du.letter_list[i - 1] for i in pred2words[:min(250, len(pred2words) - 1)]])
             if gen.__contains__("<eos>"):
                 gen = gen[:gen.index("<eos>")]
             print(batch_num,gen[:50])
