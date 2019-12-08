@@ -20,7 +20,7 @@ import net
 
 
 def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
-    best_loss = 7
+    best_loss = 0.5
     # model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
     for epochs in range(num_epochs):
         start_time = time.time()
@@ -87,25 +87,17 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
             elif predictions.shape[0] < text_input.shape[0]:
                 text_input = text_input[:predictions.shape[0]]
 
-            now_loss = criterion(predictions, text_input)
-            # print(loss)
-            # if len(loss) != len(mask):
-            #     mask = mask[:len(loss)]
-            # masked_loss = torch.sum(loss * mask)
-            val_loss += now_loss
             if batch_num % 5 == 0:
                 pred2words = torch.argmax(predictions, dim=1)
-
                 text_input_view = text_input[:].detach().cpu().numpy()
                 pred2words_view = pred2words[:].data.detach().cpu().numpy()
-
                 ref = ''.join([du.letter_list[i - 1] for i in text_input_view])
                 gen = ''.join([du.letter_list[i - 1] for i in pred2words_view])
                 print(text_input_view[:20], ' | ', text_input_view[:-20])
                 print(pred2words_view[:20], ' | ', pred2words_view[:-20])
                 print(ref[:40], ' | ', gen[:40])
                 print(" ")
-        if (val_loss / len(val_loader)) < best_loss * 0.95:
+        if (loss_sum / len(train_loader)) < best_loss * 0.95 or num_epochs % 5 == 0:
             now = datetime.datetime.now()
             jobtime = str(now.hour) + str(now.minute)
             modelpath = "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs))
@@ -131,7 +123,6 @@ def test(model, test_loader):
             # for i, j in enumerate(pred2words):
             #     sent.append(j)
             #     if j == "eos" or np.sum(pred2words[j:j + 3]) == 0:
-
 
 
 def main():
