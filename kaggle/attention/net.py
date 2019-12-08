@@ -11,6 +11,7 @@ from torch.utils.data import DataLoader, Dataset
 import time
 from torch.autograd import Variable
 import data_utility as du
+import torchnlp as nlp
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -55,6 +56,8 @@ class Encoder(nn.Module):
         self.key_network = nn.Linear(hidden_dim * 2, value_size).to(device)
         self.value_network = nn.Linear(hidden_dim * 2, key_size).to(device)
 
+        self.locked_dropouts = nlp.nn.LockedDropout(p=0.2)
+
     def forward(self, x, seq_len):
         rnn_inp = utils.rnn.pack_padded_sequence(x, lengths=seq_len, batch_first=True, enforce_sorted=False)
         outputs, _ = self.lstm(rnn_inp)
@@ -62,10 +65,10 @@ class Encoder(nn.Module):
         # outputs = self.dropout(outputs)
         # Use the outputs and pass it through the pBLSTM blocks
         outputs, _ = self.pblstm1(outputs)
-        # outputs = self.dropout(outputs)
+        outputs = self.locked_dropouts(outputs)
 
         outputs, _ = self.pblstm2(outputs)
-        # outputs = self.dropout(outputs)
+        outputs = self.locked_dropouts(outputs)
 
         linear_input, _ = self.pblstm3(outputs)
         # linear_input = self.dropout(linear_input)
@@ -114,7 +117,8 @@ class Decoder(nn.Module):
 
         self.lstm1 = nn.LSTMCell(input_size=embed_dim + value_size, hidden_size=hidden_dim).to(device)
         self.lstm2 = nn.LSTMCell(input_size=hidden_dim, hidden_size=key_size).to(device)
-        self.dropout = nn.Dropout(p=0.1)
+        self.dropout = nn.Dropout(p=0.2)
+        # self.dropout2 = nn.Dropout(p=0.1)
         self.isAttended = isAttended
         if (isAttended):
             self.attention = Attention()
