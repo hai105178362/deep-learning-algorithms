@@ -145,7 +145,7 @@ class Decoder(nn.Module):
             max_len = text.shape[1]
             # embeddings = self.embedding(text)
         else:
-            mu, beta = 250, 30  # location and scale
+            mu, beta = 250, 5  # location and scale
             max_len = int(np.random.gumbel(mu, beta))
 
         predictions = []
