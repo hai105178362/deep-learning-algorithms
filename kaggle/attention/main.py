@@ -62,7 +62,6 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                     ref = ''.join([du.letter_list[i - 1] for i in new_text])
                     gen = ''.join([du.letter_list[i - 1] for i in new_gen])
                     print("Batch {} Loss: {:3f}".format(batch_num, current_loss)," | ", ref[:40]," | ", gen[:40])
-                    print("\n")
 
         end_time = time.time()
         print("Average Training Loss: {}".format(loss_sum / len(train_loader)))
@@ -129,11 +128,11 @@ def test(model, test_loader):
             pred2words = torch.argmax(predictions, dim=1)
             # print(pred2words[:].data.detach().cpu().numpy())
             pred2words = [x for x in pred2words if x != 0]
-            gen = ''.join([du.letter_list[i - 1] for i in pred2words[:min(250, len(pred2words) - 1)]])
-            if gen.__contains__("<eos>"):
-                print("found")
-                gen = gen[:gen.index("<eos>")]
-            # print(batch_num, gen[:50])
+            gen = ''.join([du.letter_list[i - 1] for i in pred2words])
+            # if gen.__contains__("<eos>"):
+            #     print("found")
+            #     gen = gen[:gen.index("<eos>")]
+            print(batch_num, gen)
             final.append(gen)
         run_write(final)
 
