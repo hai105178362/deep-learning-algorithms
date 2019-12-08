@@ -8,7 +8,8 @@ import pickle as pk
 from torch.utils.data import DataLoader, Dataset
 import time
 import datetime
-import Levenshtein
+# import Levenshtein
+from write_csv import run_write
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 #########################
@@ -60,8 +61,8 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                     new_gen = [i for i in pred2words if i != 0]
                     ref = ''.join([du.letter_list[i - 1] for i in new_text])
                     gen = ''.join([du.letter_list[i - 1] for i in new_gen])
-                    print(ref[:20], '|', gen[:20])
-                    print("Batch {} Loss: {}    Levenshtein:{}".format(batch_num, current_loss, Levenshtein.distance(ref, gen)))
+                    print(ref[:40], '|', gen[:40])
+                    print("Batch {} Loss: {}\n".format(batch_num, current_loss))
 
         end_time = time.time()
         print("Average Training Loss: {}".format(loss_sum / len(train_loader)))
@@ -100,11 +101,11 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
 
                 ref = ''.join([du.letter_list[i - 1] for i in text_input_view])
                 gen = ''.join([du.letter_list[i - 1] for i in pred2words_view])
-                print(text_input_view[:10], ' | ', text_input_view[:-10])
-                print(pred2words_view[:10], ' | ', pred2words_view[:-10])
-                print(ref[:20], ' | ', gen[:20])
+                print(text_input_view[:20], ' | ', text_input_view[:-20])
+                print(pred2words_view[:20], ' | ', pred2words_view[:-20])
+                print(ref[:40], ' | ', gen[:40])
                 print(" ")
-        if (val_loss / len(val_loader)) < best_loss * 0.8:
+        if (val_loss / len(val_loader)) < best_loss * 0.9:
             now = datetime.datetime.now()
             jobtime = str(now.hour) + str(now.minute)
             modelpath = "snapshots/{}.pt".format(str(jobtime) + "-" + str(epochs))
@@ -115,24 +116,24 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
 
 
 def test(model, test_loader):
+    final = []
     with torch.no_grad():
         model.eval()
+        model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
         for (batch_num, collate_output) in enumerate(test_loader):
             speech_input, speech_len = collate_output
             speech_input = speech_input.to(device)
             predictions = model(speech_input, speech_len, train=False)
-            mask = torch.zeros(text_input.size()).to(device)
-            # for length in text_len:
-            mask[:, :250] = 1
-            mask = mask.view(-1).to(device)
-            # print(predictions.shape)
-            predictions = predictions[:, :text_input.shape[1], :]
             predictions = predictions.contiguous().view(-1, predictions.size(-1))
             pred2words = torch.argmax(predictions, dim=1)
-            print(pred2words[:].data.detach().cpu().numpy())
-            text_input = [x for x in text_input if x != 0]
+            # print(pred2words[:].data.detach().cpu().numpy())
             pred2words = [x for x in pred2words if x != 0]
             gen = ''.join([du.letter_list[i - 1] for i in pred2words[:min(251, len(pred2words) - 1)]])
+            if gen.__contains__("<eos>"):
+                gen = gen[:gen.index("<eos>")]
+            print(batch_num,gen[:50])
+            final.append(gen)
+        run_write(final)
 
 
 def main():
@@ -142,7 +143,7 @@ def main():
     if par.train_mode:
         train(model=model, train_loader=du.train_loader, val_loader=du.val_loader, num_epochs=config.num_epochs, criterion=criterion, optimizer=optimizer)
     else:
-        test(model=model, data_loader=du.test_loader)
+        test(model=model, test_loader=du.test_loader)
 
 
 if __name__ == "__main__":

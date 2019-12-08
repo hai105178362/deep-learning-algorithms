@@ -27,7 +27,7 @@ def get_data(mode):
         speech = np.load(config.path_dev_new, allow_pickle=True, encoding='bytes')
         transcript = np.load(config.path_dev_transcripts, allow_pickle=True, encoding='bytes')
     if mode == "test":
-        speech = np.load(config.path_test_new, allow_pickle=True, encoding='bytes')
+        speech = np.load("dataset.nosync/test_new.npy", allow_pickle=True, encoding='bytes')
         transcript = None
     print("Data Loading Sucessful.....")
     return speech, transcript
@@ -138,27 +138,28 @@ def generate_data(x, y=None, train=par.train_mode):
 
 vocab = letter_list
 #### Training Set
-utterance, transcript = get_data(mode=config.mode)
-# vocab = build_vocab(transcript)
-letter_to_index_list = transform_letter_to_index(transcript)
-# word_to_index_list = transform_word_to_index(transcripts=transcript, vocab=vocab)
-tx, ty = generate_data(x=utterance, y=letter_to_index_list)
-train_dataset = Speech2Text_Dataset(speech=tx, text=ty)
-# data_loader = DataLoader(train_dataset, shuffle=par.train_mode, batch_size=config.batch_size, collate_fn=collate_train)
-train_loader = DataLoader(train_dataset, shuffle=True, batch_size=config.batch_size, collate_fn=collate_train)
+if config.mode != "test":
+    utterance, transcript = get_data(mode=config.mode)
+    # vocab = build_vocab(transcript)
+    letter_to_index_list = transform_letter_to_index(transcript)
+    # word_to_index_list = transform_word_to_index(transcripts=transcript, vocab=vocab)
+    tx, ty = generate_data(x=utterance, y=letter_to_index_list)
+    train_dataset = Speech2Text_Dataset(speech=tx, text=ty)
+    # data_loader = DataLoader(train_dataset, shuffle=par.train_mode, batch_size=config.batch_size, collate_fn=collate_train)
+    train_loader = DataLoader(train_dataset, shuffle=True, batch_size=config.batch_size, collate_fn=collate_train)
 
-#### Validation Set
-utterance, transcript = get_data(mode='dev')
-letter_to_index_list = transform_letter_to_index(transcript)
-tx, ty = generate_data(x=utterance, y=letter_to_index_list)
-val_dataset = Speech2Text_Dataset(speech=tx, text=ty)
-val_loader = DataLoader(val_dataset, shuffle=True, batch_size=config.batch_size, collate_fn=collate_train)
-
+    #### Validation Set
+    utterance, transcript = get_data(mode='dev')
+    letter_to_index_list = transform_letter_to_index(transcript)
+    tx, ty = generate_data(x=utterance, y=letter_to_index_list)
+    val_dataset = Speech2Text_Dataset(speech=tx, text=ty)
+    val_loader = DataLoader(val_dataset, shuffle=True, batch_size=config.batch_size, collate_fn=collate_train)
 ### Test Set
-utterance, _ = get_data(mode='test')
-x = generate_data(x=utterance, train=False)
-test_dataset = Speech2Text_Dataset(speech=x, train=False)
-test_loader = DataLoader(test_dataset, shuffle=par.train_mode, batch_size=config.batch_size, collate_fn=collate_test)
+else:
+    utterance, _ = get_data(mode='test')
+    x = generate_data(x=utterance, train=False)
+    test_dataset = Speech2Text_Dataset(speech=x, train=False)
+    test_loader = DataLoader(test_dataset, shuffle=par.train_mode, batch_size=1, collate_fn=collate_test)
 
 if __name__ == "__main__":
     for batch_num, (inputs, targets, inputs_len, targets_len) in enumerate(train_loader):
