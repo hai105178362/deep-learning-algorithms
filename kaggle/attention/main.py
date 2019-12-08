@@ -61,7 +61,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
                     new_gen = [i for i in pred2words if i != 0]
                     ref = ''.join([du.letter_list[i - 1] for i in new_text])
                     gen = ''.join([du.letter_list[i - 1] for i in new_gen])
-                    print("Batch {} Loss: {}\n".format(batch_num, current_loss),"     ",ref[:40], '|', gen[:40])
+                    print("Batch {} Loss: {}\n".format(batch_num, current_loss), "     ", ref[:40], '|', gen[:40])
 
         end_time = time.time()
         print("Average Training Loss: {}".format(loss_sum / len(train_loader)))
@@ -130,7 +130,7 @@ def test(model, test_loader):
             gen = ''.join([du.letter_list[i - 1] for i in pred2words[:min(250, len(pred2words) - 1)]])
             if gen.__contains__("<eos>"):
                 gen = gen[:gen.index("<eos>")]
-            print(batch_num,gen[:50])
+            print(batch_num, gen[:50])
             final.append(gen)
         run_write(final)
 
