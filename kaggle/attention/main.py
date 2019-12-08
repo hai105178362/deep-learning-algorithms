@@ -117,6 +117,7 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
 def test(model, test_loader):
     final = []
     with torch.no_grad():
+        print("testing...")
         model.eval()
         model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
         for (batch_num, collate_output) in enumerate(test_loader):
@@ -129,8 +130,9 @@ def test(model, test_loader):
             pred2words = [x for x in pred2words if x != 0]
             gen = ''.join([du.letter_list[i - 1] for i in pred2words[:min(250, len(pred2words) - 1)]])
             if gen.__contains__("<eos>"):
+                print("found")
                 gen = gen[:gen.index("<eos>")]
-            print(batch_num, gen[:50])
+            # print(batch_num, gen[:50])
             final.append(gen)
         run_write(final)
 
