@@ -25,3 +25,5 @@ dataset/
 __pycache__/
 */experiments/
 */snapshots/
+*/raw_results/
+*/fused_results/
