@@ -13,12 +13,12 @@ def init_parser():
     parser.add_argument('--lr', type=float, default=0.002)
     parser.add_argument('--weight_decay', type=float, default=1e-6)
     parser.add_argument('--num_epochs', type=int, default=1500)
-    parser.add_argument('--batch_size', type=int, default=96)
+    parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--num_workers', type=int, default=1)
     ### Hidden Size
     parser.add_argument('--encode_hidden', type=int, default=256)
     parser.add_argument('--decode_hidden', type=int, default=512)
-    parser.add_argument('--attention_hidden', type=int, default=128)
+    parser.add_argument('--attention_hidden', type=int, default=144)
     parser.add_argument('--embed_dim', type=int, default=256)
 
     # parser.add_argument('--encode_hidden', type=int, default=32)
