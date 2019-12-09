@@ -68,7 +68,7 @@ class Encoder(nn.Module):
         outputs = self.locked_dropouts(outputs)
 
         outputs, _ = self.pblstm2(outputs)
-        outputs = self.locked_dropouts(outputs)
+        # outputs = self.locked_dropouts(outputs)
 
         linear_input, _ = self.pblstm3(outputs)
         # linear_input = self.dropout(linear_input)
@@ -117,7 +117,7 @@ class Decoder(nn.Module):
 
         self.lstm1 = nn.LSTMCell(input_size=embed_dim + value_size, hidden_size=hidden_dim).to(device)
         self.lstm2 = nn.LSTMCell(input_size=hidden_dim, hidden_size=key_size).to(device)
-        self.dropout = nn.Dropout(p=0.2)
+        self.dropout = nn.Dropout(p=0.1)
         # self.dropout2 = nn.Dropout(p=0.1)
         self.isAttended = isAttended
         if (isAttended):
