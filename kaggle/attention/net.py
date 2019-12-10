@@ -62,13 +62,13 @@ class Encoder(nn.Module):
         rnn_inp = utils.rnn.pack_padded_sequence(x, lengths=seq_len, batch_first=True, enforce_sorted=False)
         outputs, _ = self.lstm(rnn_inp)
         outputs, _ = utils.rnn.pad_packed_sequence(outputs)
-        # outputs = self.dropout(outputs)
+        outputs = self.locked_dropouts(outputs)
         # Use the outputs and pass it through the pBLSTM blocks
         outputs, _ = self.pblstm1(outputs)
-        # outputs = self.locked_dropouts(outputs)
+        outputs = self.locked_dropouts(outputs)
 
         outputs, _ = self.pblstm2(outputs)
-        # outputs = self.locked_dropouts(outputs)
+        outputs = self.locked_dropouts(outputs)
 
         linear_input, _ = self.pblstm3(outputs)
         # linear_input = self.dropout(linear_input)
@@ -118,6 +118,7 @@ class Decoder(nn.Module):
         self.lstm1 = nn.LSTMCell(input_size=embed_dim + value_size, hidden_size=hidden_dim).to(device)
         self.lstm2 = nn.LSTMCell(input_size=hidden_dim, hidden_size=key_size).to(device)
         self.dropout = nn.Dropout(p=0.12)
+        self.relu = torch.nn.LeakyReLU(negative_slope=0.2)
         # self.dropout2 = nn.Dropout(p=0.1)
         self.isAttended = isAttended
         if (isAttended):
@@ -186,7 +187,8 @@ class Decoder(nn.Module):
             output = hidden_states[1][0]
 
             if self.isAttended:
-                context, mask = self.attention(output, key, values, speech_len=speech_len)
+                context, _ = self.attention(output, key, values, speech_len=speech_len)
+                context = self.relu(context)
                 prediction = self.character_prob(torch.cat([output, context], dim=1))
             # When attention is True you should replace the values[i,:,:] with the context you get from attention
             else:
