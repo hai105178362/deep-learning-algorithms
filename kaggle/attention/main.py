@@ -26,7 +26,10 @@ def train(model, train_loader, val_loader, num_epochs, criterion, optimizer):
     # model.load_state_dict(state_dict=torch.load('snapshots/{}.pt'.format(config.model), map_location=net.device))
     for epochs in range(num_epochs):
         start_time = time.time()
-        par.tf_rate *= 0.9
+        if par.tf_rate > 0.3:
+            par.tf_rate *= 0.9
+        else:
+            par.tf_rate = 0.3
         loss_sum = 0
         since = time.time()
         print("\n\n")

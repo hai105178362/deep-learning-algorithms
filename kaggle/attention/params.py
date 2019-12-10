@@ -34,6 +34,6 @@ def init_parser():
 
 config = init_parser()
 train_mode = True
-tf_rate = 2.5
+tf_rate = 0.9
 if config.mode == "test":
     train_mode = False
