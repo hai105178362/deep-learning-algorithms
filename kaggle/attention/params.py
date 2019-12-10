@@ -18,7 +18,7 @@ def init_parser():
     ### Hidden Size
     parser.add_argument('--encode_hidden', type=int, default=256)
     parser.add_argument('--decode_hidden', type=int, default=512)
-    parser.add_argument('--attention_hidden', type=int, default=144)
+    parser.add_argument('--attention_hidden', type=int, default=128)
     parser.add_argument('--embed_dim', type=int, default=256)
 
     # parser.add_argument('--encode_hidden', type=int, default=32)
